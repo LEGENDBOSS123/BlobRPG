@@ -1,0 +1,137 @@
+:root {
+    --slot-border: #444;
+    --slot-bg: #222;
+    --slot-bg-hover: #2e2e2e;
+    --slot-color: #fff;
+    --slot-radius: 8px;
+    --slot-transition: 0.1s;
+    --slot-opacity: 0.75;
+}
+
+.inventory-container {
+    display: grid;
+    width: 100%;
+}
+
+.inventory-slot {
+    position: relative;
+    border: 1px solid var(--slot-border);
+    border-radius: var(--slot-radius);
+    background-color: var(--slot-bg);
+    color: var(--slot-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: sans-serif;
+    font-size: 1rem;
+    aspect-ratio: 1 / 1;
+    user-select: none;
+    transition:
+        background-color var(--slot-transition),
+        transform calc(var(--slot-transition) * 1.5);
+    cursor: pointer;
+}
+
+.inventory-slot:hover {
+    background-color: var(--slot-bg-hover);
+    transform: scale(1.05);
+}
+
+
+.inventory-slot.empty {
+    opacity: var(--slot-opacity);
+}
+
+.item-count {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: 0.75rem;
+}
+
+.inventory-item {
+    position: relative;
+    display: inline-block;
+    background-color: #333;
+    color: #fff;
+    border-radius: 4px;
+    width: 100%;
+    height: 100%;
+}
+
+.item-name {
+    position: absolute;
+    display: block;
+    font-weight: bold;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 8px;
+    width: 90%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+    font-size: 1em;
+}
+
+
+.item-container {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.item-icon {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+.item-icon-container {
+    position: absolute;
+    width: 100%;
+    height: 65%;
+    bottom: 12.5%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.action-container {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    user-select: none;
+    pointer-events: none;
+    display: none;
+    transition: visibility 0.3s ease-in-out;
+    z-index: 999;
+}
+
+.action-button {
+    position: absolute;
+    border-radius: 50%;
+    border: none;
+    pointer-events: auto;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2em;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}

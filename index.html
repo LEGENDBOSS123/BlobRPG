@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" style="margin: 0; padding: 0; overflow: hidden; height: 100%;">
+
+<head style="margin: 0; padding: 0; overflow: hidden; height: 100%;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEGENDS GAME</title>
+    <link rel="stylesheet" href="./3D/Web/Inventory/inventory.css">
+</head>
+
+<body style="margin: 0; padding: 0; overflow: hidden; height: 100%;">
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "./3D/Graphics/three/build/three.module.js",
+            "three/addons/": "./3D/Graphics/three/examples/jsm/",
+            "postprocessing": "./3D/Graphics/postprocessing/build/index.js"
+            }
+        }
+    </script>
+    <script type="module" src="main.js"></script>
+    <div style="position: relative; width: 100%; height: 100%;">
+        <canvas id="canvas"></canvas>
+        <img src="./3D/Graphics/Assets/shiftlockcursor.png" id="shiftlockcursor"
+            style="pointer-events: none; display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px;">
+    </div>
+
+
+    <div id="inventory"
+        style="display: flex; position: absolute; width: 750px; height: 500px; scrollbar-width: none; top: 50px; left: 50%; transform: translate(-50%, 0);">
+    </div>
+    <div id="hotbar"
+        style="display: flex; position: absolute; width: 675px; height: 75px; scrollbar-width: none; bottom: 50px; left: 50%; transform: translate(-50%, 0);">
+    </div>
+
+</body>
+
+</html>
