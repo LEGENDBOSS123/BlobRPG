@@ -29,11 +29,7 @@ const Inventory = class {
             }
         }
 
-        this.modal = new Modal({
-            draggable: true,
-            closeable: false,
-            title: "Inventory"
-        })
+        this.modal = new Modal(options)
         this.html = null;
     }
 
@@ -93,20 +89,20 @@ const Inventory = class {
             switch (index) {
                 case this.ACTIONS.TRASH:
                     button.style.bottom = `calc(-10% - ${button.offsetWidth}px)`;
-                    button.style.top = "unset";
+                    button.style.top = "";
                     button.style.left = "50%";
                     if(Inventory.isButtonClipped(button, "bottom")){
                         button.style.top = `calc(-10% - ${button.offsetWidth}px)`;
-                        button.style.bottom = "unset";
+                        button.style.bottom = "";
                     }
                     break;
                 case this.ACTIONS.INSPECT:
                     button.style.left = `calc(-10% - ${button.offsetWidth}px)`;
-                    button.style.right = "unset";
+                    button.style.right = "";
                     button.style.top = "50%";
                     if(Inventory.isButtonClipped(button, "left")){
                         button.style.right = `calc(-10% - ${button.offsetWidth}px)`;
-                        button.style.left = "unset";
+                        button.style.left = "";
                     }
                     break;
                 default:
@@ -149,7 +145,7 @@ const Inventory = class {
         for (var row = 0; row < this.rows; row++) {
             for (var column = 0; column < this.columns; column++) {
                 var slot = this.getSlot(column, row);
-                var slotElememt = slot.createHTML()
+                var slotElememt = slot.createHTML();
                 element.appendChild(slotElememt);
             }
         }
@@ -170,12 +166,9 @@ const Inventory = class {
             document: this.document,
             container: container,
             width: width,
-            height: height
+            height: height,
+            centered: options?.centered
         });
-
-        if(options?.centered){
-            this.modal.center();
-        }
 
         return this.html;
     }

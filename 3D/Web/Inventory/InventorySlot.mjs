@@ -55,7 +55,7 @@ const InventorySlot = class {
 
     createHTML() {
         var element = this.document.createElement('div');
-        element.classList.add('inventory-slot');
+        element.classList.add("inventory-slot", "empty");
         element.draggable = true;
 
         this.itemContainer = this.document.createElement('div');

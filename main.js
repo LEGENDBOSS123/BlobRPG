@@ -21,6 +21,7 @@ import Sphere from "./3D/Physics/Shapes/Sphere.mjs";
 import Inventory from "./3D/Web/Inventory/Inventory.mjs";
 import InventorySlot from "./3D/Web/Inventory/InventorySlot.mjs";
 import InventoryItem from "./3D/Web/Inventory/InventoryItem.mjs";
+import Modal from "./3D/Web/Modal/Modal.mjs";
 
 var stats = new Stats();
 var stats2 = new Stats();
@@ -136,7 +137,8 @@ player.addToWorld(gameEngine.world);
 var inventory = new Inventory({
     rows: 12,
     columns: 8,
-    document: document
+    document: document,
+    title: "Inventory"
 })
 
 inventory.createHTML({
@@ -144,19 +146,28 @@ inventory.createHTML({
     overflow: true,
     width: 750,
     height: 500,
-    centered: true
+    centered: true,
+
 })
 
-// var hotbar = new Inventory({
-//     rows: 1,
-//     columns: 9,
-//     document: document
-// })
 
-// hotbar.createHTML({
-//     container: document.getElementById("hotbar"),
-//     overflow: false
-// })
+var hotbar = new Inventory({
+    rows: 1,
+    columns: 9,
+    document: document,
+    title: "HOTBAR",
+    closeable: false,
+    fullscreenable: false,
+    resizable: false
+})
+
+hotbar.createHTML({
+    container: document.body,
+    overflow: false,
+    width: 750,
+    height: 130,
+    centered: true,
+})
 
 inventory.getSlot(0, 0).setItem(new InventoryItem({
     name: "Knife",
@@ -231,26 +242,26 @@ gameEngine.timer.schedule(gameEngine.fpsStepper);
 
 function render() {
     stats.begin();
-    gameEngine.cameraControls.update();
+    // gameEngine.cameraControls.update();
 
 
-    gameEngine.fpsStepper.job = function () {
-        player.updateKeys(gameEngine);
-        gameEngine.cameraControls.reset();
-        gameEngine.updateEntitiesStep();
+    // gameEngine.fpsStepper.job = function () {
+    //     player.updateKeys(gameEngine);
+    //     gameEngine.cameraControls.reset();
+    //     gameEngine.updateEntitiesStep();
 
-        stats2.begin();
-        gameEngine.stepWorld();
-        stats2.end();
-    }
+    //     stats2.begin();
+    //     gameEngine.stepWorld();
+    //     stats2.end();
+    // }
     inventory.update();
-    // hotbar.update();
-    gameEngine.updateEntities();
-    gameEngine.updateGraphicsEngine();
-    gameEngine.updateGameCamera(Vector3.from(player.getMainShape()?.mesh?.mesh?.position ?? player.getMainShape().global.body.position.copy()));
-    gameEngine.particleSystem.update();
-    gameEngine.graphicsEngine.render();
-    gameEngine.timer.step();
+    hotbar.update();
+    // gameEngine.updateEntities();
+    // gameEngine.updateGraphicsEngine();
+    // gameEngine.updateGameCamera(Vector3.from(player.getMainShape()?.mesh?.mesh?.position ?? player.getMainShape().global.body.position.copy()));
+    // gameEngine.particleSystem.update();
+    // gameEngine.graphicsEngine.render();
+    // gameEngine.timer.step();
     requestAnimationFrame(render);
 
     stats.end();
