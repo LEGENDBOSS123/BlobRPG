@@ -10,7 +10,19 @@
 
 .inventory-container {
     display: grid;
+    width: 95%;
+    height: 95%;
+    position: absolute;
+    scrollbar-width: none;
+}
+
+.inventory-grid-container {
+    display: grid;
     width: 100%;
+    height: auto;
+    position: absolute;
+    top: 0;
+    box-sizing: border-box;
 }
 
 .inventory-slot {

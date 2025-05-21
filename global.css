@@ -1,0 +1,9 @@
+html * {
+    font-size: 1em;
+    color: #ffffff;
+    font-family: sans-serif;
+    font-style: normal;
+    font-weight: normal;
+    margin: 0;
+    padding: 0;
+}
