@@ -7,7 +7,6 @@ const InventorySlot = class {
     constructor(options) {
         this.item = options?.item ?? null;
         this.html = options?.html ?? null;
-        this.document = options?.document ?? null;
         this.parent = options.parent;
         this.itemContainer = null;
     }
@@ -54,11 +53,11 @@ const InventorySlot = class {
     }
 
     createHTML() {
-        var element = this.document.createElement('div');
+        var element = document.createElement('div');
         element.classList.add("inventory-slot", "empty");
         element.draggable = true;
 
-        this.itemContainer = this.document.createElement('div');
+        this.itemContainer = document.createElement('div');
         this.itemContainer.classList.add('item-container');
         element.appendChild(this.itemContainer);
 
@@ -69,9 +68,7 @@ const InventorySlot = class {
 
     updateHTML() {
         if (this.item) {
-            this.item.updateHTML({
-                document: this.document
-            });
+            this.item.updateHTML();
         }
         if (!this.item) {
             this.html.classList.add('empty');
@@ -129,6 +126,14 @@ const InventorySlot = class {
             }
             Inventory.centerActionButtonAround(this);
         }.bind(this));
+
+        // this.html.addEventListener("click", function(e){
+        //     if(Inventory.actionButtonAround == this){
+        //         Inventory.hideActionContainer();
+        //         return;
+        //     }
+        //     Inventory.centerActionButtonAround(this);
+        // }.bind(this));
     }
 
 }

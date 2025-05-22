@@ -17,7 +17,7 @@ const InventoryItem = class {
         this.iconElement = null;
     }
 
-    createHTML({ document }) {
+    createHTML() {
         var element = document.createElement("div");
         element.classList.add("inventory-item");
 
@@ -42,9 +42,7 @@ const InventoryItem = class {
         element.appendChild(this.countElement);
 
         this.html = element;
-        this.updateHTML({
-            document: document
-        });
+        this.updateHTML();
         return this.html;
     }
 
@@ -56,11 +54,9 @@ const InventoryItem = class {
         return true;
     }
 
-    updateHTML({ document }) {
+    updateHTML() {
         if (!this.html) {
-            return this.createHTML({
-                document: document
-            });
+            return this.createHTML();
         }
 
 

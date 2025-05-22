@@ -24,10 +24,13 @@ const Modal = class {
         this.html.style.zIndex = Modal.zIndexCounter;
     }
 
+    headerVisible(){
+        return this.title || this.closeable || this.draggable;
+    }
+
     createHTML(options) {
         var container = options.container;
         this.parent = container;
-        var document = options.document;
         var width = options?.width ?? 750;
         var height = options?.height ?? 600;
 
@@ -39,38 +42,41 @@ const Modal = class {
             this.html.classList.add('modal-resizable');
         }
 
-        this.modalHeaderElement = document.createElement("div");
-        this.modalHeaderElement.classList.add("modal-header");
-        if (this.draggable) {
-            this.modalHeaderElement.style.cursor = "move";
-        }
-        this.html.appendChild(this.modalHeaderElement);
-
-
-        this.modalCloseButtonElement = document.createElement("div");
-        this.modalCloseButtonElement.classList.add("modal-close-button");
-        if(!this.closeable){
-            this.modalCloseButtonElement.classList.add('modal-hidden');
-        }
-        this.modalHeaderElement.appendChild(this.modalCloseButtonElement);
-
-        this.modalTitleElement = document.createElement("div");
-        this.modalTitleElement.classList.add("modal-title");
-        this.modalTitleElement.innerHTML = this.title;
-        this.modalHeaderElement.appendChild(this.modalTitleElement);
-
         this.modalContentElement = document.createElement("div");
         this.modalContentElement.classList.add("modal-content");
         this.html.appendChild(this.modalContentElement);
+
         if (this.content) {
             this.setContent(this.content);
         }
 
+        if (this.headerVisible()) {
+            this.modalHeaderElement = document.createElement("div");
+            this.modalHeaderElement.classList.add("modal-header");
+            if (this.draggable) {
+                this.modalHeaderElement.style.cursor = "move";
+            }
+            this.html.appendChild(this.modalHeaderElement);
+            this.modalCloseButtonElement = document.createElement("div");
+            this.modalCloseButtonElement.classList.add("modal-close-button");
+            if (!this.closeable) {
+                this.modalCloseButtonElement.classList.add('modal-hidden');
+            }
+            this.modalHeaderElement.appendChild(this.modalCloseButtonElement);
+
+            this.modalTitleElement = document.createElement("div");
+            this.modalTitleElement.classList.add("modal-title");
+            this.modalTitleElement.innerHTML = this.title;
+            this.modalHeaderElement.appendChild(this.modalTitleElement);
+        }
+        else{
+            this.modalContentElement.classList.add('modal-no-header');
+        }
+
+
         container.appendChild(this.html);
 
-        this.setupEventListeners({
-            document: document
-        });
+        this.setupEventListeners();
 
         if (options?.centered) {
             this.center();
@@ -97,21 +103,27 @@ const Modal = class {
     }
 
     open() {
-
+        this.html.style.display = "block";
     }
 
     close() {
-
+        this.html.style.display = "none";
     }
 
-    clampToParentBounds() {
-        if (!this.parent || !this.html) return;
+    toggleOpenClose(){
+        this.html.style.display = this.html.style.display == "none" ? "block" : "none";
+    }
 
-        const parentRect = this.parent.getBoundingClientRect();
-        const modalRect = this.html.getBoundingClientRect();
+    static clampToParentBounds(html, parent) {
+        if (!parent || !html) {
+            return;
+        }
 
-        let left = parseFloat(this.html.style.left || '0');
-        let top = parseFloat(this.html.style.top || '0');
+        const parentRect = parent.getBoundingClientRect();
+        const modalRect = html.getBoundingClientRect();
+
+        var left = parseFloat(html.style.left || '0');
+        var top = parseFloat(html.style.top || '0');
 
         const maxLeft = parentRect.width - modalRect.width;
         const maxTop = parentRect.height - modalRect.height;
@@ -119,11 +131,22 @@ const Modal = class {
         left = Math.min(Math.max(0, left), maxLeft);
         top = Math.min(Math.max(0, top), maxTop);
 
-        this.html.style.left = `${left}px`;
-        this.html.style.top = `${top}px`;
+        html.style.left = `${left}px`;
+        html.style.top = `${top}px`;
+        html.style.right = "";
+        html.style.bottom = "";
     }
 
-    setupEventListeners({ document }) {
+
+    clampToParentBounds() {
+        Modal.clampToParentBounds(this.html, this.parent);
+    }
+
+    update() {
+        this.clampToParentBounds();
+    }
+
+    setupEventListeners() {
         if (this.draggable) {
             var isDragging = false;
             var offset = {
@@ -190,6 +213,12 @@ const Modal = class {
                     this.html.classList.add("modal-fullscreen");
                     this.clampToParentBounds();
                 }
+            }.bind(this));
+        }
+
+        if(this.closeable){
+            this.modalCloseButtonElement.addEventListener("click", function (e) {
+                this.close();
             }.bind(this));
         }
 

@@ -17,13 +17,11 @@ const Inventory = class {
     constructor(options) {
         this.rows = options?.rows ?? 5;
         this.columns = options?.columns ?? 5;
-        this.document = options.document;
         this.slots = [];
         for (let i = 0; i < this.rows; i++) {
             this.slots[i] = [];
             for (let j = 0; j < this.columns; j++) {
                 this.slots[i][j] = new InventorySlot({
-                    document: this.document,
                     parent: this
                 });
             }
@@ -43,31 +41,10 @@ const Inventory = class {
     static showActionContainer() {
         if (Inventory.actionButtonAround) {
             Inventory.actionContainer.style.display = 'flex';
-            if (!Inventory.actionButtonAround.parent.html.contains(Inventory.actionContainer)) {
-                Inventory.actionButtonAround.parent.html.appendChild(Inventory.actionContainer);
+            Inventory.actionContainer.style.zIndex = 1 + Inventory.actionButtonAround.parent.modal.html.style.zIndex;
+            if (!document.body.contains(Inventory.actionContainer)) {
+                document.body.appendChild(Inventory.actionContainer);
             }
-        }
-    }
-
-    static isButtonClipped(button, direction = null) {
-        if (!Inventory.actionButtonAround) {
-            return false;
-        }
-        var elementRect = button.getBoundingClientRect();
-        var containerRect = Inventory.actionButtonAround.parent.html.getBoundingClientRect();
-
-
-        switch (direction) {
-            case "right":
-                return elementRect.right > containerRect.right;
-            case "left":
-                return elementRect.left < containerRect.left;
-            case "bottom":
-                return elementRect.bottom > containerRect.bottom;
-            case "top":
-                return elementRect.top < containerRect.top;
-            default:
-                return elementRect.right > containerRect.right || elementRect.left < containerRect.left || elementRect.bottom > containerRect.bottom || elementRect.top < containerRect.top;
         }
     }
 
@@ -79,8 +56,12 @@ const Inventory = class {
         Inventory.actionButtonAround = slot;
         Inventory.showActionContainer();
 
-        Inventory.actionContainer.style.left = `${slot.html.offsetLeft}px`;
-        Inventory.actionContainer.style.top = `${slot.html.offsetTop}px`;
+        var slotRect = slot.html.getBoundingClientRect();
+        var actionContainerParent = Inventory.actionContainer.parentElement.getBoundingClientRect();
+
+        Inventory.actionContainer.style.left = `${slotRect.left - actionContainerParent.left}px`;
+        Inventory.actionContainer.style.top = `${slotRect.top - actionContainerParent.top}px`;
+
         Inventory.actionContainer.style.width = `${slot.html.offsetWidth}px`;
         Inventory.actionContainer.style.height = `${slot.html.offsetHeight}px`;
 
@@ -88,22 +69,14 @@ const Inventory = class {
             var button = Inventory.actionButtons[index];
             switch (index) {
                 case this.ACTIONS.TRASH:
-                    button.style.bottom = `calc(-10% - ${button.offsetWidth}px)`;
-                    button.style.top = "";
+                    button.style.top = `calc(-10% - ${button.offsetWidth}px)`;
+                    button.style.bottom = "";
                     button.style.left = "50%";
-                    if(Inventory.isButtonClipped(button, "bottom")){
-                        button.style.top = `calc(-10% - ${button.offsetWidth}px)`;
-                        button.style.bottom = "";
-                    }
                     break;
                 case this.ACTIONS.INSPECT:
                     button.style.left = `calc(-10% - ${button.offsetWidth}px)`;
                     button.style.right = "";
                     button.style.top = "50%";
-                    if(Inventory.isButtonClipped(button, "left")){
-                        button.style.right = `calc(-10% - ${button.offsetWidth}px)`;
-                        button.style.left = "";
-                    }
                     break;
                 default:
                     break;
@@ -130,10 +103,10 @@ const Inventory = class {
         var width = options?.width ?? 750;
         var height = options?.height ?? 600;
 
-        var inventoryContainer = this.document.createElement("div");
+        var inventoryContainer = document.createElement("div");
         inventoryContainer.classList.add("inventory-container");
 
-        var element = this.document.createElement("div");
+        var element = document.createElement("div");
 
         element.classList.add("inventory-grid-container");
         element.style.gridTemplateColumns = `repeat(${this.columns}, 1fr)`;
@@ -153,17 +126,11 @@ const Inventory = class {
         inventoryContainer.appendChild(element);
         this.html = inventoryContainer;
 
-        Inventory.createHTML({
-            document: this.document
-        });
-
-        Inventory.setupEventListeners({
-            document: this.document
-        });
-
+        Inventory.createHTML();
+        Inventory.setupEventListeners();
+        this.setupEventListeners();
         this.modal.content = this.html;
         this.modal.createHTML({
-            document: this.document,
             container: container,
             width: width,
             height: height,
@@ -180,6 +147,7 @@ const Inventory = class {
                 slot.update();
             }
         }
+        this.modal.update();
         if (Inventory.actionButtonAround && Inventory.actionButtonAround.parent == this) {
             Inventory.centerActionButtonAround(Inventory.actionButtonAround);
         }
@@ -200,7 +168,7 @@ const Inventory = class {
         return -1;
     }
 
-    static createHTML({ document }) {
+    static createHTML() {
         if (this.actionContainer) {
             return;
         }
@@ -229,16 +197,22 @@ const Inventory = class {
             this.actionButtons[index] = button;
         }
     }
-    static setupEventListeners({ document }) {
+    static setupEventListeners() {
         if (this.setEventListeners) {
             return;
         }
         this.setEventListeners = true;
-        document.addEventListener("click", function (e) {
+        document.addEventListener("mousedown", function (e) {
             if (!e.target.closest('.inventory-slot') && !e.target.closest('.action-button')) {
                 this.hideActionContainer();
             }
         }.bind(this));
+    }
+
+    setupEventListeners(){
+        this.html.addEventListener("scroll", function(e){
+            Inventory.hideActionContainer();
+        }.bind(this))
     }
 }
 

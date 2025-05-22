@@ -1,9 +1,9 @@
 :root {
     --modal-border-radius: 25px;
     --modal-header-height: 40px;
-    --modal-close-button-size: 20px;
+    --modal-close-button-size: 26px;
     --modal-close-button-color: #FE5F58;
-    --modal-color: rgba(0, 0, 0, 0.85);
+    --modal-color: rgba(0, 12, 56, 0.85);
 }
 
 
@@ -57,13 +57,15 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    right: 10px;
+    right: calc((var(--modal-header-height) - var(--modal-close-button-size)) / 2);
     cursor: pointer;
     border-radius: 50%;
     background-color: var(--modal-close-button-color);
     width: var(--modal-close-button-size);
     height: var(--modal-close-button-size);
 }
+
+
 
 .modal-content {
     width: 100%;
@@ -76,6 +78,11 @@
     justify-content: center;
     border-radius: 0 0 var(--modal-border-radius) var(--modal-border-radius);
     overflow: hidden;
+}
+
+.modal-no-header{
+    top: 0;
+    height: 100%;
 }
 
 .modal-title {
