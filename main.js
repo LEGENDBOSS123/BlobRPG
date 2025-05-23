@@ -178,6 +178,34 @@ var setHotbarPosition = function () {
 
 setHotbarPosition();
 
+var hotbarSelectedIndex = null;
+
+for (var s_ in hotbar.slots[0]) {
+    var s = hotbar.slots[0][s_];
+    var index = Array.from(s.html.parentElement.children).indexOf(s.html);
+    (function (s, index) {
+        var f = function (event) {
+            var allSelected = document.querySelectorAll(".inventory-slot.selected");
+            s.html.classList.add("selected");
+            for (var i of allSelected) {
+                i.classList.remove("selected");
+            }
+            if(document.querySelector(".inventory-slot.selected")){
+                hotbarSelectedIndex = index;
+            }
+            else{
+                hotbarSelectedIndex = null;
+            }
+        };
+        s.html.addEventListener("click", f);
+        document.addEventListener("keydown", function (e) {
+            if (e.key == (index + 1).toString()) {
+                f();
+            }
+        })
+    })(s, index);
+}
+
 inventory.getSlot(0, 0).setItem(new InventoryItem({
     name: "Knife",
     quantity: 1,

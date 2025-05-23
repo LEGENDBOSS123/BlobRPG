@@ -155,10 +155,19 @@ const InventorySlot = class {
             Inventory.centerActionButtonAround(this);
         }.bind(this);
 
+
+        this.eventListeners.mousedown = function(e){
+            if(Inventory.actionButtonAround && Inventory.actionButtonAround != this){
+                Inventory.hideActionContainer();
+            }
+        }.bind(this);
+
+
         this.html.addEventListener("dragstart", this.eventListeners.dragstart);
         this.html.addEventListener("dragover", this.eventListeners.dragover);
         this.html.addEventListener("drop", this.eventListeners.drop);
         this.html.addEventListener("click", this.eventListeners.click);
+        this.html.addEventListener("mousedown", this.eventListeners.mousedown);
     }
 
     destroy() {
@@ -167,6 +176,7 @@ const InventorySlot = class {
             this.html.removeEventListener("dragover", this.eventListeners.dragover);
             this.html.removeEventListener("drop", this.eventListeners.drop);
             this.html.removeEventListener("click", this.eventListeners.click);
+            this.html.removeEventListener("mousedown", this.eventListeners.mousedown);
         }
         this.html.remove();
         this.itemContainer = null;

@@ -249,7 +249,8 @@ const Modal = class {
 
         this.eventListeners.onmousedown = function (e) {
             this.bringToFront();
-        }.bind(this)
+        }.bind(this);
+
         this.html.addEventListener("mousedown", this.eventListeners.onmousedown);
     }
 
