@@ -6,6 +6,8 @@
     --slot-radius: 8px;
     --slot-transition: 0.1s;
     --slot-opacity: 0.85;
+    --action-button-bg: #a6cad7;
+    --action-button-border: #8be2ff;
 }
 
 .inventory-container {
@@ -124,19 +126,17 @@
 
 .action-container {
     position: absolute;
-    width: 200px;
-    height: 200px;
     user-select: none;
     pointer-events: none;
     display: none;
     transition: visibility 0.3s ease-in-out;
-    z-index: 999;
+    z-index: 9999999;
 }
 
 .action-button {
     position: absolute;
     border-radius: 50%;
-    border: none;
+    border: 1px solid var(--action-button-border);
     pointer-events: auto;
     color: white;
     cursor: pointer;
@@ -144,6 +144,7 @@
     justify-content: center;
     align-items: center;
     font-size: 1.2em;
+    background-color: var(--action-button-bg);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
 }

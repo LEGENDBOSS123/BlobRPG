@@ -225,7 +225,7 @@ var Player = class extends Entity {
         var vecHorizontal = vec.copy();
         vecHorizontal.y = 0;
         vecHorizontal.normalizeInPlace();
-        
+
 
         var desiredVelocity = vecHorizontal.scale(this.moveSpeed);
         if (this.touchingGround) {

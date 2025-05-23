@@ -1,7 +1,9 @@
+import Modal from "../Modal/Modal.mjs";
+
 const InventoryItem = class {
     constructor(options) {
         this.name = options?.name ?? "";
-        this.description = options?.description ?? "";
+        this.description = options?.description ?? "This is an item";
         this.stackable = options?.stackable ?? true;
         this.maxStack = options?.maxStack ?? 16;
         this.quantity = options?.quantity ?? 1;
@@ -15,6 +17,8 @@ const InventoryItem = class {
         this.nameElement = null;
         this.countElement = null;
         this.iconElement = null;
+        this.inspectModal = null;
+        this.eventListeners = null;
     }
 
     createHTML() {
@@ -46,12 +50,40 @@ const InventoryItem = class {
         return this.html;
     }
 
+    createInspectModal({ container }) {
+
+        if (this.inspectModal) {
+            this.inspectModal.open();
+            this.inspectModal.bringToFront();
+            return;
+        }
+
+        this.inspectModal = new Modal({
+            title: this.name
+        });
+
+        this.inspectModal.content = document.createElement('p');
+        this.inspectModal.content.textContent = this.description;
+
+        this.inspectModal.createHTML({
+            container: container,
+            width: 400,
+            height: 200,
+            centered: true
+        })
+        this.inspectModal.bringToFront();
+    }
+
     canMergeWith(item) {
         return this.name == item.name && this.stackable;
     }
-    
+
     canSwapWith(item) {
         return true;
+    }
+
+    update() {
+        this.updateHTML();
     }
 
     updateHTML() {
@@ -81,8 +113,26 @@ const InventoryItem = class {
         } else {
             this.countElement.style.display = 'none';
         }
+
+        if (this.inspectModal) {
+            this.inspectModal.content.textContent = this.description + " and has " + this.quantity + " " + this.name;
+        }
     }
 
+    destroy() {
+        if (this.inspectModal) {
+            this.inspectModal.destroy();
+            this.inspectModal = null;
+        }
+        this.html.remove();
+        this.html = null;
+        this.icon = null;
+        this.nameElement = null;
+        this.countElement = null;
+        this.iconElement = null;
+        this.inspectModal = null;
+        this.eventListeners = null;
+    }
 
 }
 

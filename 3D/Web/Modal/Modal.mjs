@@ -24,13 +24,17 @@ const Modal = class {
         this.html.style.zIndex = Modal.zIndexCounter;
     }
 
-    headerVisible(){
+    headerVisible() {
         return this.title || this.closeable || this.draggable;
+    }
+
+    setContainer(container) {
+        this.parent = container;
+        container.appendChild(this.html);
     }
 
     createHTML(options) {
         var container = options.container;
-        this.parent = container;
         var width = options?.width ?? 750;
         var height = options?.height ?? 600;
 
@@ -69,12 +73,13 @@ const Modal = class {
             this.modalTitleElement.innerHTML = this.title;
             this.modalHeaderElement.appendChild(this.modalTitleElement);
         }
-        else{
+        else {
             this.modalContentElement.classList.add('modal-no-header');
         }
 
-
-        container.appendChild(this.html);
+        if (container) {
+            this.setContainer(container);
+        }
 
         this.setupEventListeners();
 
@@ -103,15 +108,28 @@ const Modal = class {
     }
 
     open() {
-        this.html.style.display = "block";
+        this.parent.appendChild(this.html);
     }
 
     close() {
-        this.html.style.display = "none";
+        this.html.remove();
     }
 
-    toggleOpenClose(){
-        this.html.style.display = this.html.style.display == "none" ? "block" : "none";
+    remove() {
+        this.html.remove();
+    }
+
+    addBack() {
+        this.parent.appendChild(this.html);
+    }
+
+    toggleOpenClose() {
+        if (this.parent.contains(this.html)) {
+            this.remove();
+        }
+        else {
+            this.parent.appendChild(this.html);
+        }
     }
 
     static clampToParentBounds(html, parent) {
@@ -147,25 +165,31 @@ const Modal = class {
     }
 
     setupEventListeners() {
+        if (this.eventListeners) {
+            return;
+        }
+
+        this.eventListeners = {};
+
         if (this.draggable) {
             var isDragging = false;
             var offset = {
                 x: 0,
                 y: 0
             }
-            this.modalHeaderElement.addEventListener("mousedown", function (e) {
+            this.eventListeners.mousedownDrag = function (e) {
                 this.bringToFront();
                 isDragging = true;
                 var rect = this.html.getBoundingClientRect();
                 offset.x = e.clientX - rect.left;
                 offset.y = e.clientY - rect.top;
 
-                document.addEventListener("mousemove", onMouseMove.bind(this));
-                document.addEventListener("mouseup", onMouseUp.bind(this));
+                document.addEventListener("mousemove", this.eventListeners.onmousemoveDrag);
+                document.addEventListener("mouseup", this.eventListeners.onmouseupDrag);
+            }.bind(this)
+            this.modalHeaderElement.addEventListener("mousedown", this.eventListeners.mousedownDrag);
 
-            }.bind(this));
-
-            var onMouseMove = function (e) {
+            this.eventListeners.onmousemoveDrag = function (e) {
                 if (!isDragging) {
                     return;
                 }
@@ -176,16 +200,15 @@ const Modal = class {
                 this.html.style.top = `${newTop}px`;
 
                 this.clampToParentBounds();
-
             }.bind(this);
 
-            var onMouseUp = function (e) {
+            this.eventListeners.onmouseupDrag = function (e) {
                 if (!isDragging) {
                     return;
                 }
                 isDragging = false;
-                document.removeEventListener("mousemove", onMouseMove);
-                document.removeEventListener("mouseup", onMouseUp);
+                document.removeEventListener("mousemove", this.eventListeners.onmousemoveDrag);
+                document.removeEventListener("mouseup", this.eventListeners.onmouseupDrag);
             }.bind(this);
         }
 
@@ -196,7 +219,7 @@ const Modal = class {
                 x: this.html.offsetLeft,
                 y: this.html.offsetTop
             }
-            this.modalHeaderElement.addEventListener("dblclick", function (e) {
+            this.eventListeners.dblclick = function (e) {
                 if (this.html.classList.contains("modal-fullscreen")) {
                     this.html.style.width = previousWidth;
                     this.html.style.height = previousHeight;
@@ -213,18 +236,44 @@ const Modal = class {
                     this.html.classList.add("modal-fullscreen");
                     this.clampToParentBounds();
                 }
-            }.bind(this));
+            }.bind(this);
+            this.modalHeaderElement.addEventListener("dblclick", this.eventListeners.dblclick);
         }
 
-        if(this.closeable){
-            this.modalCloseButtonElement.addEventListener("click", function (e) {
+        if (this.closeable) {
+            this.eventListeners.clickClose = function (e) {
                 this.close();
-            }.bind(this));
+            }.bind(this);
+            this.modalCloseButtonElement.addEventListener("click", this.eventListeners.clickClose);
         }
 
-        this.html.addEventListener("click", function (e) {
+        this.eventListeners.onmousedown = function (e) {
             this.bringToFront();
-        }.bind(this));
+        }.bind(this)
+        this.html.addEventListener("mousedown", this.eventListeners.onmousedown);
+    }
+
+    destroy() {
+        if (this.eventListeners) {
+            this.modalHeaderElement.removeEventListener("mousedown", this.eventListeners.mousedownDrag);
+            document.removeEventListener("mousemove", this.eventListeners.onmousemoveDrag);
+            document.removeEventListener("mouseup", this.eventListeners.onmouseupDrag);
+            this.modalHeaderElement.removeEventListener("dblclick", this.eventListeners.dblclick);
+            this.modalCloseButtonElement.removeEventListener("click", this.eventListeners.clickClose);
+            this.html.removeEventListener("mousedown", this.eventListeners.onmousedown);
+        }
+
+        if (this.html && this.html.parentNode) {
+            this.html.remove();
+        }
+        this.html = null;
+        this.modalContentElement = null;
+        this.modalHeaderElement = null;
+        this.modalTitleElement = null;
+        this.modalCloseButtonElement = null;
+        this.parent = null;
+        this.content = null;
+        this.eventListeners = null;
     }
 }
 

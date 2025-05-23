@@ -4,7 +4,7 @@ import Modal from "../Modal/Modal.mjs";
 const Inventory = class {
 
     static actionButtonAround = null;
-    static setEventListeners = false;
+    static eventListeners = null;
     static actionContainer = null;
     static actionButtons = [];
     static actionButtonSize = 50;
@@ -26,8 +26,8 @@ const Inventory = class {
                 });
             }
         }
-
-        this.modal = new Modal(options)
+        this.eventListeners = null;
+        this.modal = new Modal(options);
         this.html = null;
     }
 
@@ -198,21 +198,61 @@ const Inventory = class {
         }
     }
     static setupEventListeners() {
-        if (this.setEventListeners) {
+        if (this.eventListeners) {
             return;
         }
-        this.setEventListeners = true;
-        document.addEventListener("mousedown", function (e) {
+        this.eventListeners = {};
+        this.eventListeners.mousedown = function (e) {
             if (!e.target.closest('.inventory-slot') && !e.target.closest('.action-button')) {
                 this.hideActionContainer();
             }
-        }.bind(this));
+        }.bind(this);
+
+        this.eventListeners.inspectClick = function (e) {
+            if (this.actionButtonAround) {
+                this.actionButtonAround.inspectItem();
+                this.hideActionContainer();
+            }
+        }.bind(this);
+
+        this.eventListeners.trashClick = function (e) {
+            if (this.actionButtonAround) {
+                this.actionButtonAround.trashItem();
+                this.hideActionContainer();
+            }
+        }.bind(this);
+
+        document.addEventListener("mousedown", this.eventListeners.mousedown);
+        this.actionButtons[this.ACTIONS.INSPECT].addEventListener("click", this.eventListeners.inspectClick);
+        this.actionButtons[this.ACTIONS.TRASH].addEventListener("click", this.eventListeners.trashClick);
+
     }
 
-    setupEventListeners(){
-        this.html.addEventListener("scroll", function(e){
+    setupEventListeners() {
+        if (this.eventListeners) {
+            return;
+        }
+        this.eventListeners = {};
+        this.eventListeners.scroll = function (e) {
             Inventory.hideActionContainer();
-        }.bind(this))
+        }.bind(this);
+
+        this.html.addEventListener("scroll", this.eventListeners.scroll);
+    }
+
+    destroy() {
+        if (this.eventListeners) {
+            this.html.removeEventListener("scroll", this.eventListeners.scroll);
+        }
+        this.modal.destroy();
+        this.html.remove();
+        this.eventListeners = null;
+        for (var y = 0; y < this.rows; y++) {
+            for (var x = 0; x < this.columns; x++) {
+                var slot = this.getSlot(x, y);
+                slot.destroy();
+            }
+        }
     }
 }
 
