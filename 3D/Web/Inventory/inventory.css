@@ -9,10 +9,30 @@
     --action-button-bg: #a6cad7;
     --action-button-border: #8be2ff;
 }
+
 .inventory-slot.selected {
     background-color: var(--slot-bg-hover);
     transform: scale(1.05);
     border-color: #00ff00;
+}
+
+.inventory-tooltip {
+    position: absolute;
+    border: 1px solid var(--slot-border);
+    border-radius: var(--slot-radius);
+    background-color: var(--slot-bg);
+    color: var(--slot-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: sans-serif;
+    font-size: 1rem;
+    aspect-ratio: 1 / 1;
+    user-select: none;
+    transition:
+        background-color var(--slot-transition),
+        transform calc(var(--slot-transition) * 1.5);
+    cursor: pointer;
 }
 
 .inventory-container {

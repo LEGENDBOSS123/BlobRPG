@@ -50,6 +50,19 @@ const InventoryItem = class {
         return this.html;
     }
 
+    addToolTip(modal) {
+        if (!modal) {
+            return;
+        }
+        if (!modal.content) {
+            modal.content = document.createElement('p');
+        }
+
+        modal.content.innerHTML = this.description + "<br>" + this.quantity + " " + this.name;
+
+        modal.setContent(modal.content);
+    }
+
     createInspectModal({ container }) {
 
         if (this.inspectModal) {

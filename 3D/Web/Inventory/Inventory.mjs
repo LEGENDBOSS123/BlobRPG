@@ -9,6 +9,10 @@ const Inventory = class {
     static actionButtons = [];
     static actionButtonSize = 50;
 
+    static toolTipAround = null;
+    static toolTip = null;
+
+
     static ACTIONS = {
         TRASH: 0,
         INSPECT: 1
@@ -31,6 +35,20 @@ const Inventory = class {
         this.html = null;
     }
 
+    static showToolTip() {
+        if (Inventory.toolTipAround) {
+            Inventory.toolTip.html.style.zIndex = Number(Inventory.toolTipAround.parent.modal.html.style.zIndex) + 1;
+            Inventory.toolTip.show();
+        }
+    }
+
+    static hideToolTip() {
+        if (Inventory.toolTipAround) {
+            Inventory.toolTip.hide();
+            Inventory.toolTipAround = null;
+        }
+    }
+
     static hideActionContainer() {
         if (Inventory.actionButtonAround) {
             Inventory.actionContainer.style.display = 'none';
@@ -41,11 +59,17 @@ const Inventory = class {
     static showActionContainer() {
         if (Inventory.actionButtonAround) {
             Inventory.actionContainer.style.display = 'flex';
-            Inventory.actionContainer.style.zIndex = 1 + Inventory.actionButtonAround.parent.modal.html.style.zIndex;
-            if (!document.body.contains(Inventory.actionContainer)) {
-                document.body.appendChild(Inventory.actionContainer);
-            }
+            Inventory.actionContainer.style.zIndex = Number(Inventory.actionButtonAround.parent.modal.html.style.zIndex) + 1;
         }
+    }
+
+    static centerToolTipAround(slot) {
+        Inventory.hideToolTip();
+        if (!slot.item) {
+            return;
+        }
+        Inventory.toolTipAround = slot;
+        Inventory.showToolTip();
     }
 
     static centerActionButtonAround(slot) {
@@ -150,6 +174,16 @@ const Inventory = class {
         this.modal.update();
         if (Inventory.actionButtonAround && Inventory.actionButtonAround.parent == this) {
             Inventory.centerActionButtonAround(Inventory.actionButtonAround);
+            if(!this.modal.isVisible()){
+                Inventory.hideActionContainer();
+            }
+        }
+
+        if (Inventory.toolTipAround && Inventory.toolTipAround.parent == this) {
+            Inventory.centerToolTipAround(Inventory.toolTipAround);
+            if(!this.modal.isVisible()){
+                Inventory.hideToolTip();
+            }
         }
     }
 
@@ -195,7 +229,26 @@ const Inventory = class {
 
             this.actionContainer.appendChild(button);
             this.actionButtons[index] = button;
+            document.body.appendChild(this.actionContainer);
+            this.actionContainer.style.display = 'none';
         }
+
+        this.toolTip = new Modal({
+            draggable: false,
+            closeable: false,
+            resizable: false,
+            fullscreenable: false
+        })
+        this.toolTip.createHTML({
+            container: document.body,
+            width: 120,
+            height: 120
+        });
+        this.toolTip.html.style.pointerEvents = 'none';
+        this.toolTip.html.style.opacity = 0.9;
+        this.toolTip.html.style.backgroundColor = 'black';
+        this.toolTip.html.style.border = '1px solid white';
+        this.toolTip.hide();
     }
     static setupEventListeners() {
         if (this.eventListeners) {
@@ -205,6 +258,16 @@ const Inventory = class {
         this.eventListeners.mousedown = function (e) {
             if (!e.target.closest('.inventory-slot') && !e.target.closest('.action-button')) {
                 this.hideActionContainer();
+            }
+        }.bind(this);
+
+        this.eventListeners.mousemove = function (e) {
+            if (this.toolTipAround && this.toolTipAround) {
+                this.toolTip.html.style.left = `${e.clientX}px`;
+                this.toolTip.html.style.top = `${e.clientY}px`;
+                if(!this.toolTipAround.parent.modal.isVisible()){
+                    this.hideToolTip(); 
+                }
             }
         }.bind(this);
 
@@ -223,6 +286,7 @@ const Inventory = class {
         }.bind(this);
 
         document.addEventListener("mousedown", this.eventListeners.mousedown);
+        document.addEventListener("mousemove", this.eventListeners.mousemove);
         this.actionButtons[this.ACTIONS.INSPECT].addEventListener("click", this.eventListeners.inspectClick);
         this.actionButtons[this.ACTIONS.TRASH].addEventListener("click", this.eventListeners.trashClick);
 
@@ -234,7 +298,11 @@ const Inventory = class {
         }
         this.eventListeners = {};
         this.eventListeners.scroll = function (e) {
-            Inventory.hideActionContainer();
+            if (Inventory.actionButtonAround) {
+                if (Modal.isChildClipped(Inventory.actionContainer, Inventory.actionButtonAround.parent.html, null, 1)) {
+                    Inventory.hideActionContainer();
+                }
+            }
         }.bind(this);
 
         this.html.addEventListener("scroll", this.eventListeners.scroll);

@@ -7,9 +7,6 @@
 }
 
 
-.modal-hidden {
-    display: none;
-}
 
 .modal-resizable {
     resize: both;
@@ -18,6 +15,7 @@
 .modal-fullscreen {
     width: 100%;
     height: 100%;
+    resize: none;
 }
 
 .modal-container {
@@ -35,7 +33,6 @@
     border-radius: var(--modal-border-radius);
     overflow: hidden;
 }
-
 
 .modal-header {
     width: 100%;
@@ -96,4 +93,8 @@
     justify-content: center;
     pointer-events: none;
     user-select: none;
+}
+
+.modal-hidden {
+    display: none;
 }

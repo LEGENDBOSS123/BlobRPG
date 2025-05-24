@@ -166,7 +166,7 @@ hotbar.createHTML({
     container: document.body,
     overflow: false,
     width: 900,
-    height: 110,
+    height: 108,
     centered: true,
 })
 

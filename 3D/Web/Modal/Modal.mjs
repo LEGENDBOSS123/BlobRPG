@@ -90,10 +90,35 @@ const Modal = class {
         return this.html;
     }
 
+    static isChildClipped(child, parent, direction = null, threshold = 0) {
+        const elementRect = child.getBoundingClientRect();
+        const containerRect = parent.getBoundingClientRect();
+
+        switch (direction) {
+            case "right":
+                return elementRect.right > containerRect.right + threshold;
+            case "left":
+                return elementRect.left < containerRect.left - threshold;
+            case "bottom":
+                return elementRect.bottom > containerRect.bottom + threshold;
+            case "top":
+                return elementRect.top < containerRect.top - threshold;
+            default:
+                return (
+                    elementRect.right > containerRect.right + threshold ||
+                    elementRect.left < containerRect.left - threshold ||
+                    elementRect.bottom > containerRect.bottom + threshold ||
+                    elementRect.top < containerRect.top - threshold
+                );
+        }
+    }
+
 
     setContent(content) {
         this.modalContentElement.innerHTML = '';
-        this.modalContentElement.appendChild(content);
+        if (content) {
+            this.modalContentElement.appendChild(content);
+        }
     }
 
     center() {
@@ -107,6 +132,18 @@ const Modal = class {
         this.html.style.top = `${top}px`;
     }
 
+    isClosed(){
+        return !this.parent.contains(this.html);
+    }
+
+    isHidden(){
+        return this.html.classList.contains('modal-hidden');
+    }
+
+    isVisible(){
+        return !this.isHidden() && !this.isClosed();
+    }
+
     open() {
         this.parent.appendChild(this.html);
     }
@@ -117,6 +154,14 @@ const Modal = class {
 
     remove() {
         this.html.remove();
+    }
+
+    hide() {
+        this.html.classList.add('modal-hidden');
+    }
+
+    show() {
+        this.html.classList.remove('modal-hidden');
     }
 
     addBack() {

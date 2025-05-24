@@ -125,6 +125,8 @@ const InventorySlot = class {
                 return e.preventDefault();
             }
             InventorySlot.dragging = this;
+            Inventory.hideActionContainer();
+            Inventory.hideToolTip();
         }.bind(this);
 
         this.eventListeners.dragover = function (e) {
@@ -152,14 +154,35 @@ const InventorySlot = class {
                 Inventory.hideActionContainer();
                 return;
             }
+            if (Modal.isChildClipped(this.html, this.parent.html)) {
+                this.html.scrollIntoView({
+                    block: "nearest",
+                    inline: "nearest",
+                    behavior: "auto"
+                });
+            }
+
             Inventory.centerActionButtonAround(this);
         }.bind(this);
 
 
-        this.eventListeners.mousedown = function(e){
-            if(Inventory.actionButtonAround && Inventory.actionButtonAround != this){
+        this.eventListeners.mousedown = function (e) {
+            if (Inventory.actionButtonAround && Inventory.actionButtonAround != this) {
                 Inventory.hideActionContainer();
             }
+        }.bind(this);
+
+        this.eventListeners.mouseenter = function (e) {
+            if(!this.item){
+                Inventory.hideToolTip();
+                return;
+            }
+            this.item.addToolTip(Inventory.toolTip);
+            Inventory.centerToolTipAround(this);
+        }.bind(this);
+
+        this.eventListeners.mouseleave = function (e) {
+            Inventory.hideToolTip();
         }.bind(this);
 
 
@@ -168,6 +191,8 @@ const InventorySlot = class {
         this.html.addEventListener("drop", this.eventListeners.drop);
         this.html.addEventListener("click", this.eventListeners.click);
         this.html.addEventListener("mousedown", this.eventListeners.mousedown);
+        this.html.addEventListener("mouseenter", this.eventListeners.mouseenter);
+        this.html.addEventListener("mouseleave", this.eventListeners.mouseleave);
     }
 
     destroy() {
@@ -177,6 +202,8 @@ const InventorySlot = class {
             this.html.removeEventListener("drop", this.eventListeners.drop);
             this.html.removeEventListener("click", this.eventListeners.click);
             this.html.removeEventListener("mousedown", this.eventListeners.mousedown);
+            this.html.removeEventListener("mouseenter", this.eventListeners.mouseenter);
+            this.html.removeEventListener("mouseleave", this.eventListeners.mouseleave);
         }
         this.html.remove();
         this.itemContainer = null;
