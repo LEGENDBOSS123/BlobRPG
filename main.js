@@ -22,7 +22,7 @@ import Inventory from "./3D/Web/Inventory/Inventory.mjs";
 import InventorySlot from "./3D/Web/Inventory/InventorySlot.mjs";
 import InventoryItem from "./3D/Web/Inventory/InventoryItem.mjs";
 import Modal from "./3D/Web/Modal/Modal.mjs";
-
+import Hotbar from "./3D/Web/Inventory/Hotbar.mjs";
 var stats = new Stats();
 var stats2 = new Stats();
 
@@ -152,7 +152,7 @@ inventory.createHTML({
 // inventory.modal.close();
 
 
-var hotbar = new Inventory({
+var hotbar = new Hotbar({
     rows: 1,
     columns: 9,
     document: document,
@@ -168,7 +168,9 @@ hotbar.createHTML({
     width: 900,
     height: 108,
     centered: true,
-})
+});
+
+top.h = hotbar;
 
 var setHotbarPosition = function () {
     hotbar.modal.center();
@@ -177,34 +179,6 @@ var setHotbarPosition = function () {
 
 
 setHotbarPosition();
-
-var hotbarSelectedIndex = null;
-
-for (var s_ in hotbar.slots[0]) {
-    var s = hotbar.slots[0][s_];
-    var index = Array.from(s.html.parentElement.children).indexOf(s.html);
-    (function (s, index) {
-        var f = function (event) {
-            var allSelected = document.querySelectorAll(".inventory-slot.selected");
-            s.html.classList.add("selected");
-            for (var i of allSelected) {
-                i.classList.remove("selected");
-            }
-            if(document.querySelector(".inventory-slot.selected")){
-                hotbarSelectedIndex = index;
-            }
-            else{
-                hotbarSelectedIndex = null;
-            }
-        };
-        s.html.addEventListener("click", f);
-        document.addEventListener("keydown", function (e) {
-            if (e.key == (index + 1).toString()) {
-                f();
-            }
-        })
-    })(s, index);
-}
 
 inventory.getSlot(0, 0).setItem(new InventoryItem({
     name: "Knife",

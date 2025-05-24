@@ -146,6 +146,10 @@ const InventoryItem = class {
         this.eventListeners = null;
     }
 
+    clone(){
+        
+    }
+
 }
 
 export default InventoryItem;

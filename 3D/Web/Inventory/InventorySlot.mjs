@@ -125,6 +125,19 @@ const InventorySlot = class {
         this.item = null;
     }
 
+    splitItem(){
+        if (!this.item) {
+            return;
+        }
+
+        var index = this.parent.emptyIndex();
+        if(index == -1){
+            return;
+        }
+        
+
+    }
+
     setupEventListeners() {
         if (this.eventListeners) {
             return;

@@ -301,11 +301,11 @@ const Modal = class {
 
     destroy() {
         if (this.eventListeners) {
-            this.modalHeaderElement.removeEventListener("mousedown", this.eventListeners.mousedownDrag);
+            this.modalHeaderElement?.removeEventListener("mousedown", this.eventListeners.mousedownDrag);
             document.removeEventListener("mousemove", this.eventListeners.onmousemoveDrag);
             document.removeEventListener("mouseup", this.eventListeners.onmouseupDrag);
-            this.modalHeaderElement.removeEventListener("dblclick", this.eventListeners.dblclick);
-            this.modalCloseButtonElement.removeEventListener("click", this.eventListeners.clickClose);
+            this.modalHeaderElement?.removeEventListener("dblclick", this.eventListeners.dblclick);
+            this.modalCloseButtonElement?.removeEventListener("click", this.eventListeners.clickClose);
             this.html.removeEventListener("mousedown", this.eventListeners.onmousedown);
         }
 
