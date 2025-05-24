@@ -15,7 +15,8 @@ const Inventory = class {
 
     static ACTIONS = {
         TRASH: 0,
-        INSPECT: 1
+        INSPECT: 1,
+        SPLIT: 2
     }
 
     constructor(options) {
@@ -59,7 +60,7 @@ const Inventory = class {
     static showActionContainer() {
         if (Inventory.actionButtonAround) {
             Inventory.actionContainer.style.display = 'flex';
-            Inventory.actionContainer.style.zIndex = Number(Inventory.actionButtonAround.parent.modal.html.style.zIndex) + 1;
+            Inventory.actionContainer.style.zIndex = Number(Inventory.actionButtonAround.parent.modal.html.style.zIndex) + 2;
         }
     }
 
@@ -91,19 +92,37 @@ const Inventory = class {
 
         for (var index = 0; index < Inventory.actionButtons.length; index++) {
             var button = Inventory.actionButtons[index];
+            var hide = false;
             switch (index) {
                 case this.ACTIONS.TRASH:
+                    if(!slot.isTrashable()) {
+                        hide = true;
+                    }
                     button.style.top = `calc(-10% - ${button.offsetWidth}px)`;
                     button.style.bottom = "";
                     button.style.left = "50%";
                     break;
                 case this.ACTIONS.INSPECT:
+                    if(!slot.isInspectable()) {
+                        hide = true;
+                    }
                     button.style.left = `calc(-10% - ${button.offsetWidth}px)`;
                     button.style.right = "";
                     button.style.top = "50%";
                     break;
+                case this.ACTIONS.SPLIT:
+                    if(!slot.isSplittable()) {
+                        hide = true;
+                    }
+                    button.style.right = `calc(-10% - ${button.offsetWidth}px)`;
+                    button.style.left = "";
+                    button.style.top = "50%";
+                    break;
                 default:
                     break;
+            }
+            if(hide){
+                button.style.display = "none";
             }
             button.style.width = `${Inventory.actionButtonSize}px`;
             button.style.height = `${Inventory.actionButtonSize}px`;
@@ -174,14 +193,14 @@ const Inventory = class {
         this.modal.update();
         if (Inventory.actionButtonAround && Inventory.actionButtonAround.parent == this) {
             Inventory.centerActionButtonAround(Inventory.actionButtonAround);
-            if(!this.modal.isVisible()){
+            if (!this.modal.isVisible()) {
                 Inventory.hideActionContainer();
             }
         }
 
         if (Inventory.toolTipAround && Inventory.toolTipAround.parent == this) {
             Inventory.centerToolTipAround(Inventory.toolTipAround);
-            if(!this.modal.isVisible()){
+            if (!this.modal.isVisible()) {
                 Inventory.hideToolTip();
             }
         }
@@ -223,6 +242,10 @@ const Inventory = class {
                     button.innerHTML = '🔎';
                     button.style.transform = "translateY(-50%)";
                     break;
+                case this.ACTIONS.SPLIT:
+                    button.innerHTML = '🔀';
+                    button.style.transform = "translateY(-50%)";
+                    break
                 default:
                     break;
             }
@@ -242,12 +265,9 @@ const Inventory = class {
         this.toolTip.createHTML({
             container: document.body,
             width: 120,
-            height: 120
+            height: 90
         });
-        this.toolTip.html.style.pointerEvents = 'none';
-        this.toolTip.html.style.opacity = 0.9;
-        this.toolTip.html.style.backgroundColor = 'black';
-        this.toolTip.html.style.border = '1px solid white';
+        this.toolTip.html.classList.add('inventory-tooltip');   
         this.toolTip.hide();
     }
     static setupEventListeners() {
@@ -259,14 +279,15 @@ const Inventory = class {
             if (!e.target.closest('.inventory-slot') && !e.target.closest('.action-button')) {
                 this.hideActionContainer();
             }
+            this.eventListeners.mousemove(e);
         }.bind(this);
 
         this.eventListeners.mousemove = function (e) {
             if (this.toolTipAround && this.toolTipAround) {
                 this.toolTip.html.style.left = `${e.clientX}px`;
                 this.toolTip.html.style.top = `${e.clientY}px`;
-                if(!this.toolTipAround.parent.modal.isVisible()){
-                    this.hideToolTip(); 
+                if (!this.toolTipAround.parent.modal.isVisible()) {
+                    this.hideToolTip();
                 }
             }
         }.bind(this);
@@ -285,10 +306,18 @@ const Inventory = class {
             }
         }.bind(this);
 
+        this.eventListeners.splitClick = function (e) {
+            if (this.actionButtonAround) {
+                this.actionButtonAround.splitItem();
+                this.hideActionContainer();
+            }
+        }.bind(this);
+
         document.addEventListener("mousedown", this.eventListeners.mousedown);
         document.addEventListener("mousemove", this.eventListeners.mousemove);
         this.actionButtons[this.ACTIONS.INSPECT].addEventListener("click", this.eventListeners.inspectClick);
         this.actionButtons[this.ACTIONS.TRASH].addEventListener("click", this.eventListeners.trashClick);
+        this.actionButtons[this.ACTIONS.SPLIT].addEventListener("click", this.eventListeners.splitClick);
 
     }
 

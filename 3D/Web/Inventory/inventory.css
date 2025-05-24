@@ -1,5 +1,5 @@
 :root {
-    --slot-border: #444;
+    --slot-border: 1px solid #444;
     --slot-bg: #222;
     --slot-bg-hover: #2e2e2e;
     --slot-color: #fff;
@@ -7,32 +7,19 @@
     --slot-transition: 0.1s;
     --slot-opacity: 0.85;
     --action-button-bg: #a6cad7;
-    --action-button-border: #8be2ff;
+    --action-button-border: 1px solid #8be2ff;
+    --tooltip-bg: #000;
+    --tooltip-border: 1px solid #fff;
+    --tooltip-opacity: 0.9;
 }
 
-.inventory-slot.selected {
-    background-color: var(--slot-bg-hover);
-    transform: scale(1.05);
-    border-color: #00ff00;
-}
 
 .inventory-tooltip {
-    position: absolute;
-    border: 1px solid var(--slot-border);
+    border: var(--tooltip-border);
     border-radius: var(--slot-radius);
-    background-color: var(--slot-bg);
-    color: var(--slot-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: sans-serif;
-    font-size: 1rem;
-    aspect-ratio: 1 / 1;
-    user-select: none;
-    transition:
-        background-color var(--slot-transition),
-        transform calc(var(--slot-transition) * 1.5);
-    cursor: pointer;
+    background-color: var(--tooltip-bg);
+    opacity: var(--tooltip-opacity);
+    pointer-events: none;
 }
 
 .inventory-container {
@@ -54,7 +41,7 @@
 
 .inventory-slot {
     position: relative;
-    border: 1px solid var(--slot-border);
+    border: var(--slot-border);
     border-radius: var(--slot-radius);
     background-color: var(--slot-bg);
     color: var(--slot-color);
@@ -161,7 +148,7 @@
 .action-button {
     position: absolute;
     border-radius: 50%;
-    border: 1px solid var(--action-button-border);
+    border: var(--action-button-border);
     pointer-events: auto;
     color: white;
     cursor: pointer;
@@ -172,4 +159,10 @@
     background-color: var(--action-button-bg);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.inventory-slot.selected {
+    background-color: var(--slot-bg-hover);
+    transform: scale(1.05);
+    border-color: #00ff00;
 }

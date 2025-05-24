@@ -88,6 +88,18 @@ const InventorySlot = class {
         this.updateHTML();
     }
 
+    isTrashable(){
+        return this.item && this.item.actions.TRASH;
+    }
+
+    isInspectable(){
+        return this.item && this.item.actions.INSPECT;
+    }
+
+    isSplittable(){
+        return this.item && this.item.quantity > 1 && this.item.actions.SPLIT;
+    }
+
 
     setItem(item) {
         this.item = item;
@@ -179,6 +191,7 @@ const InventorySlot = class {
             }
             this.item.addToolTip(Inventory.toolTip);
             Inventory.centerToolTipAround(this);
+            Inventory.eventListeners.mousemove(e);
         }.bind(this);
 
         this.eventListeners.mouseleave = function (e) {

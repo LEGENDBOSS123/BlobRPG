@@ -1,5 +1,5 @@
 import Modal from "../Modal/Modal.mjs";
-
+import Inventory from "./Inventory.mjs";
 const InventoryItem = class {
     constructor(options) {
         this.name = options?.name ?? "";
@@ -9,10 +9,9 @@ const InventoryItem = class {
         this.quantity = options?.quantity ?? 1;
         this.icon = options?.icon ?? null;
         this.html = options?.html ?? null;
-        this.actions = {
-            trash: true,
-            inspect: true,
-            use: true
+        this.actions = structuredClone(Inventory.ACTIONS);
+        for(var action in this.actions) {
+            this.actions[action] = options?.actions?.[action] ?? true;
         }
         this.nameElement = null;
         this.countElement = null;
