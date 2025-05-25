@@ -124,6 +124,9 @@ const Inventory = class {
             if(hide){
                 button.style.display = "none";
             }
+            else{
+                button.style.display = "block";
+            }
             button.style.width = `${Inventory.actionButtonSize}px`;
             button.style.height = `${Inventory.actionButtonSize}px`;
         }
@@ -331,6 +334,9 @@ const Inventory = class {
                 if (Modal.isChildClipped(Inventory.actionContainer, Inventory.actionButtonAround.parent.html, null, 1)) {
                     Inventory.hideActionContainer();
                 }
+            }
+            if(Inventory.toolTipAround) {
+                Inventory.hideToolTip();
             }
         }.bind(this);
 

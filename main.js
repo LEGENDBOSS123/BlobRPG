@@ -23,6 +23,8 @@ import InventorySlot from "./3D/Web/Inventory/InventorySlot.mjs";
 import InventoryItem from "./3D/Web/Inventory/InventoryItem.mjs";
 import Modal from "./3D/Web/Modal/Modal.mjs";
 import Hotbar from "./3D/Web/Inventory/Hotbar.mjs";
+import ToastManager from "./3D/Web/Toast/ToastManager.mjs";
+
 var stats = new Stats();
 var stats2 = new Stats();
 
@@ -90,6 +92,13 @@ gameEngine.graphicsEngine.cameraFar = 2000;
 gameEngine.cameraControls.renderDomElement = gameEngine.graphicsEngine.canvas;
 gameEngine.cameraControls.setupEventListeners();
 
+var toastManager = new ToastManager();
+toastManager.createHTML({
+    container: document.body,
+    width: 300
+});
+
+window.toastManager = toastManager;
 
 
 gameEngine.cameraControls.addKeyBinds(
@@ -169,8 +178,6 @@ hotbar.createHTML({
     height: 108,
     centered: true,
 });
-
-top.h = hotbar;
 
 var setHotbarPosition = function () {
     hotbar.modal.center();
@@ -259,6 +266,7 @@ gameEngine.graphicsEngine.addToScene(map.gltf.scene)
 
 gameEngine.timer.schedule(gameEngine.fpsStepper);
 
+toastManager.createToast({duration: 1000, type: 0, message: "Map Loaded"})
 
 function render() {
     stats.begin();
