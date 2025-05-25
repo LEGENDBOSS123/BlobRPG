@@ -1,4 +1,5 @@
 import Inventory from "./Inventory.mjs";
+import WebComponent from "../WebComponent.mjs";
 
 
 const Hotbar = class extends Inventory {
@@ -9,10 +10,6 @@ const Hotbar = class extends Inventory {
 
     setupEventListeners() {
         super.setupEventListeners();
-        if (this.eventListeners.hotbar) {
-            return;
-        }
-        this.eventListeners.hotbar = [];
         for (var s_ in this.slots[0]) {
             var s = this.slots[0][s_];
             var index = Array.from(s.html.parentElement.children).indexOf(s.html);
@@ -30,29 +27,18 @@ const Hotbar = class extends Inventory {
                         this.selectedSlot = null;
                     }
                 }.bind(this);
-                s.html.addEventListener("click", f);
+                this.addEventListener("hotbar " + index + " click", s.html, "click", f);
                 var x = function (e) {
                     if (e.key == (index + 1).toString()) {
                         f();
                     }
                 }.bind(this);
-                document.addEventListener("keydown", x);
-                this.eventListeners.hotbar.push({
-                    click: f,
-                    keydown: x,
-                    remove: function () {
-                        s.html.removeEventListener("click", f);
-                        document.removeEventListener("keydown", x);
-                    }
-                });
+                this.addEventListener("hotbar " + index + " keydown", document, "keydown", x);
             }.bind(this))(s, index);
         }
     }
 
     destroy() {
-        for (var i of this.eventListeners.hotbar) {
-            i.remove();
-        }
         super.destroy();
         this.selectedSlot = null;
     }

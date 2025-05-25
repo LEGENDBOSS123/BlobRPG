@@ -1,10 +1,10 @@
 import InventorySlot from "./InventorySlot.mjs";
 import Modal from "../Modal/Modal.mjs";
+import WebComponent from "../WebComponent.mjs";
 
-const Inventory = class {
+const Inventory = class extends WebComponent {
 
     static actionButtonAround = null;
-    static eventListeners = null;
     static actionContainer = null;
     static actionButtons = [];
     static actionButtonSize = 50;
@@ -20,6 +20,7 @@ const Inventory = class {
     }
 
     constructor(options) {
+        super(options);
         this.rows = options?.rows ?? 5;
         this.columns = options?.columns ?? 5;
         this.slots = [];
@@ -31,7 +32,6 @@ const Inventory = class {
                 });
             }
         }
-        this.eventListeners = null;
         this.modal = new Modal(options);
         this.html = null;
     }
@@ -95,7 +95,7 @@ const Inventory = class {
             var hide = false;
             switch (index) {
                 case this.ACTIONS.TRASH:
-                    if(!slot.isTrashable()) {
+                    if (!slot.isTrashable()) {
                         hide = true;
                     }
                     button.style.top = `calc(-10% - ${button.offsetWidth}px)`;
@@ -103,7 +103,7 @@ const Inventory = class {
                     button.style.left = "50%";
                     break;
                 case this.ACTIONS.INSPECT:
-                    if(!slot.isInspectable()) {
+                    if (!slot.isInspectable()) {
                         hide = true;
                     }
                     button.style.left = `calc(-10% - ${button.offsetWidth}px)`;
@@ -111,7 +111,7 @@ const Inventory = class {
                     button.style.top = "50%";
                     break;
                 case this.ACTIONS.SPLIT:
-                    if(!slot.isSplittable()) {
+                    if (!slot.isSplittable()) {
                         hide = true;
                     }
                     button.style.right = `calc(-10% - ${button.offsetWidth}px)`;
@@ -121,10 +121,10 @@ const Inventory = class {
                 default:
                     break;
             }
-            if(hide){
+            if (hide) {
                 button.style.display = "none";
             }
-            else{
+            else {
                 button.style.display = "block";
             }
             button.style.width = `${Inventory.actionButtonSize}px`;
@@ -270,7 +270,7 @@ const Inventory = class {
             width: 120,
             height: 90
         });
-        this.toolTip.html.classList.add('inventory-tooltip');   
+        this.toolTip.html.classList.add('inventory-tooltip');
         this.toolTip.hide();
     }
     static setupEventListeners() {
@@ -325,31 +325,24 @@ const Inventory = class {
     }
 
     setupEventListeners() {
-        if (this.eventListeners) {
-            return;
-        }
-        this.eventListeners = {};
-        this.eventListeners.scroll = function (e) {
-            if (Inventory.actionButtonAround) {
-                if (Modal.isChildClipped(Inventory.actionContainer, Inventory.actionButtonAround.parent.html, null, 1)) {
-                    Inventory.hideActionContainer();
+        this.addEventListener("scroll", this.html, "scroll",
+            function (e) {
+                if (Inventory.actionButtonAround) {
+                    if (Modal.isChildClipped(Inventory.actionContainer, Inventory.actionButtonAround.parent.html, null, 1)) {
+                        Inventory.hideActionContainer();
+                    }
                 }
-            }
-            if(Inventory.toolTipAround) {
-                Inventory.hideToolTip();
-            }
-        }.bind(this);
-
-        this.html.addEventListener("scroll", this.eventListeners.scroll);
+                if (Inventory.toolTipAround) {
+                    Inventory.hideToolTip();
+                }
+            }.bind(this)
+        );
     }
 
     destroy() {
-        if (this.eventListeners) {
-            this.html.removeEventListener("scroll", this.eventListeners.scroll);
-        }
+        super.destroy();
         this.modal.destroy();
         this.html.remove();
-        this.eventListeners = null;
         for (var y = 0; y < this.rows; y++) {
             for (var x = 0; x < this.columns; x++) {
                 var slot = this.getSlot(x, y);

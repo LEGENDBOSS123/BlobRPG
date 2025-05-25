@@ -1,7 +1,10 @@
 import Modal from "../Modal/Modal.mjs";
 import Inventory from "./Inventory.mjs";
-const InventoryItem = class {
+import WebComponent from "../WebComponent.mjs";
+
+const InventoryItem = class extends WebComponent{
     constructor(options) {
+        super(options);
         this.name = options?.name ?? "";
         this.description = options?.description ?? "This is an item";
         this.stackable = options?.stackable ?? true;
@@ -17,7 +20,6 @@ const InventoryItem = class {
         this.countElement = null;
         this.iconElement = null;
         this.inspectModal = null;
-        this.eventListeners = null;
     }
 
     createHTML() {
@@ -143,7 +145,6 @@ const InventoryItem = class {
         this.countElement = null;
         this.iconElement = null;
         this.inspectModal = null;
-        this.eventListeners = null;
     }
 
     clone(){

@@ -1,17 +1,19 @@
 import Inventory from "./Inventory.mjs";
 import Modal from "../Modal/Modal.mjs";
 import Toast from "../Toast/Toast.mjs";
+import WebComponent from "../WebComponent.mjs";
 
-const InventorySlot = class {
+
+const InventorySlot = class extends WebComponent {
 
     static dragging = null;
 
     constructor(options) {
+        super(options);
         this.item = options?.item ?? null;
         this.html = options?.html ?? null;
         this.parent = options.parent;
         this.itemContainer = null;
-        this.eventListeners = null;
     }
 
     swapWith(slot) {
@@ -143,101 +145,89 @@ const InventorySlot = class {
     }
 
     setupEventListeners() {
-        if (this.eventListeners) {
-            return;
-        }
 
-        this.eventListeners = {};
-
-        this.eventListeners.dragstart = function (e) {
-            if (this.item == null) {
-                return e.preventDefault();
-            }
-            InventorySlot.dragging = this;
-            Inventory.hideActionContainer();
-            Inventory.hideToolTip();
-        }.bind(this);
-
-        this.eventListeners.dragover = function (e) {
-            if (InventorySlot.dragging) {
-                e.preventDefault();
-            }
-        }.bind(this);
-
-        this.eventListeners.drop = function (e) {
-            e.preventDefault();
-            if (InventorySlot.dragging) {
-                var other = InventorySlot.dragging;
-                InventorySlot.dragging = null;
-                if (other.canMergeWith(this)) {
-                    other.mergeWith(this);
+        this.addEventListener("dragstart", this.html, "dragstart",
+            function (e) {
+                if (this.item == null) {
+                    return e.preventDefault();
                 }
-                else if (other.canSwapWith(this)) {
-                    other.swapWith(this);
-                }
-            }
-        }.bind(this);
-
-        this.eventListeners.click = function (e) {
-            if (Inventory.actionButtonAround == this) {
+                InventorySlot.dragging = this;
                 Inventory.hideActionContainer();
-                return;
-            }
-            if (Modal.isChildClipped(this.html, this.parent.html)) {
-                this.html.scrollIntoView({
-                    block: "nearest",
-                    inline: "nearest",
-                    behavior: "auto"
-                });
-            }
-
-            Inventory.centerActionButtonAround(this);
-        }.bind(this);
-
-
-        this.eventListeners.mousedown = function (e) {
-            if (Inventory.actionButtonAround && Inventory.actionButtonAround != this) {
-                Inventory.hideActionContainer();
-            }
-        }.bind(this);
-
-        this.eventListeners.mouseenter = function (e) {
-            if (!this.item) {
                 Inventory.hideToolTip();
-                return;
-            }
-            this.item.addToolTip(Inventory.toolTip);
-            Inventory.centerToolTipAround(this);
-            Inventory.eventListeners.mousemove(e);
-        }.bind(this);
+            }.bind(this)
+        );
 
-        this.eventListeners.mouseleave = function (e) {
-            Inventory.hideToolTip();
-        }.bind(this);
+        this.addEventListener("dragover", this.html, "dragover",
+            function (e) {
+                if (InventorySlot.dragging) {
+                    e.preventDefault();
+                }
+            }.bind(this)
+        );
 
+        this.addEventListener("drop", this.html, "drop",
+            function (e) {
+                e.preventDefault();
+                if (InventorySlot.dragging) {
+                    var other = InventorySlot.dragging;
+                    InventorySlot.dragging = null;
+                    if (other.canMergeWith(this)) {
+                        other.mergeWith(this);
+                    }
+                    else if (other.canSwapWith(this)) {
+                        other.swapWith(this);
+                    }
+                }
+            }.bind(this)
+        );
 
-        this.html.addEventListener("dragstart", this.eventListeners.dragstart);
-        this.html.addEventListener("dragover", this.eventListeners.dragover);
-        this.html.addEventListener("drop", this.eventListeners.drop);
-        this.html.addEventListener("click", this.eventListeners.click);
-        this.html.addEventListener("mousedown", this.eventListeners.mousedown);
-        this.html.addEventListener("mouseenter", this.eventListeners.mouseenter);
-        this.html.addEventListener("mouseleave", this.eventListeners.mouseleave);
+        this.addEventListener("click", this.html, "click",
+            function (e) {
+                if (Inventory.actionButtonAround == this) {
+                    Inventory.hideActionContainer();
+                    return;
+                }
+                if (Modal.isChildClipped(this.html, this.parent.html)) {
+                    this.html.scrollIntoView({
+                        block: "nearest",
+                        inline: "nearest",
+                        behavior: "auto"
+                    });
+                }
+
+                Inventory.centerActionButtonAround(this);
+            }.bind(this)
+        )
+
+        this.addEventListener("mousedown", this.html, "mousedown",
+            function (e) {
+                if (Inventory.actionButtonAround && Inventory.actionButtonAround != this) {
+                    Inventory.hideActionContainer();
+                }
+            }.bind(this)
+        );
+        this.addEventListener("mouseenter", this.html, "mouseenter",
+            function (e) {
+                if (!this.item) {
+                    Inventory.hideToolTip();
+                    return;
+                }
+                this.item.addToolTip(Inventory.toolTip);
+                Inventory.centerToolTipAround(this);
+                Inventory.eventListeners.mousemove(e);
+            }.bind(this)
+        );
+        this.addEventListener("mouseleave", this.html, "mouseleave",
+            function (e) {
+                Inventory.hideToolTip();
+            }.bind(this)
+        );
     }
 
     destroy() {
-        if (this.eventListeners) {
-            this.html.removeEventListener("dragstart", this.eventListeners.dragstart);
-            this.html.removeEventListener("dragover", this.eventListeners.dragover);
-            this.html.removeEventListener("drop", this.eventListeners.drop);
-            this.html.removeEventListener("click", this.eventListeners.click);
-            this.html.removeEventListener("mousedown", this.eventListeners.mousedown);
-            this.html.removeEventListener("mouseenter", this.eventListeners.mouseenter);
-            this.html.removeEventListener("mouseleave", this.eventListeners.mouseleave);
-        }
+        super.destroy();
         this.html.remove();
         this.itemContainer = null;
-        this.eventListeners = null;
         this.item = null;
         this.html = null;
         this.parent = null;

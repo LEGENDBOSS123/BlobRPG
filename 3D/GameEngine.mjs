@@ -9,6 +9,7 @@ import Composite from "./Physics/Shapes/Composite.mjs";
 import Polyhedron from "./Physics/Shapes/Polyhedron.mjs";
 import Sphere from "./Physics/Shapes/Sphere.mjs";
 import SimpleCameraControls from "./SimpleCameraControls.mjs";
+import SoundManager from "./Sounds/SoundManager.mjs";
 
 const GameEngine = class {
     constructor(options) {
@@ -19,6 +20,7 @@ const GameEngine = class {
         this.cameraControls = new SimpleCameraControls(options?.cameraControls);
         this.world = new World(options?.world);
         this.particleSystem = new ParticleSystem(options?.particleSystem);
+        this.soundManager = new SoundManager(options?.soundManager);
         this.previousWorld = null;
 
         this.world.gameEngine = this;
