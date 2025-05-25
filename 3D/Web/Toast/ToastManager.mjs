@@ -1,10 +1,11 @@
 import Toast from "./Toast.mjs";
+import WebComponent from "../WebComponent.mjs";
 
-const ToastManager = class {
+const ToastManager = class extends WebComponent {
     constructor(options) {
+        super(options);
         this.parent = null;
         this.html = null;
-        
     }
 
     createHTML(options){
@@ -19,7 +20,8 @@ const ToastManager = class {
         return this.html;
     }
 
-    createToast(options){
+    createToast(options = {}){
+        options.gameEngine = this.gameEngine;
         var toast = new Toast(options);
         toast.createHTML();
         this.html.appendChild(toast.html);

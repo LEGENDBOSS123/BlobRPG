@@ -1,7 +1,11 @@
 
+import WebComponent from "../WebComponent.mjs";
 
 
-const Toast = class {
+const Toast = class extends WebComponent {
+    static get observedAttributes() {
+        return ["message", "duration", "type", "closable"];
+    }
 
     static TYPES = {
         SUCCESS: 0,
@@ -31,6 +35,7 @@ const Toast = class {
 
 
     constructor(options) {
+        super(options);
         this.message = options?.message ?? "";
         this.duration = options?.duration ?? 3000;
         this.type = options?.type ?? Toast.TYPES.DEFAULT;
@@ -63,6 +68,8 @@ const Toast = class {
                 break;
         }
 
+        this.gameEngine.soundManager.play("toast");
+
         this.iconElement = document.createElement("div");
         this.iconElement.classList.add("toast-icon");
         var svg = document.createElement("svg");
@@ -70,7 +77,6 @@ const Toast = class {
         svg.classList.add("toast-icon-svg");
         this.iconElement.appendChild(svg);
         this.html.appendChild(this.iconElement);
-
 
         this.textElement = document.createElement("span");
         this.textElement.classList.add("toast-text");

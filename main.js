@@ -82,6 +82,7 @@ var gameEngine = new GameEngine(
 
     }
 );
+
 window.gameEngine = gameEngine;
 gameEngine.graphicsEngine.ambientLight.intensity = 1;
 gameEngine.graphicsEngine.setBackgroundImage("autumn_field_puresky_8k.hdr", true, false);
@@ -92,7 +93,9 @@ gameEngine.graphicsEngine.cameraFar = 2000;
 gameEngine.cameraControls.renderDomElement = gameEngine.graphicsEngine.canvas;
 gameEngine.cameraControls.setupEventListeners();
 
-var toastManager = new ToastManager();
+var toastManager = new ToastManager({
+    gameEngine: gameEngine
+});
 toastManager.createHTML({
     container: document.body,
     width: 300
@@ -118,6 +121,10 @@ gameEngine.cameraControls.addKeyBinds(
         KeyI: "zoomIn"
     }
 );
+
+gameEngine.soundManager.addSounds({
+    "toast": "correct-answer.wav",
+})
 
 gameEngine.world.setSubsteps(4);
 gameEngine.world.setIterations(16);

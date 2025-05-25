@@ -28,7 +28,8 @@ const Inventory = class extends WebComponent {
             this.slots[i] = [];
             for (let j = 0; j < this.columns; j++) {
                 this.slots[i][j] = new InventorySlot({
-                    parent: this
+                    parent: this,
+                    gameEngine: this.gameEngine
                 });
             }
         }
