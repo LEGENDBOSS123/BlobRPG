@@ -9,6 +9,7 @@ const Modal = class {
         this.closeable = options?.closeable ?? true;
         this.resizable = options?.resizable ?? true;
         this.fullscreenable = options?.fullscreenable ?? true;
+        this.hideOnClose = options?.hideOnClose ?? false;
         this.content = options?.content ?? null;
         this.html = null;
 
@@ -170,10 +171,19 @@ const Modal = class {
 
     toggleOpenClose() {
         if (this.parent.contains(this.html)) {
-            this.remove();
+            this.close();
         }
         else {
-            this.parent.appendChild(this.html);
+            this.open();
+        }
+    }
+
+    toggleShowHide() {
+        if (this.html.classList.contains('modal-hidden')) {
+            this.show();
+        }
+        else {
+            this.hide();
         }
     }
 
@@ -287,7 +297,12 @@ const Modal = class {
 
         if (this.closeable) {
             this.eventListeners.clickClose = function (e) {
-                this.close();
+                if(this.hideOnClose){
+                    this.hide();
+                }
+                else{
+                    this.close();
+                }
             }.bind(this);
             this.modalCloseButtonElement.addEventListener("click", this.eventListeners.clickClose);
         }

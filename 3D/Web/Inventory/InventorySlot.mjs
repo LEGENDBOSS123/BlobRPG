@@ -1,5 +1,6 @@
 import Inventory from "./Inventory.mjs";
 import Modal from "../Modal/Modal.mjs";
+import Toast from "../Toast/Toast.mjs";
 
 const InventorySlot = class {
 
@@ -88,15 +89,15 @@ const InventorySlot = class {
         this.updateHTML();
     }
 
-    isTrashable(){
+    isTrashable() {
         return this.item && this.item.actions.TRASH;
     }
 
-    isInspectable(){
+    isInspectable() {
         return this.item && this.item.actions.INSPECT;
     }
 
-    isSplittable(){
+    isSplittable() {
         return this.item && this.item.quantity > 1 && this.item.actions.SPLIT;
     }
 
@@ -125,16 +126,19 @@ const InventorySlot = class {
         this.item = null;
     }
 
-    splitItem(){
+    splitItem() {
         if (!this.item) {
             return;
         }
 
         var index = this.parent.emptyIndex();
-        if(index == -1){
+        if (index == -1) {
+            window.toastManager.createToast({ duration: 1000, type: Toast.TYPES.ERROR, message: "No space in inventory" });
             return;
         }
-        
+
+        window.toastManager.createToast({ duration: 1000, type: Toast.TYPES.ERROR, message: "Not implemented yet lol" });
+
 
     }
 
@@ -198,7 +202,7 @@ const InventorySlot = class {
         }.bind(this);
 
         this.eventListeners.mouseenter = function (e) {
-            if(!this.item){
+            if (!this.item) {
                 Inventory.hideToolTip();
                 return;
             }

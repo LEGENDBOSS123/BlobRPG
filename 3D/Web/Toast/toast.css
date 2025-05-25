@@ -3,6 +3,7 @@
     --toast-color: #fff;
     --toast-radius: 8px;
     --toast-opacity: 0.95;
+    --toast-height: 2.5rem;
 }
 
 .toast.success {
@@ -59,7 +60,7 @@
 
 .toast {
     padding: 5px;
-    height: 3rem;
+    min-height: var(--toast-height);
     border-radius: 0.5rem;
     border: var(--toast-border);
     box-sizing: border-box;
@@ -84,7 +85,7 @@
 }
 
 .toast-icon {
-    height: 90%;
+    height: calc(var(--toast-height) * 0.9);
     aspect-ratio: 1/1;
     left: 5%;
     display: flex;

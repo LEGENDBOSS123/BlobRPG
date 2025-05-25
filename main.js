@@ -147,15 +147,15 @@ var inventory = new Inventory({
     rows: 12,
     columns: 8,
     document: document,
-    title: "Inventory"
+    title: "Inventory",
+    hideOnClose: true
 })
 
 inventory.createHTML({
     container: document.body,
     overflow: true,
     width: 750,
-    height: 500,
-    centered: true,
+    height: 500
 })
 
 // inventory.modal.close();
@@ -175,8 +175,7 @@ hotbar.createHTML({
     container: document.body,
     overflow: false,
     width: 900,
-    height: 108,
-    centered: true,
+    height: 108
 });
 
 var setHotbarPosition = function () {
@@ -196,7 +195,7 @@ inventory.getSlot(0, 0).setItem(new InventoryItem({
 
 document.addEventListener("keypress", function (e) {
     if (e.key == "e") {
-        inventory.modal.toggleOpenClose();
+        inventory.modal.toggleShowHide();
     }
 });
 

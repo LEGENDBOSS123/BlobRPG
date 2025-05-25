@@ -51,9 +51,6 @@ const Toast = class {
     createHTML(options) {
         this.html = document.createElement("div");
         this.html.classList.add("toast", "toast-start");
-        if (options?.height) {
-            this.html.style.height = `${options.height}px`;
-        }
 
         switch (this.type) {
             case Toast.TYPES.SUCCESS:

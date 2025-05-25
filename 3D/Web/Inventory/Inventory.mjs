@@ -180,7 +180,7 @@ const Inventory = class {
             container: container,
             width: width,
             height: height,
-            centered: options?.centered
+            centered: options?.centered ?? true
         });
 
         return this.html;
