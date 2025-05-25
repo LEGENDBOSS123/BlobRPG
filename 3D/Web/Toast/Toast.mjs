@@ -68,7 +68,7 @@ const Toast = class extends WebComponent {
                 break;
         }
 
-        this.gameEngine.soundManager.play("toast");
+        this.gameEngine.soundManager.play("toast", 0.4);
 
         this.iconElement = document.createElement("div");
         this.iconElement.classList.add("toast-icon");

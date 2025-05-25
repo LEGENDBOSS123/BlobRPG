@@ -124,6 +124,7 @@ gameEngine.cameraControls.addKeyBinds(
 
 gameEngine.soundManager.addSounds({
     "toast": "correct-answer.wav",
+    "click": "click.m4a"
 })
 
 gameEngine.world.setSubsteps(4);

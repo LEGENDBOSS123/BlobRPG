@@ -2,6 +2,9 @@ const SoundManager = class {
     constructor(options) {
         this.sounds = {};
         this.audioContext = new window.AudioContext();
+        this.masterGain = this.audioContext.createGain();
+        this.setVolume(1);
+        this.masterGain.connect(this.audioContext.destination);
         this.assetsDirectory = options?.assetsDirectory ?? new URL('.', import.meta.url).href + "Assets/";
     }
 
@@ -34,14 +37,21 @@ const SoundManager = class {
         }
     }
 
-    play(name) {
+    setVolume(v = 1){
+        this.masterGain.gain.value = v;
+    }
+
+    play(name, volume = 1) {
         const buffer = this.sounds[name];
         if (!buffer) {
             return;
         }
         const source = this.audioContext.createBufferSource();
+        const gain = this.audioContext.createGain();
+        gain.gain.value = volume;
         source.buffer = buffer;
-        source.connect(this.audioContext.destination);
+        source.connect(gain);
+        gain.connect(this.masterGain);
         source.start(0);
     }
 }

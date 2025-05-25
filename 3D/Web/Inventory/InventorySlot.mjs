@@ -154,6 +154,7 @@ const InventorySlot = class extends WebComponent {
                 InventorySlot.dragging = this;
                 Inventory.hideActionContainer();
                 Inventory.hideToolTip();
+                
             }.bind(this)
         );
 
@@ -169,6 +170,7 @@ const InventorySlot = class extends WebComponent {
             function (e) {
                 e.preventDefault();
                 if (InventorySlot.dragging) {
+                    this.gameEngine.soundManager.play("click", 0.75);
                     var other = InventorySlot.dragging;
                     InventorySlot.dragging = null;
                     if (other.canMergeWith(this)) {
@@ -194,7 +196,7 @@ const InventorySlot = class extends WebComponent {
                         behavior: "auto"
                     });
                 }
-
+                this.gameEngine.soundManager.play("click", 0.75);
                 Inventory.centerActionButtonAround(this);
             }.bind(this)
         )
