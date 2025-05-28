@@ -1,9 +1,11 @@
+import WebComponent from "../WebComponent.mjs";
 
-const Modal = class {
+const Modal = class extends WebComponent {
 
     static zIndexCounter = 1000;
 
     constructor(options) {
+        super(options);
         this.draggable = options?.draggable ?? true;
         this.title = options?.title ?? null;
         this.closeable = options?.closeable ?? true;
@@ -133,15 +135,15 @@ const Modal = class {
         this.html.style.top = `${top}px`;
     }
 
-    isClosed(){
+    isClosed() {
         return !this.parent.contains(this.html);
     }
 
-    isHidden(){
+    isHidden() {
         return this.html.classList.contains('modal-hidden');
     }
 
-    isVisible(){
+    isVisible() {
         return !this.isHidden() && !this.isClosed();
     }
 
@@ -220,31 +222,13 @@ const Modal = class {
     }
 
     setupEventListeners() {
-        if (this.eventListeners) {
-            return;
-        }
-
-        this.eventListeners = {};
-
         if (this.draggable) {
             var isDragging = false;
             var offset = {
                 x: 0,
                 y: 0
             }
-            this.eventListeners.mousedownDrag = function (e) {
-                this.bringToFront();
-                isDragging = true;
-                var rect = this.html.getBoundingClientRect();
-                offset.x = e.clientX - rect.left;
-                offset.y = e.clientY - rect.top;
-
-                document.addEventListener("mousemove", this.eventListeners.onmousemoveDrag);
-                document.addEventListener("mouseup", this.eventListeners.onmouseupDrag);
-            }.bind(this)
-            this.modalHeaderElement.addEventListener("mousedown", this.eventListeners.mousedownDrag);
-
-            this.eventListeners.onmousemoveDrag = function (e) {
+            const onmousemoveDrag = function (e) {
                 if (!isDragging) {
                     return;
                 }
@@ -257,14 +241,25 @@ const Modal = class {
                 this.clampToParentBounds();
             }.bind(this);
 
-            this.eventListeners.onmouseupDrag = function (e) {
+            const onmouseupDrag = function (e) {
                 if (!isDragging) {
                     return;
                 }
                 isDragging = false;
-                document.removeEventListener("mousemove", this.eventListeners.onmousemoveDrag);
-                document.removeEventListener("mouseup", this.eventListeners.onmouseupDrag);
+                document.removeEventListener("mousemove", onmousemoveDrag);
+                document.removeEventListener("mouseup", onmouseupDrag);
             }.bind(this);
+            this.addEventListener("mousedownDrag", this.modalHeaderElement, "mousedown",
+                function (e) {
+                    this.bringToFront();
+                    isDragging = true;
+                    var rect = this.html.getBoundingClientRect();
+                    offset.x = e.clientX - rect.left;
+                    offset.y = e.clientY - rect.top;
+                    document.addEventListener("mousemove", onmousemoveDrag);
+                    document.addEventListener("mouseup", onmouseupDrag);
+                }.bind(this)
+            );
         }
 
         if (this.resizable && this.fullscreenable) {
@@ -274,55 +269,49 @@ const Modal = class {
                 x: this.html.offsetLeft,
                 y: this.html.offsetTop
             }
-            this.eventListeners.dblclick = function (e) {
-                if (this.html.classList.contains("modal-fullscreen")) {
-                    this.html.style.width = previousWidth;
-                    this.html.style.height = previousHeight;
-                    this.html.style.left = `${previousPosition.x}px`;
-                    this.html.style.top = `${previousPosition.y}px`;
-                    this.html.classList.remove("modal-fullscreen");
-                    this.clampToParentBounds();
-                }
-                else {
-                    previousPosition.x = this.html.offsetLeft;
-                    previousPosition.y = this.html.offsetTop;
-                    this.html.style.width = "";
-                    this.html.style.height = "";
-                    this.html.classList.add("modal-fullscreen");
-                    this.clampToParentBounds();
-                }
-            }.bind(this);
-            this.modalHeaderElement.addEventListener("dblclick", this.eventListeners.dblclick);
+            this.addEventListener("dblclick", this.modalHeaderElement, "dblclick",
+                function (e) {
+                    if (this.html.classList.contains("modal-fullscreen")) {
+                        this.html.style.width = previousWidth;
+                        this.html.style.height = previousHeight;
+                        this.html.style.left = `${previousPosition.x}px`;
+                        this.html.style.top = `${previousPosition.y}px`;
+                        this.html.classList.remove("modal-fullscreen");
+                        this.clampToParentBounds();
+                    }
+                    else {
+                        previousPosition.x = this.html.offsetLeft;
+                        previousPosition.y = this.html.offsetTop;
+                        this.html.style.width = "";
+                        this.html.style.height = "";
+                        this.html.classList.add("modal-fullscreen");
+                        this.clampToParentBounds();
+                    }
+                }.bind(this)
+            );
         }
 
         if (this.closeable) {
-            this.eventListeners.clickClose = function (e) {
-                if(this.hideOnClose){
-                    this.hide();
-                }
-                else{
-                    this.close();
-                }
-            }.bind(this);
-            this.modalCloseButtonElement.addEventListener("click", this.eventListeners.clickClose);
+            this.addEventListener("clickClose", this.modalCloseButtonElement, "click",
+                function (e) {
+                    if (this.hideOnClose) {
+                        this.hide();
+                    }
+                    else {
+                        this.close();
+                    }
+                }.bind(this)
+            );
         }
-
-        this.eventListeners.onmousedown = function (e) {
-            this.bringToFront();
-        }.bind(this);
-
-        this.html.addEventListener("mousedown", this.eventListeners.onmousedown);
+        this.addEventListener("onmousedown", this.html, "mousedown",
+            function (e) {
+                this.bringToFront();
+            }.bind(this)
+        );
     }
 
     destroy() {
-        if (this.eventListeners) {
-            this.modalHeaderElement?.removeEventListener("mousedown", this.eventListeners.mousedownDrag);
-            document.removeEventListener("mousemove", this.eventListeners.onmousemoveDrag);
-            document.removeEventListener("mouseup", this.eventListeners.onmouseupDrag);
-            this.modalHeaderElement?.removeEventListener("dblclick", this.eventListeners.dblclick);
-            this.modalCloseButtonElement?.removeEventListener("click", this.eventListeners.clickClose);
-            this.html.removeEventListener("mousedown", this.eventListeners.onmousedown);
-        }
+        super.destroy();
 
         if (this.html && this.html.parentNode) {
             this.html.remove();
@@ -334,7 +323,6 @@ const Modal = class {
         this.modalCloseButtonElement = null;
         this.parent = null;
         this.content = null;
-        this.eventListeners = null;
     }
 }
 

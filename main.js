@@ -24,7 +24,7 @@ import InventoryItem from "./3D/Web/Inventory/InventoryItem.mjs";
 import Modal from "./3D/Web/Modal/Modal.mjs";
 import Hotbar from "./3D/Web/Inventory/Hotbar.mjs";
 import ToastManager from "./3D/Web/Toast/ToastManager.mjs";
-
+import ProgressBar from "./3D/Web/ProgressBar/ProgressBar.mjs";
 var stats = new Stats();
 var stats2 = new Stats();
 
@@ -126,6 +126,22 @@ gameEngine.soundManager.addSounds({
     "toast": "correct-answer.wav",
     "click": "click.m4a"
 })
+
+var healthBar = new ProgressBar({
+    gameEngine: gameEngine,
+    title: "HEALTH"
+});
+
+healthBar.createHTML({
+    container: document.body,
+    width: 300,
+    height: 20
+})
+
+healthBar.html.style.top = "5px";
+healthBar.html.style.right = "15px";
+top.hp = healthBar;
+
 
 gameEngine.world.setSubsteps(4);
 gameEngine.world.setIterations(16);
@@ -296,6 +312,7 @@ function render() {
     inventory.update();
     setHotbarPosition();
     hotbar.update();
+    healthBar.update();
 
     gameEngine.updateEntities();
     gameEngine.updateGraphicsEngine();

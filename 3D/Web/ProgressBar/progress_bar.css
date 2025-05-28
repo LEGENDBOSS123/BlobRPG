@@ -1,0 +1,75 @@
+
+.progress-bar {
+    position: absolute;
+    background-color: #e0e0e0;
+    border-radius: 999999px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+}
+
+.progress-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(to right, #4CAF50, #8BC34A);
+    border-radius: 999999px;
+    transition: width 0.3s ease-in-out;
+    will-change: width; 
+}
+
+.progress-bar-text {
+    position: absolute;
+    color: #333;
+    font-size: 0.9em;
+    font-weight: 600;
+    z-index: 1;
+    padding: 0 10px;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.progress-bar-text-left {
+    left: 10px;
+}
+
+.progress-bar-text-right {
+    right: 10px;
+}
+
+.progress-bar-text-middle {
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+
+@keyframes fadeInProgress {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.progress-bar {
+    animation: fadeInProgress 0.5s ease-out forwards;
+}
+
+@media (max-width: 768px) {
+    .progress-bar {
+        width: 90%;
+        height: 50px;
+    }
+    .progress-bar-text {
+        font-size: 0.8em;
+        padding: 0 5px;
+    }
+}
+
+@media (max-width: 480px) {
+    .progress-bar {
+        height: 40px;
+    }
+    .progress-bar-text {
+        font-size: 0.7em;
+    }
+}
