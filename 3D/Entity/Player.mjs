@@ -8,6 +8,8 @@ var Player = class extends Entity {
     constructor(options) {
         super(options);
         this.isPlayer = true;
+        this.health = options?.health ?? 100;
+        this.maxHealth = options?.maxHealth ?? 100;
         this.gravity = options?.gravity ?? new Vector3(0, 0, 0);
         this.moveSpeed = options?.moveSpeed ?? 1;
         this.moveStrength = options?.moveStrength ?? 1;

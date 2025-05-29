@@ -17,7 +17,7 @@
     height: 100%;
     background: linear-gradient(to right, #4CAF50, #8BC34A);
     border-radius: 999999px;
-    transition: width 0.3s ease-in-out;
+    transition: width 0.1s ease-in-out;
     will-change: width; 
 }
 

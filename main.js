@@ -124,7 +124,8 @@ gameEngine.cameraControls.addKeyBinds(
 
 gameEngine.soundManager.addSounds({
     "toast": "correct-answer.wav",
-    "click": "click.m4a"
+    "click": "click.m4a",
+    "damage": "damage.mp3"
 })
 
 var healthBar = new ProgressBar({
@@ -140,8 +141,6 @@ healthBar.createHTML({
 
 healthBar.html.style.top = "5px";
 healthBar.html.style.right = "15px";
-top.hp = healthBar;
-
 
 gameEngine.world.setSubsteps(4);
 gameEngine.world.setIterations(16);
@@ -239,7 +238,7 @@ for (var x = 1; x < 8; x++) {
 }
 
 var map = await gameEngine.loadMap("map.glb", {});
-
+var damageTimeStamp = 0;
 for (const obj of map.objects) {
     gameEngine.world.addComposite(obj);
     if (obj.name.toLowerCase().includes("death")) {
@@ -255,7 +254,18 @@ for (const obj of map.objects) {
             if (!player) {
                 return;
             }
-            player.respawn();
+            player.health -= 1;
+            if(performance.now() - damageTimeStamp > 100){
+                gameEngine.soundManager.play("damage");
+                damageTimeStamp = performance.now();
+            }
+            
+            player.composite.awaken();
+            if(player.health <= 0){
+                player.respawn();
+                player.health = player.maxHealth;
+            }
+            // player.respawn();
         })
     }
     if (obj.name.toLowerCase().includes("start")) {
@@ -312,6 +322,8 @@ function render() {
     inventory.update();
     setHotbarPosition();
     hotbar.update();
+    healthBar.value = player.health;
+    healthBar.max = player.maxHealth;
     healthBar.update();
 
     gameEngine.updateEntities();

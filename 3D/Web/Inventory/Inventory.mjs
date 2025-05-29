@@ -261,6 +261,7 @@ const Inventory = class extends WebComponent {
         }
 
         this.toolTip = new Modal({
+            gameEngine: this.gameEngine,
             draggable: false,
             closeable: false,
             resizable: false,

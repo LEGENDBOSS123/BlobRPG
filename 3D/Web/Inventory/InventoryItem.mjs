@@ -73,6 +73,7 @@ const InventoryItem = class extends WebComponent{
         }
 
         this.inspectModal = new Modal({
+            gameEngine: this.gameEngine,
             title: this.name
         });
 
