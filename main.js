@@ -25,6 +25,7 @@ import Modal from "./3D/Web/Modal/Modal.mjs";
 import Hotbar from "./3D/Web/Inventory/Hotbar.mjs";
 import ToastManager from "./3D/Web/Toast/ToastManager.mjs";
 import ProgressBar from "./3D/Web/ProgressBar/ProgressBar.mjs";
+import Settings from "./3D/Web/Settings/Settings.mjs";
 var stats = new Stats();
 var stats2 = new Stats();
 
@@ -79,7 +80,6 @@ var gameEngine = new GameEngine(
         },
         particleSystem: {},
         fps: 20
-
     }
 );
 
@@ -101,7 +101,7 @@ toastManager.createHTML({
     width: 300
 });
 
-window.toastManager = toastManager;
+
 
 
 gameEngine.cameraControls.addKeyBinds(
@@ -128,7 +128,7 @@ gameEngine.soundManager.addSounds({
     "damage": "damage.mp3"
 })
 
-var healthBar = new ProgressBar({
+const healthBar = new ProgressBar({
     gameEngine: gameEngine,
     title: "HEALTH"
 });
@@ -141,6 +141,44 @@ healthBar.createHTML({
 
 healthBar.html.style.top = "5px";
 healthBar.html.style.right = "15px";
+
+
+const settings = new Settings({
+    gameEngine: gameEngine,
+    title: "Settings"
+});
+
+
+settings.createHTML({
+    container: document.body,
+    overflow: true,
+    width: 750,
+    height: 500,
+    centered: true
+})
+
+var panel = new Settings.SettingsPanel({
+    gameEngine: gameEngine,
+    buttons: [
+        "Graphics",
+        "Sound",
+        "Controls",
+        "Gameplay",
+        "Interface",
+        "Options",
+        "Account",
+        "Privacy",
+        "Network",
+        "Experimental"
+    ]
+});
+
+settings.addComponent(panel);
+
+panel.createHTML({
+    width: 120,
+    side: "left"
+})
 
 gameEngine.world.setSubsteps(4);
 gameEngine.world.setIterations(16);
@@ -157,7 +195,7 @@ var player = new Player({
     gravity: new Vector3(0, gravity, 0),
     position: new Vector3(0, 30, 0),
     mass: 1,
-    graphicsEngine: gameEngine.graphicsEngine
+    gameEngine: gameEngine
 });
 
 
@@ -182,7 +220,7 @@ inventory.createHTML({
     height: 500
 })
 
-// inventory.modal.close();
+inventory.modal.hide();
 
 
 var hotbar = new Hotbar({
@@ -255,13 +293,13 @@ for (const obj of map.objects) {
                 return;
             }
             player.health -= 1;
-            if(performance.now() - damageTimeStamp > 100){
+            if (performance.now() - damageTimeStamp > 100) {
                 gameEngine.soundManager.play("damage");
                 damageTimeStamp = performance.now();
             }
-            
+
             player.composite.awaken();
-            if(player.health <= 0){
+            if (player.health <= 0) {
                 player.respawn();
                 player.health = player.maxHealth;
             }
@@ -303,7 +341,7 @@ gameEngine.graphicsEngine.addToScene(map.gltf.scene)
 
 gameEngine.timer.schedule(gameEngine.fpsStepper);
 
-toastManager.createToast({duration: 1000, type: 0, message: "Map Loaded"})
+toastManager.createToast({ duration: 1000, type: 0, message: "Map Loaded" })
 
 function render() {
     stats.begin();

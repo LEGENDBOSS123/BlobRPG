@@ -162,7 +162,7 @@ var Player = class extends Entity {
         this.updateShapeID();
     }
 
-    setMeshAndAddToScene(options, gameEngine) {
+    setMeshAndAddToScene(options) {
         if (this.composite.mesh) {
             return;
         }
@@ -190,7 +190,7 @@ var Player = class extends Entity {
         // for (const sphere of this.spheres) {
         //     sphere.setMeshAndAddToScene({}, gameEngine);
         // }
-        this.spheres[this.spheres.length - 1].mesh = gameEngine.graphicsEngine.meshLinker.createMeshData(new gameEngine.graphicsEngine.THREE.Mesh());
+        this.spheres[this.spheres.length - 1].mesh = this.gameEngine.graphicsEngine.meshLinker.createMeshData(new gameEngine.graphicsEngine.THREE.Mesh());
     }
 
     wasKeyJustPressed(key) {
@@ -209,13 +209,13 @@ var Player = class extends Entity {
         return this.keysVector.copy();
     }
 
-    updateKeys(gameEngine) {
-        this.keysHeld = structuredClone(gameEngine.cameraControls.movement);
-        this.justToggled = structuredClone(gameEngine.cameraControls.justToggled);
-        this.keysVector = gameEngine.cameraControls.getDelta(gameEngine.graphicsEngine.camera).copy();
+    updateKeys() {
+        this.keysHeld = structuredClone(this.gameEngine.cameraControls.movement);
+        this.justToggled = structuredClone(this.gameEngine.cameraControls.justToggled);
+        this.keysVector = this.gameEngine.cameraControls.getDelta(this.gameEngine.graphicsEngine.camera).copy();
     }
 
-    updateStep(gameEngine) {
+    updateStep() {
         var vel = this.composite.global.body.getVelocity();
         var velHorizontal = vel.copy();
         velHorizontal.y = 0;
@@ -297,10 +297,10 @@ var Player = class extends Entity {
         return player;
     }
 
-    updateReferences(gameEngine) {
-        this.composite = gameEngine.world.getByID(this.composite);
+    updateReferences() {
+        this.composite = this.gameEngine.world.getByID(this.composite);
         this.sphere = this.spheres.map(function (sphere) {
-            return gameEngine.world.getByID(sphere);
+            return this.gameEngine.world.getByID(sphere);
         });
         this.spheres[0].addEventListener("collision", this.jumpPostCollision);
         this.composite.addEventListener("postStep", this.postStepCallback);

@@ -1,6 +1,9 @@
 
-var Entity = class {
+import GameEngineComponent from "../GameEngineComponent.mjs";
+
+var Entity = class extends GameEngineComponent {
     constructor(options) {
+        super(options);
         this.id = options?.id ?? -1;
         this.entitySystem = options?.entitySystem ?? null;
         this.oldShape = options?.oldShape ?? null;
