@@ -10,6 +10,7 @@ import Polyhedron from "./Physics/Shapes/Polyhedron.mjs";
 import Sphere from "./Physics/Shapes/Sphere.mjs";
 import SimpleCameraControls from "./SimpleCameraControls.mjs";
 import SoundManager from "./Sounds/SoundManager.mjs";
+import ToastManager from "./Web/Toast/ToastManager.mjs";
 
 const GameEngine = class {
     constructor(options) {
@@ -21,10 +22,13 @@ const GameEngine = class {
         this.world = new World(options?.world);
         this.particleSystem = new ParticleSystem(options?.particleSystem);
         this.soundManager = new SoundManager(options?.soundManager);
+        this.toastManager = new ToastManager(options?.toastManager);
         this.previousWorld = null;
 
         this.world.gameEngine = this;
         this.particleSystem.gameEngine = this;
+        this.soundManager.gameEngine = this;
+        this.toastManager.gameEngine = this;
         this.gameCamera.camera = this.graphicsEngine.camera;
         this.cameraControls.camera = this.gameCamera;
         this.particleSystem.timer = this.timer;

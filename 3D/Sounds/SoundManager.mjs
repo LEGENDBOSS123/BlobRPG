@@ -1,5 +1,8 @@
-const SoundManager = class {
+import GameEngineComponent from "../GameEngineComponent.mjs";
+
+const SoundManager = class extends GameEngineComponent{
     constructor(options) {
+        super(options);
         this.sounds = {};
         this.audioContext = new window.AudioContext();
         this.masterGain = this.audioContext.createGain();

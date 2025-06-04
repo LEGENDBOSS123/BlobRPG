@@ -204,7 +204,7 @@ const Modal = class extends WebComponent {
         const maxTop = parentRect.height - modalRect.height;
 
         left = Math.min(Math.max(0, left), maxLeft);
-        top = Math.min(Math.max(0, top), maxTop);
+        top = Math.max(Math.min(maxTop, top), 0);
 
         html.style.left = `${left}px`;
         html.style.top = `${top}px`;

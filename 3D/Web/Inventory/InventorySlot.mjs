@@ -135,11 +135,11 @@ const InventorySlot = class extends WebComponent {
 
         var index = this.parent.emptyIndex();
         if (index == -1) {
-            window.toastManager.createToast({ duration: 1000, type: Toast.TYPES.ERROR, message: "No space in inventory" });
+            this.gameEngine.toastManager.createToast({ duration: 1000, type: Toast.TYPES.ERROR, message: "No space in inventory" });
             return;
         }
 
-        window.toastManager.createToast({ duration: 1000, type: Toast.TYPES.ERROR, message: "Not implemented yet lol" });
+        this.gameEngine.toastManager.createToast({ duration: 1000, type: Toast.TYPES.ERROR, message: "Not implemented yet lol" });
 
 
     }
@@ -196,7 +196,6 @@ const InventorySlot = class extends WebComponent {
                         behavior: "auto"
                     });
                 }
-                this.gameEngine.soundManager.play("click", 0.75);
                 Inventory.centerActionButtonAround(this);
             }.bind(this)
         )

@@ -10,7 +10,7 @@ const SpatialHash = class {
             spatialHash.hashmap = new Map();
             spatialHash.gridSize = options?.gridSizes?.[i] ?? Math.pow(4, i) * 0.5;
             spatialHash.inverseGridSize = 1 / spatialHash.gridSize;
-            spatialHash.threshold = options?.thresholds?.[i] ?? 1;
+            spatialHash.threshold = options?.thresholds?.[i] ?? 4;
             spatialHash.translation = new Vector3();
             spatialHash.index = i;
             if (spatialHash.index % 2 == 0) {
@@ -27,10 +27,13 @@ const SpatialHash = class {
         this.spatialHashes.push({ final: true, hashmap: this.global, next: null, index: this.spatialHashes.length });
         this.spatialHashes[this.spatialHashes.length - 2].next = this.spatialHashes[this.spatialHashes.length - 1];
         this.ids = {};
+
+        this.minCellPosition = new Vector3();
+        this.maxCellPosition = new Vector3();
     }
 
     hash(x, y, z) {
-        return (x*73856093 ^ y*19349663 ^ z*83492791) >> 0;
+        return (x * 73856093 ^ y * 19349663 ^ z * 83492791) >> 0;
     }
 
     remove(id) {
@@ -38,9 +41,10 @@ const SpatialHash = class {
         delete this.ids[id];
     }
 
-    getCellPosition(v, hash) {
-        const v1 = v.add(hash.translation);
-        return new Vector3(Math.floor(v1.x * hash.inverseGridSize), Math.floor(v1.y * hash.inverseGridSize), Math.floor(v1.z * hash.inverseGridSize));
+    getCellPosition(v, hash, store) {
+        store.x = Math.floor(v.x * hash.inverseGridSize + hash.translation.x);
+        store.y = Math.floor(v.y * hash.inverseGridSize + hash.translation.y);
+        store.z = Math.floor(v.z * hash.inverseGridSize + hash.translation.z);
     }
 
     getSizeHeuristic(min, max) {
@@ -58,8 +62,10 @@ const SpatialHash = class {
                 return true;
             }
 
-            const min = this.getCellPosition(hitbox.min, hash);
-            const max = this.getCellPosition(hitbox.max, hash);
+            this.getCellPosition(hitbox.min, hash, this.minCellPosition);
+            this.getCellPosition(hitbox.max, hash, this.maxCellPosition);
+            const min = this.minCellPosition;
+            const max = this.maxCellPosition;
 
             if (!below) {
                 if (this.getSizeHeuristic(min, max) > hash.threshold) {
@@ -105,8 +111,10 @@ const SpatialHash = class {
                 hash.hashmap.delete(id);
                 return true;
             }
-            const min = this.getCellPosition(hitbox.min, hash);
-            const max = this.getCellPosition(hitbox.max, hash);
+            this.getCellPosition(hitbox.min, hash, this.minCellPosition);
+            this.getCellPosition(hitbox.max, hash, this.maxCellPosition);
+            const min = this.minCellPosition;
+            const max = this.maxCellPosition;
             for (var x = min.x; x <= max.x; x++) {
                 for (var y = min.y; y <= max.y; y++) {
                     for (var z = min.z; z <= max.z; z++) {
@@ -181,8 +189,10 @@ const SpatialHash = class {
                 }
                 return;
             }
-            const min = this.getCellPosition(hitbox.min, hash);
-            const max = this.getCellPosition(hitbox.max, hash);
+            this.getCellPosition(hitbox.min, hash, this.minCellPosition);
+            this.getCellPosition(hitbox.max, hash, this.maxCellPosition);
+            const min = this.minCellPosition;
+            const max = this.maxCellPosition;
             var map = null;
             var cell = null;
             if (hash.hashmap.size > 0) {
@@ -261,8 +271,7 @@ const SpatialHash = class {
         spatialHash.world = world;
         spatialHash.global = json.global;
         spatialHash.spatialHashes = json.spatialHashes;
-        for (const i = 0; i < spatialHash.spatialHashes.length; i++) {
-            const hash = spatialHash.spatialHashes[i];
+        for (const hash of spatialHash.spatialHashes) {
             hash.translation = Vector3.fromJSON(hash.translation);
             if (!hash.final) {
                 hash.next = spatialHash.spatialHashes[hash.next];

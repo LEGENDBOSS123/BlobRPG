@@ -1,7 +1,8 @@
+import GameEngineComponent from "../GameEngineComponent.mjs";
 
-const WebComponent = class {
+const WebComponent = class extends GameEngineComponent{
     constructor(options) {
-        this.gameEngine = options?.gameEngine ?? null;
+        super(options);
         this.eventListeners = {};
     }
 

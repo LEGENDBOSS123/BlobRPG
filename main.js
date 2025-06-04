@@ -93,10 +93,8 @@ gameEngine.graphicsEngine.cameraFar = 2000;
 gameEngine.cameraControls.renderDomElement = gameEngine.graphicsEngine.canvas;
 gameEngine.cameraControls.setupEventListeners();
 
-var toastManager = new ToastManager({
-    gameEngine: gameEngine
-});
-toastManager.createHTML({
+
+gameEngine.toastManager.createHTML({
     container: document.body,
     width: 300
 });
@@ -149,35 +147,81 @@ const settings = new Settings({
 });
 
 
+var panel = new Settings.Panel({
+    buttons: {
+        "Graphics": new Settings.Screen({
+            elements: [
+                new Settings.Checkbox({
+                    label: "Vsync"
+                }),
+                new Settings.Slider({
+                    label: "Framerate",
+                    min: 20,
+                    max: 120,
+                    default: 60
+                }),
+                new Settings.Checkbox({
+                    label: "Antialiasing"
+                }),
+                new Settings.Slider({
+                    label: "Resolution",
+                    min: 1,
+                    max: 10,
+                    default: 5
+                }),
+                new Settings.Checkbox({
+                    label: "Ambient Occlusion"
+                }),
+            ]
+        }),
+        "Sound": new Settings.Screen({
+            elements: [new Settings.Slider({
+                label: "Volume",
+                min: 0,
+                max: 100,
+                default: 75,
+                decimalPlaces: 1
+            })]
+        }),
+        "Controls": new Settings.Screen({
+
+        }),
+        "Gameplay": new Settings.Screen({
+
+        }),
+        "Interface": new Settings.Screen({
+
+        }),
+        "Options": new Settings.Screen({
+
+        }),
+        "Account": new Settings.Screen({
+
+        }),
+        "Privacy": new Settings.Screen({
+
+        }),
+        "Network": new Settings.Screen({
+
+        }),
+        "Experimental": new Settings.Screen({
+
+        })
+    },
+    htmlOptions: {
+        width: 120,
+        side: "left"
+    }
+});
+
+settings.addComponent(panel);
+
 settings.createHTML({
     container: document.body,
     overflow: true,
     width: 750,
     height: 500,
     centered: true
-})
-
-var panel = new Settings.SettingsPanel({
-    gameEngine: gameEngine,
-    buttons: [
-        "Graphics",
-        "Sound",
-        "Controls",
-        "Gameplay",
-        "Interface",
-        "Options",
-        "Account",
-        "Privacy",
-        "Network",
-        "Experimental"
-    ]
-});
-
-settings.addComponent(panel);
-
-panel.createHTML({
-    width: 120,
-    side: "left"
 })
 
 gameEngine.world.setSubsteps(4);
@@ -341,7 +385,7 @@ gameEngine.graphicsEngine.addToScene(map.gltf.scene)
 
 gameEngine.timer.schedule(gameEngine.fpsStepper);
 
-toastManager.createToast({ duration: 1000, type: 0, message: "Map Loaded" })
+gameEngine.toastManager.createToast({ duration: 1000, type: 0, message: "Map Loaded" })
 
 function render() {
     stats.begin();
@@ -363,6 +407,7 @@ function render() {
     healthBar.value = player.health;
     healthBar.max = player.maxHealth;
     healthBar.update();
+    settings.update();
 
     gameEngine.updateEntities();
     gameEngine.updateGraphicsEngine();
