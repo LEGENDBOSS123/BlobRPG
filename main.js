@@ -151,17 +151,12 @@ var panel = new Settings.Panel({
     buttons: {
         "Graphics": new Settings.Screen({
             elements: [
-                new Settings.Checkbox({
-                    label: "Vsync"
-                }),
+                
                 new Settings.Slider({
                     label: "Framerate",
                     min: 20,
                     max: 120,
                     default: 60
-                }),
-                new Settings.Checkbox({
-                    label: "Antialiasing"
                 }),
                 new Settings.Slider({
                     label: "Resolution",
@@ -170,8 +165,14 @@ var panel = new Settings.Panel({
                     default: 5
                 }),
                 new Settings.Checkbox({
+                    label: "Vsync"
+                }),
+                new Settings.Checkbox({
                     label: "Ambient Occlusion"
                 }),
+                new Settings.Checkbox({
+                    label: "Antialiasing"
+                })
             ]
         }),
         "Sound": new Settings.Screen({
@@ -319,7 +320,7 @@ for (var x = 1; x < 8; x++) {
     }
 }
 
-var map = await gameEngine.loadMap("map.glb", {});
+var map = await gameEngine.loadMap("abandoned_city.glb", {});
 var damageTimeStamp = 0;
 for (const obj of map.objects) {
     gameEngine.world.addComposite(obj);

@@ -3,6 +3,7 @@ import GameEngineComponent from "../GameEngineComponent.mjs";
 const WebComponent = class extends GameEngineComponent{
     constructor(options) {
         super(options);
+        this.html = null;
         this.eventListeners = {};
     }
 
@@ -30,11 +31,13 @@ const WebComponent = class extends GameEngineComponent{
 
     destroy(){
         for(var name in this.eventListeners) {
-            console.log(name);
             this.removeEventListener(name);
         }
         this.gameEngine = null;
         this.eventListeners = {};
+        if(this.html){
+            this.html.remove();
+        }
     }
 }
 

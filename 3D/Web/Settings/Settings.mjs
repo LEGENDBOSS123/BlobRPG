@@ -4,7 +4,6 @@ const SettingsComponent = class extends WebComponent {
     constructor(options) {
         super(options);
         this.components = [];
-        this.html = null;
         this.parent = null;
         this.htmlOptions = options?.htmlOptions ?? {};
     }
@@ -270,7 +269,6 @@ const Slider = class extends SettingsComponent {
             }.bind(this)
         );
     }
-
 }
 
 const Settings = class extends Modal {
