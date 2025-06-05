@@ -5,6 +5,8 @@ const SettingsComponent = class extends WebComponent {
         super(options);
         this.components = [];
         this.parent = null;
+        this.root = null;
+        this.name = options?.name ?? "";
         this.htmlOptions = options?.htmlOptions ?? {};
     }
 
@@ -14,12 +16,42 @@ const SettingsComponent = class extends WebComponent {
         c.gameEngine = this.gameEngine;
     }
 
+    setRoot(r){
+        this.root = r;
+        for (const component of this.components) {
+            component.setRoot(r);
+        }
+    }
+
+    setState(state) {
+        for (const component of this.components) {
+            if (state.hasOwnProperty(component.name)) {
+                component.setValue(state[component.name]);
+            }
+            component.setState(state);
+        }
+    }
+
     createHTML(options) {
 
     }
 
+    setValue(x) {
+        
+    }
+
+    getValue(){
+        return 0;
+    }
+
+    changed(value){
+        if(this.name){
+            this.root.changedSetting(this.name, value);
+        }
+    }
+
     destroy() {
-        for (var component of this.components) {
+        for (const component of this.components) {
             component.destroy();
         }
         super.destroy();
@@ -29,14 +61,15 @@ const SettingsComponent = class extends WebComponent {
         this.parent = container;
         container.appendChild(this.html);
     }
-}
 
-const Button = class extends SettingsComponent {
-    constructor(options) {
-        super(options);
-    }
-
-    createHTML(options) {
+    getState(state = {}) {
+        for (const component of this.components) {
+            if (component.name) {
+                state[component.name] = component.getValue();
+            }
+            component.getState(state);
+        }
+        return state;
     }
 }
 
@@ -45,13 +78,16 @@ const Panel = class extends SettingsComponent {
     constructor(options) {
         super(options);
         this.buttons = options?.buttons ?? [];
+        for(const buttonTitle in this.buttons){
+            this.addComponent(this.buttons[buttonTitle]);
+        }
         this.buttonElements = [];
         this.contentElement = null;
         this.panelElement = null;
     }
 
     createHTML(options) {
-        const container = this.parent.modalContentElement;
+        const container = options.container;
 
         const width = options?.width ?? 60;
         const height = options?.height ?? 60;
@@ -148,12 +184,22 @@ const Screen = class extends SettingsComponent {
 const Checkbox = class extends SettingsComponent {
     constructor(options) {
         super(options);
-        this.name = options?.title ?? "";
         this.label = options?.label ?? "";
-        this.value = options?.value ?? false;
+        this.default = options?.default ?? false;
+        this.value = options?.value ?? this.default;
 
         this.checkboxElement = null;
         this.labelElement = null;
+    }
+
+    getValue() {
+        return this.checkboxElement.checked;
+    }
+
+    setValue(x) {
+        this.checkboxElement.checked = x;
+        this.value = x;
+        this.changed(this.value);
     }
 
     createHTML(options) {
@@ -181,6 +227,24 @@ const Checkbox = class extends SettingsComponent {
         this.html.appendChild(switchWrapper);
 
         container.appendChild(this.html);
+
+        this.setValue(this.value);
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        this.addEventListener("checkbox-change", this.html, "change",
+            function (e) {
+                this.setValue(this.getValue());
+            }.bind(this)
+        )
+        this.addEventListener("checkbox-keydown", this.checkboxElement, "keydown",
+            function (e) {
+                if (e.code == "Space"){
+                    e.preventDefault();
+                }
+            }.bind(this)
+        )
     }
 
 }
@@ -189,9 +253,7 @@ const Checkbox = class extends SettingsComponent {
 const Slider = class extends SettingsComponent {
     constructor(options) {
         super(options);
-        this.name = options?.title ?? "";
         this.label = options?.label ?? "";
-
         this.min = options?.min ?? 0;
         this.max = options?.max ?? 100;
         this.default = options?.default ?? 50;
@@ -204,18 +266,20 @@ const Slider = class extends SettingsComponent {
         this.valueElement = null;
     }
 
-    getValue(){
-        return (this.sliderElement.value * (this.max - this.min) / this.sliderMax + this.min).toFixed(this.decimalPlaces);
+    getValue() {
+        return Number((this.sliderElement.value * (this.max - this.min) / this.sliderMax + this.min).toFixed(this.decimalPlaces));
     }
 
-    setValue(x){
+    setValue(x) {
         var constrained = Math.min(Math.max(x, this.min), this.max);
-        if(!Number.isFinite(constrained)){
+        if (!Number.isFinite(constrained)) {
             constrained = this.default;
         }
         constrained = constrained.toFixed(this.decimalPlaces);
         this.sliderElement.value = (constrained - this.min) / (this.max - this.min) * this.sliderMax;
         this.valueElement.value = constrained;
+        this.value = constrained;
+        this.changed(this.value);
     }
 
     createHTML(options) {
@@ -237,7 +301,7 @@ const Slider = class extends SettingsComponent {
         this.valueElement = document.createElement("input");
         this.valueElement.type = "text";
         this.valueElement.classList.add("value");
-        
+
         this.sliderElement = document.createElement("input");
         this.sliderElement.type = "range";
         this.sliderElement.min = "0";
@@ -245,7 +309,7 @@ const Slider = class extends SettingsComponent {
         this.setValue(this.value);
         this.sliderElement.classList.add("slider");
 
-        
+
 
         this.html.appendChild(this.sliderElement);
 
@@ -259,8 +323,7 @@ const Slider = class extends SettingsComponent {
     setupEventListeners() {
         this.addEventListener("slider-change", this.sliderElement, "input",
             function (e) {
-                this.value = this.getValue();
-                this.valueElement.value = this.value;
+                this.setValue(this.getValue());
             }.bind(this)
         );
         this.addEventListener("value-change", this.valueElement, "change",
@@ -273,7 +336,6 @@ const Slider = class extends SettingsComponent {
 
 const Settings = class extends Modal {
 
-    static Button = Button;
     static Panel = Panel;
     static Screen = Screen;
     static Checkbox = Checkbox;
@@ -282,6 +344,8 @@ const Settings = class extends Modal {
     constructor(options) {
         super(options);
         this.components = [];
+        this.onChangeCallbacks = {};
+        this.state = {};
     }
 
     addComponent(c) {
@@ -292,10 +356,33 @@ const Settings = class extends Modal {
 
     createHTML(options) {
         super.createHTML(options);
+        this.setRoot();
         for (var component of this.components) {
-            component.htmlOptions.container = this.html;
+            component.htmlOptions.container = this.modalContentElement;
             component.createHTML(component.htmlOptions);
         }
+    }
+
+    load() {
+        var state = localStorage.getItem("settings");
+        if (state) {
+            this.state = JSON.parse(state);
+            this.setState(this.state);
+        }
+    }
+
+    setState(state) {
+        for (const component of this.components) {
+            if (state.hasOwnProperty(component.name)) {
+                component.setValue(state[component.name]);
+            }
+            component.setState(state);
+        }
+    }
+
+    save() {
+        var state = this.getState();
+        localStorage.setItem("settings", JSON.stringify(state));
     }
 
     update() {
@@ -303,10 +390,40 @@ const Settings = class extends Modal {
     }
 
     destroy() {
-        for (var component of this.components) {
+        for (const component of this.components) {
             component.destroy();
         }
         super.destroy();
+    }
+
+    getState(state = {}) {
+        for (const component of this.components) {
+            if (component.name) {
+                state[component.name] = component.getValue();
+            }
+            component.getState(state);
+        }
+        this.state = state;
+        return state;
+    }
+
+    changedSetting(name, value) {
+        for (const f of this.onChangeCallbacks[name] ?? []) {
+            f(value);
+        }
+    }
+
+    onSettingsChange(name, f){
+        if(!this.onChangeCallbacks[name]){
+            this.onChangeCallbacks[name] = [];
+        }
+        this.onChangeCallbacks[name].push(f);
+    }
+
+    setRoot(){
+        for (const component of this.components) {
+            component.setRoot(this);
+        }
     }
 }
 

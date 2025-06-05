@@ -146,38 +146,34 @@ const settings = new Settings({
     title: "Settings"
 });
 
+top.s = settings;
+
 
 var panel = new Settings.Panel({
     buttons: {
         "Graphics": new Settings.Screen({
             elements: [
-                
-                new Settings.Slider({
-                    label: "Framerate",
-                    min: 20,
-                    max: 120,
-                    default: 60
-                }),
-                new Settings.Slider({
-                    label: "Resolution",
-                    min: 1,
-                    max: 10,
-                    default: 5
+                new Settings.Checkbox({
+                    label: "Ambient Occlusion",
+                    name: "ambient_occlusion",
+                    default: false
                 }),
                 new Settings.Checkbox({
-                    label: "Vsync"
+                    label: "Bloom",
+                    name: "bloom",
+                    default: false
                 }),
                 new Settings.Checkbox({
-                    label: "Ambient Occlusion"
-                }),
-                new Settings.Checkbox({
-                    label: "Antialiasing"
+                    label: "Shadows",
+                    name: "shadows",
+                    default: true
                 })
             ]
         }),
         "Sound": new Settings.Screen({
             elements: [new Settings.Slider({
                 label: "Volume",
+                name: "volume",
                 min: 0,
                 max: 100,
                 default: 75,
@@ -185,7 +181,6 @@ var panel = new Settings.Panel({
             })]
         }),
         "Controls": new Settings.Screen({
-
         }),
         "Gameplay": new Settings.Screen({
 
@@ -223,7 +218,47 @@ settings.createHTML({
     width: 750,
     height: 500,
     centered: true
-})
+});
+
+settings.close();
+
+window.onbeforeunload = function () {
+    settings.save();
+}
+
+settings.onSettingsChange("volume", function(volume){
+    gameEngine.soundManager.setVolume(volume / 100);
+});
+
+settings.onSettingsChange("ambient_occlusion", function(ao){
+    if(ao){
+        gameEngine.graphicsEngine.enableAO();
+    }
+    else{
+        gameEngine.graphicsEngine.disableAO();
+    }
+});
+
+settings.onSettingsChange("bloom", function(ao){
+    if(ao){
+        gameEngine.graphicsEngine.enableBloom();
+    }
+    else{
+        gameEngine.graphicsEngine.disableBloom();
+    }
+});
+
+settings.onSettingsChange("shadows", function(ao){
+    if(ao){
+        gameEngine.graphicsEngine.enableShadows();
+    }
+    else{
+        gameEngine.graphicsEngine.disableShadows();
+    }
+});
+
+settings.load();
+
 
 gameEngine.world.setSubsteps(4);
 gameEngine.world.setIterations(16);
@@ -302,9 +337,12 @@ inventory.getSlot(0, 0).setItem(new InventoryItem({
 }))
 
 
-document.addEventListener("keypress", function (e) {
+document.addEventListener("keydown", function (e) {
     if (e.key == "e") {
         inventory.modal.toggleShowHide();
+    }
+    if(e.key == "Escape"){        
+        settings.toggleOpenClose();
     }
 });
 
@@ -387,6 +425,28 @@ gameEngine.graphicsEngine.addToScene(map.gltf.scene)
 gameEngine.timer.schedule(gameEngine.fpsStepper);
 
 gameEngine.toastManager.createToast({ duration: 1000, type: 0, message: "Map Loaded" })
+
+
+
+var infoModal = new Modal({
+    content: document.createElement('p'),
+    resizable: false,
+    fullscreenable: false,
+    draggable: false,
+    closeable: false
+})
+infoModal.createHTML({
+    container: document.body,
+    width: 400,
+    height: 200,
+    centered: true
+})
+infoModal.content.textContent = "Press [E] to open inventory, and [Escape] to open settings";
+infoModal.content.style = `padding: 20px; text-align: center; font-size: 20px;`;
+
+setTimeout(function(){
+    infoModal.close();
+}, 2000);
 
 function render() {
     stats.begin();
