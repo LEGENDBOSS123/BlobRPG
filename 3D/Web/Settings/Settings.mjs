@@ -16,7 +16,7 @@ const SettingsComponent = class extends WebComponent {
         c.gameEngine = this.gameEngine;
     }
 
-    setRoot(r){
+    setRoot(r) {
         this.root = r;
         for (const component of this.components) {
             component.setRoot(r);
@@ -37,15 +37,15 @@ const SettingsComponent = class extends WebComponent {
     }
 
     setValue(x) {
-        
+
     }
 
-    getValue(){
+    getValue() {
         return 0;
     }
 
-    changed(value){
-        if(this.name){
+    changed(value) {
+        if (this.name) {
             this.root.changedSetting(this.name, value);
         }
     }
@@ -71,14 +71,14 @@ const SettingsComponent = class extends WebComponent {
         }
         return state;
     }
-}
+};
 
 
 const Panel = class extends SettingsComponent {
     constructor(options) {
         super(options);
         this.buttons = options?.buttons ?? [];
-        for(const buttonTitle in this.buttons){
+        for (const buttonTitle in this.buttons) {
             this.addComponent(this.buttons[buttonTitle]);
         }
         this.buttonElements = [];
@@ -145,7 +145,7 @@ const Panel = class extends SettingsComponent {
             )
         }
     }
-}
+};
 
 const Screen = class extends SettingsComponent {
     constructor(options) {
@@ -179,7 +179,7 @@ const Screen = class extends SettingsComponent {
     hide() {
 
     }
-}
+};
 
 const Checkbox = class extends SettingsComponent {
     constructor(options) {
@@ -208,12 +208,12 @@ const Checkbox = class extends SettingsComponent {
         this.html = document.createElement("div");
         this.html.classList.add("settings-screen-item-container", "checkbox");
 
-        this.labelElement = document.createElement("label");
+        this.labelElement = document.createElement("span");
         this.labelElement.classList.add("label");
         this.labelElement.textContent = this.label;
         this.html.appendChild(this.labelElement);
 
-        const switchWrapper = document.createElement("label");
+        const switchWrapper = document.createElement("span");
         switchWrapper.classList.add("switch");
 
         this.checkboxElement = document.createElement("input");
@@ -240,14 +240,14 @@ const Checkbox = class extends SettingsComponent {
         )
         this.addEventListener("checkbox-keydown", this.checkboxElement, "keydown",
             function (e) {
-                if (e.code == "Space"){
+                if (e.code == "Space") {
                     e.preventDefault();
                 }
             }.bind(this)
         )
     }
 
-}
+};
 
 
 const Slider = class extends SettingsComponent {
@@ -291,7 +291,7 @@ const Slider = class extends SettingsComponent {
         this.labelParentElement = document.createElement("div");
         this.labelParentElement.classList.add("label-parent");
 
-        this.labelElement = document.createElement("label");
+        this.labelElement = document.createElement("span");
         this.labelElement.classList.add("label");
         this.labelElement.textContent = this.label;
         this.labelParentElement.appendChild(this.labelElement);
@@ -332,6 +332,153 @@ const Slider = class extends SettingsComponent {
             }.bind(this)
         );
     }
+};
+
+const KeybindMenu = class extends SettingsComponent {
+    constructor(options) {
+        super(options);
+        this.actions = [];
+        this.keybinds = options.keybinds;
+        if (Object.keys(this.keybinds).length > 0) {
+            const tmpKeyBind = {};
+
+            for (const key in this.keybinds) {
+                const action = this.keybinds[key];
+                if (!this.actions.includes(action)) {
+                    this.actions.push(action);
+                }
+
+                if (!tmpKeyBind[action]) {
+                    tmpKeyBind[action] = [];
+                }
+
+                tmpKeyBind[action].push(key);
+            }
+
+            this.keybinds = tmpKeyBind;
+            for (const action in this.keybinds) {
+                this.addComponent(
+                    new Keybind({
+                        action: action,
+                        keys: this.keybinds[action]
+                    })
+                );
+            }
+        }
+    }
+
+    getValue() {
+        return this.keybinds;
+    }
+
+    setValue(x) {
+        this.keybinds = x;
+        this.changed(this.keybinds);
+    }
+
+    
+
+    createHTML(options) {
+        const container = options.container;
+
+        this.html = document.createElement("div");
+        this.html.classList.add("keybind-menu");
+
+        for (const c of this.components) {
+            c.htmlOptions.container = this.html;
+            c.createHTML(c.htmlOptions);
+        }
+
+        container.appendChild(this.html);
+    }
+};
+
+const Keybind = class extends SettingsComponent {
+
+    static keyLabelMap = {
+        "ArrowUp": "↑",
+        "ArrowDown": "↓",
+        "ArrowLeft": "←",
+        "ArrowRight": "→",
+        "Space": "⎵",
+        "ShiftLeft": "L⇧",
+        "ShiftRight": "R⇧",
+    };
+
+    constructor(options) {
+        super(options);
+        this.action = options?.action ?? "";
+        this.keys = options?.keys ?? [];
+
+        this.addButton = null;
+        this.labelElement = null;
+        this.keysContainer = null;
+        this.addButtonTextElement = null;
+        this.keyElements = [];
+    }
+
+    camelCaseToWords(str) {
+        return str.replace(/([A-Z])/g, ' $1').replace(/^./, function (str) { return str.toUpperCase(); });
+    }
+
+    makeKeys(){
+        for(const key of this.keyElements){
+            this.keyElements.remove();
+        }
+        this.keyElements = [];
+        for(const key of this.keys){
+            const keyElement = document.createElement("div");
+            keyElement.classList.add("key");
+
+            const keyLabel = document.createElement("span");
+            keyLabel.classList.add("label");
+            keyLabel.textContent = Keybind.keyLabelMap[key];
+            if(key.startsWith("Key")){
+                keyLabel.textContent = key.substring(3).toUpperCase();
+            }
+            keyElement.appendChild(keyLabel);
+
+            const deleteKey = document.createElement("span");
+            deleteKey.classList.add("delete");
+            keyElement.appendChild(deleteKey);
+
+            this.keysContainer.appendChild(keyElement);
+            this.keyElements.push(keyElement);
+        }
+    }
+
+    createHTML(options) {
+        const container = options.container;
+
+        this.html = document.createElement("div");
+        this.html.classList.add("settings-screen-item-container", "keybind", "keybind-container");
+        
+        this.labelElement = document.createElement("span");
+        this.labelElement.classList.add("label");
+        this.labelElement.textContent = this.camelCaseToWords(this.action);
+        this.html.appendChild(this.labelElement);
+
+
+        this.keysContainer = document.createElement("div");
+        this.keysContainer.classList.add("keys-container");
+        this.html.appendChild(this.keysContainer);
+
+
+        this.makeKeys();
+
+        this.addButton = document.createElement("button");
+        this.addButton.classList.add("add");
+
+        this.addButtonTextElement = document.createElement("span");
+        this.addButtonTextElement.classList.add("add-text");
+        this.addButtonTextElement.textContent = "+";
+        // this.addButton.appendChild(this.addButtonTextElement);
+
+
+        this.html.appendChild(this.addButton);
+
+        container.appendChild(this.html);
+    }
 }
 
 const Settings = class extends Modal {
@@ -340,6 +487,7 @@ const Settings = class extends Modal {
     static Screen = Screen;
     static Checkbox = Checkbox;
     static Slider = Slider;
+    static KeybindMenu = KeybindMenu;
 
     constructor(options) {
         super(options);
@@ -413,18 +561,18 @@ const Settings = class extends Modal {
         }
     }
 
-    onSettingsChange(name, f){
-        if(!this.onChangeCallbacks[name]){
+    onSettingsChange(name, f) {
+        if (!this.onChangeCallbacks[name]) {
             this.onChangeCallbacks[name] = [];
         }
         this.onChangeCallbacks[name].push(f);
     }
 
-    setRoot(){
+    setRoot() {
         for (const component of this.components) {
             component.setRoot(this);
         }
     }
-}
+};
 
 export default Settings;

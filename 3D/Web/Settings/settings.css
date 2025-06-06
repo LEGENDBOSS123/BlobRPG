@@ -65,6 +65,7 @@
     font-weight: bold;
     text-align: center;
     transition: transform 0.1s ease-in-out;
+    pointer-events: none;
 }
 
 .settings-panel-button:hover .settings-panel-button-label {
@@ -105,17 +106,18 @@
     justify-content: space-between;
     padding: 12px;
     width: 100%;
-    gap: 6px;
+    gap: 12px;
     box-sizing: border-box;
 }
 
 .settings-screen-item-container:hover {
-    background-color: rgba(0,0,0,0.3);
+    background-color: rgba(0, 0, 0, 0.3);
     border-radius: 10px;
 }
 
 
-.checkbox .label-parent, .slider .label-parent {
+.checkbox .label-parent,
+.slider .label-parent {
     display: flex;
     height: 100%;
     flex: 1 1 0;
@@ -123,7 +125,9 @@
     align-items: center;
 }
 
-.checkbox .label, .slider .label {
+.checkbox .label,
+.slider .label,
+.keybind .label {
     font-size: 18px;
     color: #ffffff;
     overflow: hidden;
@@ -200,4 +204,120 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.keybind-menu {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow: auto;
+    box-sizing: border-box;
+    scrollbar-width: none;
+}
+
+
+.keybind-container {
+    padding: 5px;
+}
+
+
+.keybind .keys-container {
+    height: 75px;
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    overflow: scroll;
+    scrollbar-width: none;
+    flex: 1 1 0;
+    border: 2px dashed white;
+    border-radius: 16px;
+    box-sizing: border-box;
+    padding: 2px;
+}
+
+.keybind .key {
+    position: relative;
+    aspect-ratio: 1/1;
+    background-color: white;
+    border-radius: 16px;
+    box-sizing: border-box;
+    padding: 6px;
+    overflow: hidden;
+}
+
+.keybind .key .label{
+    width: 100%;
+    height: 100%;
+    color: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    line-height: 1;
+    user-select: none;
+}
+
+.keybind .key .delete {
+    width: 100%;
+    height: 100%;
+    background-color: red;
+    opacity: 0;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.keybind .key:hover .delete {
+    opacity: 1;
+}
+
+.keybind .key .delete:after {
+    color: white;
+    content: "\00d7";
+    font-size: 3em;
+    line-height: 1;
+    user-select: none;
+    transform: translateY(-3px);
+}
+
+.keybind .add {
+    aspect-ratio: 1/1;
+    height: 100%;
+    background-color: #4CAF50;
+    border-radius: 50%;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.keybind .add:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+}
+
+.keybind .add:active {
+    transform: scale(0.95);
+}
+
+
+.keybind .add:after {
+    display: inline-block;
+    content: "\002b";
+    font-size: 2em;
+    font-weight: bold;
+    line-height: 1;
+    user-select: none;
+    transform: translateY(-2px);
 }

@@ -171,16 +171,24 @@ var panel = new Settings.Panel({
             ]
         }),
         "Sound": new Settings.Screen({
-            elements: [new Settings.Slider({
-                label: "Volume",
-                name: "volume",
-                min: 0,
-                max: 100,
-                default: 75,
-                decimalPlaces: 1
-            })]
+            elements: [
+                new Settings.Slider({
+                    label: "Volume",
+                    name: "volume",
+                    min: 0,
+                    max: 100,
+                    default: 75,
+                    decimalPlaces: 1
+                })
+            ]
         }),
         "Controls": new Settings.Screen({
+            elements: [
+                new Settings.KeybindMenu({
+                    name: "keybinds",
+                    keybinds: gameEngine.cameraControls.keybinds
+                })
+            ]
         }),
         "Gameplay": new Settings.Screen({
 
@@ -226,33 +234,33 @@ window.onbeforeunload = function () {
     settings.save();
 }
 
-settings.onSettingsChange("volume", function(volume){
+settings.onSettingsChange("volume", function (volume) {
     gameEngine.soundManager.setVolume(volume / 100);
 });
 
-settings.onSettingsChange("ambient_occlusion", function(ao){
-    if(ao){
+settings.onSettingsChange("ambient_occlusion", function (ao) {
+    if (ao) {
         gameEngine.graphicsEngine.enableAO();
     }
-    else{
+    else {
         gameEngine.graphicsEngine.disableAO();
     }
 });
 
-settings.onSettingsChange("bloom", function(ao){
-    if(ao){
+settings.onSettingsChange("bloom", function (ao) {
+    if (ao) {
         gameEngine.graphicsEngine.enableBloom();
     }
-    else{
+    else {
         gameEngine.graphicsEngine.disableBloom();
     }
 });
 
-settings.onSettingsChange("shadows", function(ao){
-    if(ao){
+settings.onSettingsChange("shadows", function (ao) {
+    if (ao) {
         gameEngine.graphicsEngine.enableShadows();
     }
-    else{
+    else {
         gameEngine.graphicsEngine.disableShadows();
     }
 });
@@ -341,7 +349,7 @@ document.addEventListener("keydown", function (e) {
     if (e.key == "e") {
         inventory.modal.toggleShowHide();
     }
-    if(e.key == "Escape"){        
+    if (e.key == "Escape") {
         settings.toggleOpenClose();
     }
 });
@@ -428,25 +436,25 @@ gameEngine.toastManager.createToast({ duration: 1000, type: 0, message: "Map Loa
 
 
 
-var infoModal = new Modal({
-    content: document.createElement('p'),
-    resizable: false,
-    fullscreenable: false,
-    draggable: false,
-    closeable: false
-})
-infoModal.createHTML({
-    container: document.body,
-    width: 400,
-    height: 200,
-    centered: true
-})
-infoModal.content.textContent = "Press [E] to open inventory, and [Escape] to open settings";
-infoModal.content.style = `padding: 20px; text-align: center; font-size: 20px;`;
+// var infoModal = new Modal({
+//     content: document.createElement('p'),
+//     resizable: false,
+//     fullscreenable: false,
+//     draggable: false,
+//     closeable: false
+// });
+// infoModal.createHTML({
+//     container: document.body,
+//     width: 400,
+//     height: 200,
+//     centered: true
+// });
+// infoModal.content.textContent = "Press [E] to open inventory, and [Escape] to open settings";
+// infoModal.content.style = `padding: 20px; text-align: center; font-size: 20px;`;
 
-setTimeout(function(){
-    infoModal.close();
-}, 2000);
+// setTimeout(function () {
+//     infoModal.close();
+// }, 2000);
 
 function render() {
     stats.begin();
