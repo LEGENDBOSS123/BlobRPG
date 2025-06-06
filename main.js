@@ -66,7 +66,7 @@ var gameEngine = new GameEngine(
             pullbackRate: 0.2,
             rotateMethods: {
                 wheel: true,
-                shiftLock: false,
+                shiftLock: true,
                 drag: true
             },
             rotateSensitivity: {
@@ -184,6 +184,30 @@ var panel = new Settings.Panel({
         }),
         "Controls": new Settings.Screen({
             elements: [
+                new Settings.Slider({
+                    label: "Wheel Sensitivity",
+                    name: "wheel_sensitivity",
+                    min: 0,
+                    max: 0.05,
+                    default: 0.01,
+                    decimalPlaces: 4
+                }),
+                new Settings.Slider({
+                    label: "Drag Sensitivity",
+                    name: "drag_sensitivity",
+                    min: 0,
+                    max: 0.05,
+                    default: 0.01,
+                    decimalPlaces: 4
+                }),
+                new Settings.Slider({
+                    label: "Shift Lock Sensitivity",
+                    name: "shift_lock_sensitivity",
+                    min: 0,
+                    max: 0.05,
+                    default: 0.01,
+                    decimalPlaces: 4
+                }),
                 new Settings.KeybindMenu({
                     name: "keybinds",
                     keybinds: gameEngine.cameraControls.keybinds
@@ -245,6 +269,23 @@ settings.onSettingsChange("ambient_occlusion", function (ao) {
     else {
         gameEngine.graphicsEngine.disableAO();
     }
+});
+
+settings.onSettingsChange("wheel_sensitivity", function (s) {
+    gameEngine.cameraControls.rotateSensitivity.wheel = s;
+});
+
+settings.onSettingsChange("drag_sensitivity", function (s) {
+    gameEngine.cameraControls.rotateSensitivity.drag = s;
+});
+
+settings.onSettingsChange("shift_lock_sensitivity", function (s) {
+    gameEngine.cameraControls.rotateSensitivity.shiftLock = s;
+});
+
+settings.onSettingsChange("keybinds", function (kb) {
+    gameEngine.cameraControls.keybinds = {};
+    gameEngine.cameraControls.addKeyBinds(Settings.KeybindMenu.toCameraControlsFormat(kb));
 });
 
 settings.onSettingsChange("bloom", function (ao) {

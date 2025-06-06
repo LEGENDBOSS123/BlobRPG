@@ -245,6 +245,7 @@
     box-sizing: border-box;
     padding: 6px;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .keybind .key .label{
@@ -312,12 +313,11 @@
 }
 
 
-.keybind .add:after {
+.keybind .add .label{
     display: inline-block;
-    content: "\002b";
-    font-size: 2em;
-    font-weight: bold;
+    font-size: 3em;
     line-height: 1;
     user-select: none;
-    transform: translateY(-2px);
+    font-family: none;
+    transform: translateY(-3px);
 }

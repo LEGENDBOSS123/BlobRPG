@@ -1,4 +1,5 @@
 import WebComponent from "../WebComponent.mjs";
+import Toast from "../Toast/Toast.mjs";
 import Modal from "../Modal/Modal.mjs";
 const SettingsComponent = class extends WebComponent {
     constructor(options) {
@@ -13,7 +14,6 @@ const SettingsComponent = class extends WebComponent {
     addComponent(c) {
         this.components.push(c);
         c.parent = this;
-        c.gameEngine = this.gameEngine;
     }
 
     setRoot(r) {
@@ -153,7 +153,6 @@ const Screen = class extends SettingsComponent {
         for (const e of options?.elements ?? []) {
             this.addComponent(e);
         }
-
     }
 
     createHTML(options) {
@@ -213,7 +212,7 @@ const Checkbox = class extends SettingsComponent {
         this.labelElement.textContent = this.label;
         this.html.appendChild(this.labelElement);
 
-        const switchWrapper = document.createElement("span");
+        const switchWrapper = document.createElement("label");
         switchWrapper.classList.add("switch");
 
         this.checkboxElement = document.createElement("input");
@@ -237,14 +236,12 @@ const Checkbox = class extends SettingsComponent {
             function (e) {
                 this.setValue(this.getValue());
             }.bind(this)
-        )
+        );
         this.addEventListener("checkbox-keydown", this.checkboxElement, "keydown",
             function (e) {
-                if (e.code == "Space") {
-                    e.preventDefault();
-                }
+                this.checkboxElement.blur();
             }.bind(this)
-        )
+        );
     }
 
 };
@@ -331,6 +328,11 @@ const Slider = class extends SettingsComponent {
                 this.setValue(this.valueElement.value);
             }.bind(this)
         );
+        this.addEventListener("value-keydown", this.valueElement, "keydown",
+            function (e) {
+                e.stopImmediatePropagation();
+            }.bind(this), true
+        );
     }
 };
 
@@ -340,22 +342,7 @@ const KeybindMenu = class extends SettingsComponent {
         this.actions = [];
         this.keybinds = options.keybinds;
         if (Object.keys(this.keybinds).length > 0) {
-            const tmpKeyBind = {};
-
-            for (const key in this.keybinds) {
-                const action = this.keybinds[key];
-                if (!this.actions.includes(action)) {
-                    this.actions.push(action);
-                }
-
-                if (!tmpKeyBind[action]) {
-                    tmpKeyBind[action] = [];
-                }
-
-                tmpKeyBind[action].push(key);
-            }
-
-            this.keybinds = tmpKeyBind;
+            this.setKeybindsFromCameraControlsFormat(this.keybinds);
             for (const action in this.keybinds) {
                 this.addComponent(
                     new Keybind({
@@ -368,15 +355,60 @@ const KeybindMenu = class extends SettingsComponent {
     }
 
     getValue() {
+        this.updateValue();
         return this.keybinds;
+    }
+
+    setKeybindsFromCameraControlsFormat(keybinds) {
+        const tmpKeyBind = {};
+
+        for (const key in keybinds) {
+            const action = keybinds[key];
+            if (!this.actions.includes(action)) {
+                this.actions.push(action);
+            }
+
+            if (!tmpKeyBind[action]) {
+                tmpKeyBind[action] = [];
+            }
+
+            tmpKeyBind[action].push(key);
+        }
+
+        this.keybinds = tmpKeyBind;
+    }
+
+    static toCameraControlsFormat(keybinds) {
+        const tmpKeyBind = {};
+
+        for (const action in keybinds) {
+            for (const key of keybinds[action]) {
+                tmpKeyBind[key] = action;
+            }
+        }
+
+        return tmpKeyBind;
+    }
+
+    updateValue() {
+        const keybinds = {};
+        for (const c of this.components) {
+            for (const key of c.keys) {
+                keybinds[key] = c.action;
+            }
+        }
+        this.setKeybindsFromCameraControlsFormat(keybinds);
+        this.changed(this.keybinds);
     }
 
     setValue(x) {
         this.keybinds = x;
+        for (const c of this.components) {
+            c.keys = this.keybinds[c.action];
+            c.makeKeys();
+        }
         this.changed(this.keybinds);
     }
-
-    
 
     createHTML(options) {
         const container = options.container;
@@ -386,6 +418,7 @@ const KeybindMenu = class extends SettingsComponent {
 
         for (const c of this.components) {
             c.htmlOptions.container = this.html;
+            c.parent = this;
             c.createHTML(c.htmlOptions);
         }
 
@@ -394,7 +427,8 @@ const KeybindMenu = class extends SettingsComponent {
 };
 
 const Keybind = class extends SettingsComponent {
-
+    static onListenCallback = null;
+    static settedEventListeners = false;
     static keyLabelMap = {
         "ArrowUp": "↑",
         "ArrowDown": "↓",
@@ -402,7 +436,7 @@ const Keybind = class extends SettingsComponent {
         "ArrowRight": "→",
         "Space": "⎵",
         "ShiftLeft": "L⇧",
-        "ShiftRight": "R⇧",
+        "ShiftRight": "R⇧"
     };
 
     constructor(options) {
@@ -411,31 +445,41 @@ const Keybind = class extends SettingsComponent {
         this.keys = options?.keys ?? [];
 
         this.addButton = null;
+        this.addButtonLabelElement = null;
         this.labelElement = null;
         this.keysContainer = null;
-        this.addButtonTextElement = null;
         this.keyElements = [];
+        this.keyEventListenerIndex = 0;
     }
 
     camelCaseToWords(str) {
         return str.replace(/([A-Z])/g, ' $1').replace(/^./, function (str) { return str.toUpperCase(); });
     }
 
-    makeKeys(){
-        for(const key of this.keyElements){
-            this.keyElements.remove();
+
+    getSymbol(key) {
+        if (key.startsWith("Key")) {
+            return key.substring(3).toUpperCase();
+        }
+        if (key.startsWith("Digit")) {
+            return key.substring(5);
+        }
+        return Keybind.keyLabelMap[key];
+    }
+
+    makeKeys() {
+        for (const key of this.keyElements) {
+            this.removeEventListener(key.eventListenerName);
+            key.remove();
         }
         this.keyElements = [];
-        for(const key of this.keys){
+        for (const key of this.keys) {
             const keyElement = document.createElement("div");
             keyElement.classList.add("key");
 
             const keyLabel = document.createElement("span");
             keyLabel.classList.add("label");
-            keyLabel.textContent = Keybind.keyLabelMap[key];
-            if(key.startsWith("Key")){
-                keyLabel.textContent = key.substring(3).toUpperCase();
-            }
+            keyLabel.textContent = this.getSymbol(key);
             keyElement.appendChild(keyLabel);
 
             const deleteKey = document.createElement("span");
@@ -444,6 +488,26 @@ const Keybind = class extends SettingsComponent {
 
             this.keysContainer.appendChild(keyElement);
             this.keyElements.push(keyElement);
+
+            const eventListenerName = "key-delete" + this.keyEventListenerIndex;
+            keyElement.eventListenerName = eventListenerName;
+            this.keyEventListenerIndex++;
+            this.addEventListener(eventListenerName, deleteKey, "click",
+                function (e) {
+                    if (this.keys.length <= 1) {
+                        this.root.gameEngine.toastManager.createToast({
+                            duration: 1000,
+                            type: Toast.TYPES.ERROR,
+                            message: "At least one key is required"
+                        });
+                        return;
+                    }
+                    this.removeEventListener(eventListenerName);
+                    keyElement.remove();
+                    this.keys.splice(this.keys.indexOf(key), 1);
+                    this.parent.updateValue();
+                }.bind(this)
+            );
         }
     }
 
@@ -452,7 +516,7 @@ const Keybind = class extends SettingsComponent {
 
         this.html = document.createElement("div");
         this.html.classList.add("settings-screen-item-container", "keybind", "keybind-container");
-        
+
         this.labelElement = document.createElement("span");
         this.labelElement.classList.add("label");
         this.labelElement.textContent = this.camelCaseToWords(this.action);
@@ -469,15 +533,61 @@ const Keybind = class extends SettingsComponent {
         this.addButton = document.createElement("button");
         this.addButton.classList.add("add");
 
-        this.addButtonTextElement = document.createElement("span");
-        this.addButtonTextElement.classList.add("add-text");
-        this.addButtonTextElement.textContent = "+";
-        // this.addButton.appendChild(this.addButtonTextElement);
-
-
         this.html.appendChild(this.addButton);
 
+
+        this.addButtonLabelElement = document.createElement("span");
+        this.addButtonLabelElement.classList.add("label");
+        this.addButtonLabelElement.textContent = "+";
+        this.addButton.appendChild(this.addButtonLabelElement);
+
         container.appendChild(this.html);
+        Keybind.setupEventListeners();
+        this.setupEventListeners();
+    }
+
+    static setupEventListeners() {
+        if (this.settedEventListeners) {
+            return;
+        }
+        this.settedEventListeners = true;
+        document.addEventListener("keydown", function (e) {
+            if (Keybind.onListenCallback) {
+                Keybind.onListenCallback(e.code);
+                e.stopImmediatePropagation();
+            }
+        }, true);
+    }
+
+    setupEventListeners() {
+        this.addEventListener("button-click", this.addButton, "click",
+            function (e) {
+                this.addButton.blur();
+                if (Keybind.onListenCallback) {
+                    Keybind.onListenCallback(false);
+                }
+                this.addButtonLabelElement.textContent = "...";
+                Keybind.onListenCallback = function (key) {
+                    this.addButtonLabelElement.textContent = "+";
+                    Keybind.onListenCallback = null;
+                    if (!key || !this.getSymbol(key)) {
+                        return;
+                    }
+                    if (this.keys.includes(key)) {
+                        return this.root.gameEngine.toastManager.createToast({
+                            duration: 1000,
+                            type: Toast.TYPES.ERROR,
+                            message: "This key is already in use"
+                        });
+                    }
+                    this.keys.push(key);
+                    this.makeKeys();
+                    this.parent.updateValue();
+                }.bind(this);
+
+            }.bind(this)
+        )
+
     }
 }
 
@@ -488,6 +598,7 @@ const Settings = class extends Modal {
     static Checkbox = Checkbox;
     static Slider = Slider;
     static KeybindMenu = KeybindMenu;
+    static Keybind = Keybind;
 
     constructor(options) {
         super(options);
@@ -499,7 +610,6 @@ const Settings = class extends Modal {
     addComponent(c) {
         this.components.push(c);
         c.parent = this;
-        c.gameEngine = this.gameEngine;
     }
 
     createHTML(options) {

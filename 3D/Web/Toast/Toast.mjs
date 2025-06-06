@@ -92,7 +92,7 @@ const Toast = class extends WebComponent {
         this.html.classList.add("toast-end");
         this.html.addEventListener("animationend", function () {
             this.html.remove();
-        }.bind(this));
+        }.bind(this), { once: true });
     }
 
     setupTimeout() {
