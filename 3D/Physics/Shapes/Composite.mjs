@@ -325,6 +325,16 @@ const Composite = class extends WorldObject {
     }
 
 
+    addVelocityAndAngularVelocity(velocity, angularVelocity) {
+        this.global.body.setVelocity(this.global.body.getVelocity().add(velocity));
+        // this.global.body.angularVelocity.addInPlace(angularVelocity);
+        this.global.body.setAngularVelocity(this.global.body.getAngularVelocity().add(angularVelocity));
+        for (const child of this.children) {
+            child.addVelocityAndAngularVelocity(velocity, angularVelocity);
+        }
+    }
+
+
     syncAll() {
 
         if (!this.isMaxParent()) {

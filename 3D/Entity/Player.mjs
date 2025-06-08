@@ -78,19 +78,23 @@ var Player = class extends Entity {
             if (contact.body1.maxParent == this.composite) {
                 if (contact.normal.dot(new Vector3(0, 1, 0)) > this.groundDetectDot) {
                     this.canJump = true;
-                    this.touchingGround = true;
-                    this.groundVelocity = contact.velocity
+                    if(contact.body2.isImmovable()){
+                        this.touchingGround = true;
+                        this.groundVelocity = contact.velocity;
+                    }
                 }
                 if (Math.abs(contact.normal.dot(new Vector3(0, 1, 0))) < this.wallDetectDot) {
                     this.touchingWall = true;
                     this.wallNormal = contact.normal.copy();
-                    this.groundVelocity = contact.velocity;
                 }
             }
             else {
                 if (contact.normal.dot(new Vector3(0, -1, 0)) > this.groundDetectDot) {
                     this.canJump = true;
-                    this.touchingGround = true;
+                    if(contact.body1.isImmovable()){
+                        this.touchingGround = true;
+                        this.groundVelocity = contact.velocity.scale(-1);
+                    }
                 }
                 if (Math.abs(contact.normal.dot(new Vector3(0, -1, 0))) < this.wallDetectDot) {
                     this.touchingWall = true;
@@ -187,10 +191,10 @@ var Player = class extends Entity {
         // this.sphere.setMeshAndAddToScene({}, gameEngine);
         // this.sphere2.setMeshAndAddToScene({}, gameEngine);
         // this.sphere3.setMeshAndAddToScene({}, gameEngine);
-        // for (const sphere of this.spheres) {
-        //     sphere.setMeshAndAddToScene({}, gameEngine);
-        // }
-        this.spheres[this.spheres.length - 1].mesh = this.gameEngine.graphicsEngine.meshLinker.createMeshData(new gameEngine.graphicsEngine.THREE.Mesh());
+        for (const sphere of this.spheres) {
+            sphere.setMeshAndAddToScene({}, gameEngine);
+        }
+        // this.spheres[this.spheres.length - 1].mesh = this.gameEngine.graphicsEngine.meshLinker.createMeshData(new gameEngine.graphicsEngine.THREE.Mesh());
     }
 
     wasKeyJustPressed(key) {
@@ -221,9 +225,6 @@ var Player = class extends Entity {
         velHorizontal.y = 0;
 
         var vec = this.getKeysVector();
-        // if(vec.magnitudeSquared() == 0){
-        //     return;
-        // }
         var vecHorizontal = vec.copy();
         vecHorizontal.y = 0;
         vecHorizontal.normalizeInPlace();

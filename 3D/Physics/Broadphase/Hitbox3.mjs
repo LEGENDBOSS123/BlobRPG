@@ -17,6 +17,22 @@ const Hitbox3 = class {
         return this.min.equals(h2.min) && this.max.equals(h2.max);
     }
 
+    getSurfaceArea() {
+        const dx = this.max.x - this.min.x;
+        const dy = this.max.y - this.min.y;
+        const dz = this.max.z - this.min.z;
+        return 2 * (dx * dy + dx * dz + dy * dz);
+    }
+
+    merge(other) {
+        this.min.x = Math.min(this.min.x, other.min.x);
+        this.min.y = Math.min(this.min.y, other.min.y);
+        this.min.z = Math.min(this.min.z, other.min.z);
+        this.max.x = Math.max(this.max.x, other.max.x);
+        this.max.y = Math.max(this.max.y, other.max.y);
+        this.max.z = Math.max(this.max.z, other.max.z);
+    }
+
     extend(v){
         var hitbox = new this.constructor();
         hitbox.min = this.min.subtract(v)

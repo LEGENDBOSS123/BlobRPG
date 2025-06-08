@@ -1,6 +1,7 @@
 import SpatialHash from "../Broadphase/SpatialHash.mjs";
 import SweepAndPrune from "../Broadphase/SweepAndPrune.mjs";
 import Octree from "../Broadphase/Octree.mjs";
+import DBVH from "../Broadphase/DBVH.mjs";
 import CollisionDetector from "../Collision/CollisionDetector.mjs";
 import ClassRegistry from "./ClassRegistry.mjs";
 
@@ -18,7 +19,7 @@ const World = class {
         this.all = options?.all ?? {};
         this.constraints = options?.constraints ?? [];
         this.composites = options?.composites ?? [];
-        this.broadphase = options?.broadphase ?? SpatialHash;
+        this.broadphase = options?.broadphase ?? DBVH;
         this.spatialHash = options?.spatialHash ?? new this.broadphase({ world: this });
         this.collisionDetector = options?.collisionDetector ?? new CollisionDetector({ world: this });
         this.gameEngine = options?.gameEngine ?? null;
@@ -53,7 +54,7 @@ const World = class {
     }
 
     addConstraint(element) {
-        if(this.getByID(element.id)) {
+        if (this.getByID(element.id)) {
             return;
         }
         this.add(element);
@@ -118,6 +119,7 @@ const World = class {
             
             this.collisionDetector.handleAll(this.composites);
             this.collisionDetector.resolveAll();
+            
             
             for (const comp of this.composites) {
                 if (comp.isMaxParent()) {

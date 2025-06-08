@@ -43,13 +43,12 @@ const CollisionDetector = class {
             shape1 = shape2;
             shape2 = temp;
         }
-        if (this.pairs.has(shape1.id + this.constructor.seperatorCharacter + shape2.id) || !(this.handlers[shape1.type]?.[shape2.type] || this.handlers[shape2.type]?.[shape1.type])) {
-            return;
-        }
         if (!shape1.canCollideWith(shape2)) {
             return;
         }
-
+        if (this.pairs.has(shape1.id + this.constructor.seperatorCharacter + shape2.id) || !(this.handlers[shape1.type]?.[shape2.type] || this.handlers[shape2.type]?.[shape1.type])) {
+            return;
+        }
         if (!shape1.global.expandedHitbox.intersects(shape2.global.expandedHitbox)) {
             return;
         }
@@ -59,12 +58,6 @@ const CollisionDetector = class {
     }
 
     detectCollision(shape1, shape2) {
-        if (shape1.maxParent == shape2.maxParent) {
-            return false;
-        }
-        if (shape1.getLocalFlag(Composite.FLAGS.STATIC) && shape2.getLocalFlag(Composite.FLAGS.STATIC)) {
-            return false;
-        }
         if (shape1.type > shape2.type) {
             const temp = shape1;
             shape1 = shape2;
@@ -95,7 +88,7 @@ const CollisionDetector = class {
 
     handleAll(shapes) {
         this.pairs.clear();
-        for (var shape of shapes) {
+        for (const shape of shapes) {
             if (shape.maxParent.sleeping || shape.getLocalFlag(Composite.FLAGS.STATIC)) {
                 continue;
             }
@@ -105,7 +98,7 @@ const CollisionDetector = class {
 
 
     resolveAll() {
-        for (var value of this.pairs.values()) {
+        for (const value of this.pairs.values()) {
             this.detectCollision(value[0], value[1]);
         }
         this.resolveAllContacts();
@@ -116,6 +109,10 @@ const CollisionDetector = class {
     }
 
     resolveAllContacts() {
+        if (!top.x) { top.x = [0, 0]; }
+
+
+
         this.contacts = this.contacts.concat(this.world.constraints);
         const maxParentMap = new Object(null);
 
@@ -139,22 +136,31 @@ const CollisionDetector = class {
             contact.body2Map = body2Map;
         }
 
+
+
         for (var iter = 0; iter < this.iterations; iter++) {
             for (const contact of this.contacts) {
                 if (contact.ignore || !contact.solve()) {
                     continue;
                 }
+                // var t1 = performance.now();
                 const a = contact.body1.maxParent;
                 const b = contact.body2.maxParent;
                 const a_body = a.global.body;
                 const b_body = b.global.body;
+
                 contact.applyForces();
-                a_body.setVelocity(a_body.getVelocity().add(contact.body1_netForce.scale(a_body.inverseMass).multiply(new Vector3(1 - a_body.linearDamping.x, 1 - a_body.linearDamping.y, 1 - a_body.linearDamping.z))));
-                b_body.setVelocity(b_body.getVelocity().add(contact.body2_netForce.scale(b_body.inverseMass).multiply(new Vector3(1 - b_body.linearDamping.x, 1 - b_body.linearDamping.y, 1 - b_body.linearDamping.z))));
-                a_body.angularVelocity.addInPlace(a_body.inverseMomentOfInertia.multiplyVector3(contact.body1_netTorque).scale(1 - a_body.angularDamping));
-                b_body.angularVelocity.addInPlace(b_body.inverseMomentOfInertia.multiplyVector3(contact.body2_netTorque).scale(1 - b_body.angularDamping));
-                a.syncAll();
-                b.syncAll();
+                // x[0] += performance.now() - t1;
+                // var t2 = performance.now();
+
+                const v1 = contact.body1_netForce.scale(a_body.inverseMass).multiply(new Vector3(1 - a_body.linearDamping.x, 1 - a_body.linearDamping.y, 1 - a_body.linearDamping.z));
+                const a1 = a_body.inverseMomentOfInertia.multiplyVector3(contact.body1_netTorque).scale(1 - a_body.angularDamping);
+                const v2 = contact.body2_netForce.scale(b_body.inverseMass).multiply(new Vector3(1 - b_body.linearDamping.x, 1 - b_body.linearDamping.y, 1 - b_body.linearDamping.z));
+                const a2 = b_body.inverseMomentOfInertia.multiplyVector3(contact.body2_netTorque).scale(1 - b_body.angularDamping);
+                a.addVelocityAndAngularVelocity(v1, a1);
+                b.addVelocityAndAngularVelocity(v2, a2);
+
+                // x[1] += performance.now() - t2;
             }
         }
 
@@ -195,6 +201,8 @@ const CollisionDetector = class {
                 contact.body2.dispatchEvent("collision", [contact]);
             }
         }
+
+
         this.contacts.length = 0;
     }
 

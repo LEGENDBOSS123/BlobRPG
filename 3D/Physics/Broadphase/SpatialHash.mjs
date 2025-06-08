@@ -5,12 +5,12 @@ const SpatialHash = class {
     constructor(options) {
         this.world = options?.world ?? null;
         this.spatialHashes = [];
-        for (var i = 0; i < (options?.gridSizes?.length ?? 12); i++) {
+        for (var i = 0; i < (options?.gridSizes?.length ?? 16); i++) {
             var spatialHash = {};
             spatialHash.hashmap = new Map();
-            spatialHash.gridSize = options?.gridSizes?.[i] ?? Math.pow(4, i) * 0.5;
+            spatialHash.gridSize = options?.gridSizes?.[i] ?? Math.pow(2, i) * 0.25;
             spatialHash.inverseGridSize = 1 / spatialHash.gridSize;
-            spatialHash.threshold = options?.thresholds?.[i] ?? 4;
+            spatialHash.threshold = options?.thresholds?.[i] ?? 2;
             spatialHash.translation = new Vector3();
             spatialHash.index = i;
             if (spatialHash.index % 2 == 0) {
@@ -42,9 +42,9 @@ const SpatialHash = class {
     }
 
     getCellPosition(v, hash, store) {
-        store.x = Math.floor(v.x * hash.inverseGridSize + hash.translation.x);
-        store.y = Math.floor(v.y * hash.inverseGridSize + hash.translation.y);
-        store.z = Math.floor(v.z * hash.inverseGridSize + hash.translation.z);
+        store.x = Math.floor((v.x + hash.translation.x) * hash.inverseGridSize);
+        store.y = Math.floor((v.y + hash.translation.y) * hash.inverseGridSize);
+        store.z = Math.floor((v.z + hash.translation.z) * hash.inverseGridSize);
     }
 
     getSizeHeuristic(min, max) {
@@ -176,9 +176,6 @@ const SpatialHash = class {
         var first = true;
         while (hash) {
             if (hash.final) {
-                if (hash.hashmap.size == 0) {
-                    return;
-                }
                 for (var i of hash.hashmap) {
                     func(i);
                 }

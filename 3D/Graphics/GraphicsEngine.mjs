@@ -263,10 +263,12 @@ var GraphicsEngine = class {
 
     disableShadows() {
         this.renderer.shadowMap.enabled = false;
+        this.sunlight.castShadow = false;
     }
 
     enableShadows() {
         this.renderer.shadowMap.enabled = true;
+        this.sunlight.castShadow = true;
     }
 }
 

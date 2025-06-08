@@ -313,6 +313,7 @@ gameEngine.world.setSubsteps(4);
 gameEngine.world.setIterations(16);
 
 var gravity = -0.4;
+
 var player = new Player({
     radius: 1,
     height: 4,
@@ -327,11 +328,33 @@ var player = new Player({
     gameEngine: gameEngine
 });
 
-
-
 player.setMeshAndAddToScene({}, gameEngine);
 gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
+
+
+var players = [];
+
+for (var i = 0; i < 40; i++) {
+    const a = new Player({
+        radius: 1,
+        height: 4,
+        tiltable: false,
+        moveStrength: 0.5,
+        airMoveStrength: 0.1,
+        moveSpeed: 0.2,
+        jumpSpeed: 0.4,
+        gravity: new Vector3(0, gravity, 0),
+        position: new Vector3(2+Math.random(), 30 + i * 8, Math.random()),
+        mass: 1,
+        gameEngine: gameEngine
+    });
+    a.setMeshAndAddToScene({}, gameEngine);
+    gameEngine.entitySystem.register(a);
+    a.addToWorld(gameEngine.world);
+    players.push(a);
+
+}
 
 var inventory = new Inventory({
     gameEngine: gameEngine,
@@ -407,6 +430,7 @@ for (var x = 1; x < 8; x++) {
     }
 }
 
+
 var map = await gameEngine.loadMap("abandoned_city.glb", {});
 var damageTimeStamp = 0;
 for (const obj of map.objects) {
@@ -474,7 +498,6 @@ gameEngine.graphicsEngine.addToScene(map.gltf.scene)
 gameEngine.timer.schedule(gameEngine.fpsStepper);
 
 gameEngine.toastManager.createToast({ duration: 1000, type: 0, message: "Map Loaded" })
-
 
 
 // var infoModal = new Modal({
