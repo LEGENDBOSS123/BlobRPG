@@ -9,12 +9,12 @@ const CollisionContact = class extends Constraint {
         this.impulse = options?.impulse;
 
         this.normal = options?.normal;
-        this.penetration = options?.penetration;
 
         this.body1 = options?.body1;
         this.body2 = options?.body2;
 
-        this.point = options?.point;
+        this.pointA = options?.pointA;
+        this.pointB = options?.pointB;
         this.velocity = options?.velocity;
 
         this.body1Map = options?.body1Map;
@@ -36,7 +36,7 @@ const CollisionContact = class extends Constraint {
         const globalBody1 = this.body1.maxParent.global.body;
         const globalBody2 = this.body2.maxParent.global.body;
 
-        this.velocity = this.body1.getVelocityAtPosition(this.point).subtractInPlace(this.body2.getVelocityAtPosition(this.point));
+        this.velocity = this.body1.getVelocityAtPosition(this.pointA).subtractInPlace(this.body2.getVelocityAtPosition(this.pointB));
         var impactSpeed = this.velocity.dot(this.normal);
         if (impactSpeed > 0) {
             return false;
@@ -44,8 +44,8 @@ const CollisionContact = class extends Constraint {
         var tangential = this.velocity.projectOntoPlane(this.normal);
         var tangentialNorm = tangential.normalize();
         if (!this.solved) {
-            var radius1 = this.point.subtract(globalBody1.position);
-            var radius2 = this.point.subtract(globalBody2.position);
+            var radius1 = this.pointA.subtract(globalBody1.position);
+            var radius2 = this.pointB.subtract(globalBody2.position);
 
             var rotationalEffects1 = this.normal.dot(globalBody1.inverseMomentOfInertia.multiplyVector3(radius1.cross(this.normal)).cross(radius1));
             var rotationalEffects2 = this.normal.dot(globalBody2.inverseMomentOfInertia.multiplyVector3(radius2.cross(this.normal)).cross(radius2));
@@ -96,8 +96,8 @@ const CollisionContact = class extends Constraint {
     }
 
     applyForces() {
-        var f1 = this.body1.maxParent.getForceEffect(this.impulse, this.point);
-        var f2 = this.body2.maxParent.getForceEffect(this.impulse.scale(-1), this.point);
+        var f1 = this.body1.maxParent.getForceEffect(this.impulse, this.pointA);
+        var f2 = this.body2.maxParent.getForceEffect(this.impulse.scale(-1), this.pointB);
         if (f1) {
             this.body1_netForce = f1[0];
             this.body1_netTorque = f1[1];
@@ -119,11 +119,11 @@ const CollisionContact = class extends Constraint {
     copy() {
         var c = new this.constructor();
         c.normal = this.normal.copy();
-        c.penetration = this.penetration;
 
         c.body1 = this.body1;
         c.body2 = this.body2;
-        c.point = this.point;
+        c.pointA = this.pointA;
+        c.pointB = this.pointB;
         c.velocity = this.velocity;
 
         c.solved = this.solved;
@@ -136,10 +136,10 @@ const CollisionContact = class extends Constraint {
     toJSON() {
         return {
             normal: this.normal.toJSON(),
-            penetration: this.penetration,
             body1: this.body1.id,
             body2: this.body2.id,
-            point: this.point.toJSON(),
+            pointA: this.pointA.toJSON(),
+            pointB: this.pointB.toJSON(),
             velocity: this.velocity.toJSON(),
             solved: this.solved,
             impulse: this.impulse.toJSON(),
@@ -150,11 +150,11 @@ const CollisionContact = class extends Constraint {
     static fromJSON(json, world) {
         var c = new this();
         c.normal = new Vector3().fromJSON(json.normal);
-        c.penetration = json.penetration;
 
         c.body1 = world.getByID(json.body1);
         c.body2 = world.getByID(json.body2);
-        c.point = new Vector3().fromJSON(json.point);
+        c.pointA = new Vector3().fromJSON(json.pointA);
+        c.pointB = new Vector3().fromJSON(json.pointB);
         c.velocity = new Vector3().fromJSON(json.velocity);
 
         c.solved = json.solved;

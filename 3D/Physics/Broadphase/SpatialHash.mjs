@@ -8,9 +8,9 @@ const SpatialHash = class {
         for (var i = 0; i < (options?.gridSizes?.length ?? 16); i++) {
             var spatialHash = {};
             spatialHash.hashmap = new Map();
-            spatialHash.gridSize = options?.gridSizes?.[i] ?? Math.pow(2, i) * 0.25;
+            spatialHash.gridSize = options?.gridSizes?.[i] ?? Math.pow(4, i) * 0.25;
             spatialHash.inverseGridSize = 1 / spatialHash.gridSize;
-            spatialHash.threshold = options?.thresholds?.[i] ?? 2;
+            spatialHash.threshold = options?.thresholds?.[i] ?? 1;
             spatialHash.translation = new Vector3();
             spatialHash.index = i;
             if (spatialHash.index % 2 == 0) {

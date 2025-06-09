@@ -38,8 +38,12 @@ const World = class {
         this.setDeltaTime(1 / this.substeps);
     }
 
-    setIterations(iterations) {
-        this.collisionDetector.iterations = iterations;
+    setVelocityIterations(iterations) {
+        this.collisionDetector.velocityIterations = iterations;
+    }
+
+    setPenetrationIterations(iterations) {
+        this.collisionDetector.penetrationIterations = iterations;
     }
 
     addComposite(composite) {

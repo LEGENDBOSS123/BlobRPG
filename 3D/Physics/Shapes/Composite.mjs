@@ -64,6 +64,13 @@ const Composite = class extends WorldObject {
         return this.global.body.mass * 1 / (1 - this.global.body.linearDamping.multiply(normal).magnitude());
     }
 
+    getEffectiveTotalInverseMass(normal = new Vector3(0, 1, 0)) {
+        if (this.isImmovable()) {
+            return 0;
+        }
+        return 1 / (this.global.body.mass * 1 / (1 - this.global.body.linearDamping.multiply(normal).magnitude()));
+    }
+
     toggleBitMask(mask, letter) {
         const position = letter.charCodeAt(0) - "A".charCodeAt(0);
         return mask ^= 1 << position;
@@ -326,9 +333,8 @@ const Composite = class extends WorldObject {
 
 
     addVelocityAndAngularVelocity(velocity, angularVelocity) {
-        this.global.body.setVelocity(this.global.body.getVelocity().add(velocity));
-        // this.global.body.angularVelocity.addInPlace(angularVelocity);
         this.global.body.setAngularVelocity(this.global.body.getAngularVelocity().add(angularVelocity));
+        this.global.body.setVelocity(this.global.body.getVelocity().add(velocity).addInPlace(angularVelocity.cross(this.global.body.position.subtract(this.maxParent.global.body.position))));
         for (const child of this.children) {
             child.addVelocityAndAngularVelocity(velocity, angularVelocity);
         }
@@ -358,15 +364,18 @@ const Composite = class extends WorldObject {
         for (const child of this.children) {
             child.syncAll();
         }
-        if(this.parent){
+        if (this.parent) {
             this.parent.global.body.mass += this.global.body.mass;
         }
         this.global.body.setMass(this.global.body.mass)
 
         if (this.getLocalFlag(this.constructor.FLAGS.CENTER_OF_MASS)) {
             const centerOfMass = this.getCenterOfMass(true);
-            const translationAmount = this.global.body.rotation.conjugate().multiplyVector3(this.global.body.position.subtract(centerOfMass));
-            this.translateChildren(translationAmount);
+            const nonRotatedTranslation = this.global.body.position.subtract(centerOfMass);
+            if (nonRotatedTranslation.magnitudeSquared() > 0) {
+                const translationAmount = this.global.body.rotation.conjugate().multiplyVector3(this.global.body.position.subtract(centerOfMass));
+                this.translateChildren(translationAmount);
+            }
         }
     }
 

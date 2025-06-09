@@ -2,6 +2,8 @@ import Vector3 from "../Math3D/Vector3.mjs";
 import Hitbox3 from "../Broadphase/Hitbox3.mjs";
 
 
+const MARGIN = 0.2;
+const MARGIN_VECTOR = new Vector3(MARGIN, MARGIN, MARGIN);
 const Node = class {
     constructor() {
         this.parent = null;
@@ -29,15 +31,14 @@ const DBVH = class {
      */
     addHitbox(hitbox, id) {
         if (this.nodes.has(id)) {
-            // If hitbox is the same, do nothing
-            if(this.nodes.get(id).hitbox.equals(hitbox)) {
+            if (this.nodes.get(id).hitbox.contains(hitbox)) {
                 return;
             }
             this.removeHitbox(id);
         }
 
         const newNode = new Node();
-        newNode.hitbox = hitbox.copy();
+        newNode.hitbox = hitbox.extend(MARGIN_VECTOR);
         newNode.id = id;
         this.nodes.set(id, newNode);
 
@@ -128,7 +129,7 @@ const DBVH = class {
             this.root = null;
             return;
         }
-        
+
         const sibling = parent.children.find(child => child !== nodeToRemove);
         const grandparent = parent.parent;
 
@@ -184,14 +185,14 @@ const DBVH = class {
             }
 
             if (node.isLeaf()) {
-                 if(node.id !== id) {
+                if (node.id !== id) {
                     func(node.id);
-                 }
+                }
             } else {
                 stack.push(...node.children);
             }
         }
-        
+
     }
 }
 

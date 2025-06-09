@@ -19,7 +19,8 @@ const CollisionDetector = class {
      * @param {Object} [options.world] - The world context in which collisions are detected.
      * @param {Array} [options.contacts] - An array to store detected collision contacts.
      * @param {number} [options.binarySearchDepth=4] - The depth for binary search operations.
-     * @param {number} [options.iterations=4] - The number of iterations to perform in collision handling.
+     * @param {number} [options.velocityIterations=4] - The number of iterations to perform in collision handling.
+     * @param {number} [options.penetrationIterations=4] - The number of iterations to perform in collision handling.
      * @param {number} [options.concavePolyhedronBinarySearchDepth=1] - The depth for binary search specific to concave polyhedrons.
      */
     constructor(options) {
@@ -28,7 +29,8 @@ const CollisionDetector = class {
         this.contacts = options?.contacts ?? [];
         this.handlers = {};
         this.binarySearchDepth = options?.binarySearchDepth ?? 4;
-        this.iterations = options?.iterations ?? 4;
+        this.velocityIterations = options?.velocityIterations ?? 16;
+        this.penetrationIterations = options?.penetrationIterations ?? 16;
         this.concavePolyhedronBinarySearchDepth = options?.concavePolyhedronBinarySearchDepth ?? 1;
         this.initHandlers();
     }
@@ -109,10 +111,6 @@ const CollisionDetector = class {
     }
 
     resolveAllContacts() {
-        if (!top.x) { top.x = [0, 0]; }
-
-
-
         this.contacts = this.contacts.concat(this.world.constraints);
         const maxParentMap = new Object(null);
 
@@ -120,11 +118,11 @@ const CollisionDetector = class {
             contact.solved = false;
             contact.material = contact.body1.material.getCombined(contact.body2.material);
             if (!maxParentMap[contact.body1.maxParent.id]) {
-                maxParentMap[contact.body1.maxParent.id] = { penetrationSum: 0 };
+                maxParentMap[contact.body1.maxParent.id] = { translation: new Vector3() };
             }
 
             if (!maxParentMap[contact.body2.maxParent.id]) {
-                maxParentMap[contact.body2.maxParent.id] = { penetrationSum: 0 };
+                maxParentMap[contact.body2.maxParent.id] = { translation: new Vector3() };
             }
 
             if (contact.body1.isSensor || contact.body2.isSensor && contact.constructor.name == "COLLISIONCONTACT") {
@@ -134,42 +132,64 @@ const CollisionDetector = class {
             var body2Map = maxParentMap[contact.body2.maxParent.id];
             contact.body1Map = body1Map;
             contact.body2Map = body2Map;
+            contact.body1Map.predictedPosition = contact.body1.maxParent.global.body.position;
+            contact.body2Map.predictedPosition = contact.body2.maxParent.global.body.position;
+            contact.body1Map.position = contact.body1.maxParent.global.body.position;
+            contact.body2Map.position = contact.body2.maxParent.global.body.position;
         }
 
 
 
-        for (var iter = 0; iter < this.iterations; iter++) {
+        for (var iter = 0; iter < this.velocityIterations; iter++) {
             for (const contact of this.contacts) {
                 if (contact.ignore || !contact.solve()) {
                     continue;
                 }
-                // var t1 = performance.now();
                 const a = contact.body1.maxParent;
                 const b = contact.body2.maxParent;
                 const a_body = a.global.body;
                 const b_body = b.global.body;
-
                 contact.applyForces();
-                // x[0] += performance.now() - t1;
-                // var t2 = performance.now();
 
-                const v1 = contact.body1_netForce.scale(a_body.inverseMass).multiply(new Vector3(1 - a_body.linearDamping.x, 1 - a_body.linearDamping.y, 1 - a_body.linearDamping.z));
+                const v1 = contact.body1_netForce.scale(a.getEffectiveTotalInverseMass(contact.normal)).multiply(new Vector3(1 - a_body.linearDamping.x, 1 - a_body.linearDamping.y, 1 - a_body.linearDamping.z));
                 const a1 = a_body.inverseMomentOfInertia.multiplyVector3(contact.body1_netTorque).scale(1 - a_body.angularDamping);
-                const v2 = contact.body2_netForce.scale(b_body.inverseMass).multiply(new Vector3(1 - b_body.linearDamping.x, 1 - b_body.linearDamping.y, 1 - b_body.linearDamping.z));
+                const v2 = contact.body2_netForce.scale(b.getEffectiveTotalInverseMass(contact.normal)).multiply(new Vector3(1 - b_body.linearDamping.x, 1 - b_body.linearDamping.y, 1 - b_body.linearDamping.z));
                 const a2 = b_body.inverseMomentOfInertia.multiplyVector3(contact.body2_netTorque).scale(1 - b_body.angularDamping);
                 a.addVelocityAndAngularVelocity(v1, a1);
                 b.addVelocityAndAngularVelocity(v2, a2);
-
-                // x[1] += performance.now() - t2;
             }
+        }
+
+        for (var iter = 0; iter < this.penetrationIterations; iter++) {
+            for (const contact of this.contacts) {
+                const pointA = contact.pointA.add(contact.body1Map.translation);
+                const pointB = contact.pointB.add(contact.body2Map.translation);
+                const delta = pointA.subtract(pointB);
+                const penetration = delta.dot(contact.normal);
+                if (penetration >= 0) {
+                    continue;
+                }
+                const wA = contact.body1.maxParent.getEffectiveTotalInverseMass(contact.normal);
+                const wB = contact.body2.maxParent.getEffectiveTotalInverseMass(contact.normal);
+                const totalInverse = wA + wB;
+
+                const correction = contact.normal.scale(penetration / totalInverse);
+                if (wA > 0) {
+                    contact.body1Map.translation.subtractInPlace(correction.scale(wA / totalInverse));
+                }
+                if (wB > 0) {
+                    contact.body2Map.translation.addInPlace(correction.scale(wB / totalInverse));
+                }
+            }
+        }
+        for (const id in maxParentMap) {
+            this.world.getByID(id).maxParent.translate(maxParentMap[id].translation);
         }
 
         for (const contact of this.contacts) {
             if (contact.ignore) {
                 continue;
             }
-            contact.body1Map.penetrationSum += contact.penetration.magnitudeSquared();
-            contact.body2Map.penetrationSum += contact.penetration.magnitudeSquared();
             contact.body1.contacts = [];
             contact.body2.contacts = [];
         }
@@ -182,25 +202,27 @@ const CollisionDetector = class {
             }
             contact.body1.contacts.push(contact.body2.id);
             contact.body2.contacts.push(contact.body1.id);
-            var translation = contact.penetration;
-            var totalMass = contact.body1.maxParent.getEffectiveTotalMass(contact.normal) + contact.body2.maxParent.getEffectiveTotalMass(contact.normal);
-            var massRatio2 = contact.body2.maxParent.getEffectiveTotalMass() / totalMass;
-            massRatio2 = isNaN(massRatio2) ? 1 : massRatio2;
-            var massRatio1 = contact.body1.maxParent.getEffectiveTotalMass() / totalMass;
-            massRatio1 = isNaN(massRatio1) ? 1 : massRatio1;
+            // var translation = contact.penetration;
+            // var totalMass = contact.body1.maxParent.getEffectiveTotalMass(contact.normal) + contact.body2.maxParent.getEffectiveTotalMass(contact.normal);
+            // var massRatio2 = contact.body2.maxParent.getEffectiveTotalMass() / totalMass;
+            // massRatio2 = isNaN(massRatio2) ? 1 : massRatio2;
+            // var massRatio1 = contact.body1.maxParent.getEffectiveTotalMass() / totalMass;
+            // massRatio1 = isNaN(massRatio1) ? 1 : massRatio1;
 
 
-            if (contact.body1Map.penetrationSum != 0) {
-                contact.body1.translate(translation.scale(contact.penetration.magnitudeSquared() / contact.body1Map.penetrationSum * massRatio2));
-            }
-            if (contact.body2Map.penetrationSum != 0) {
-                contact.body2.translate(translation.scale(-contact.penetration.magnitudeSquared() / contact.body2Map.penetrationSum * massRatio1));
-            }
+            // if (contact.body1Map.penetrationSum != 0) {
+            //     contact.body1.translate(translation.scale(contact.penetration.magnitudeSquared() / contact.body1Map.penetrationSum * massRatio2));
+            // }
+            // if (contact.body2Map.penetrationSum != 0) {
+            //     contact.body2.translate(translation.scale(-contact.penetration.magnitudeSquared() / contact.body2Map.penetrationSum * massRatio1));
+            // }
             if (contact.constructor.name == "COLLISIONCONTACT") {
                 contact.body1.dispatchEvent("collision", [contact]);
                 contact.body2.dispatchEvent("collision", [contact]);
             }
         }
+
+
 
 
         this.contacts.length = 0;
@@ -577,15 +599,16 @@ const CollisionDetector = class {
         }
 
         const contact = new CollisionContact();
-        contact.point = box.translateLocalToWorld(closestPoint);
-        contact.normal = spherePos.subtract(contact.point).normalizeInPlace();
+
+        contact.pointB = box.translateLocalToWorld(closestPoint);
+        contact.normal = spherePos.subtract(contact.pointB).normalizeInPlace();
+
         if (inside) {
             contact.normal.scaleInPlace(-1);
         }
-        contact.penetration = contact.normal.scale(sphere.radius).add(contact.point.subtract(sphere.global.body.position).projectOnto(contact.normal));
+        contact.pointA = sphere.global.body.position.add(contact.normal.scale(-sphere.radius));
         contact.body1 = sphere;
         contact.body2 = box;
-        contact.point = sphere.global.body.position.subtract(contact.normal.scale(sphere.radius));
         this.addContact(contact);
 
         return true;
@@ -640,13 +663,11 @@ const CollisionDetector = class {
         if (contact.normal.magnitudeSquared() == 0) {
             contact.normal = new Vector3(1, 0, 0);
         }
-        contact.point = sphere1.global.body.position.add(sphere2.global.body.position).scale(0.5);
+        contact.pointA = sphere1.global.body.position.add(contact.normal.scale(-sphere1.radius));
+        contact.pointB = sphere2.global.body.position.add(contact.normal.scale(sphere2.radius));
 
         contact.body1 = sphere1;
         contact.body2 = sphere2;
-        const penetration = sphere1.radius + sphere2.radius - distanceTo;
-
-        contact.penetration = contact.normal.scale(penetration);
 
         this.addContact(contact);
         return;
@@ -750,7 +771,7 @@ const CollisionDetector = class {
                     var contact = new CollisionContact();
                     contact.point = intersection;
                     contact.penetration = sphere1.radius - contact.point.distance(spherePos2);
-                    contact.normal = t.getNormal();//contact.point.subtract(spherePos2).normalizeInPlace();
+                    contact.normal = t.getNormal();
                     if (contact.penetration <= 0) {
                         continue;
                     }
