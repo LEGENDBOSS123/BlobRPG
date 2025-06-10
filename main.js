@@ -317,17 +317,18 @@ var gravity = -0.4;
 
 var player = new Player({
     radius: 1,
-    height: 2,
+    height: 4,
     tiltable: false,
     moveStrength: 0.5,
     airMoveStrength: 0.1,
     moveSpeed: 0.2,
     jumpSpeed: 0.4,
     gravity: new Vector3(0, gravity, 0),
-    position: new Vector3(0, 30, 0),
+    position: new Vector3(0, 100, 0),
     mass: 1,
     gameEngine: gameEngine
 });
+
 
 player.setMeshAndAddToScene({}, gameEngine);
 gameEngine.entitySystem.register(player);
@@ -336,23 +337,22 @@ player.addToWorld(gameEngine.world);
 
 var players = [];
 
-for (var i = 0; i < 50; i++) {
+for (var i = 0; i < 3; i++) {
     const a = new Player({
         radius: 0.5,
-        height: 8,
+        height: 4,
         tiltable: false,
         moveStrength: 0.5,
         airMoveStrength: 0.1,
         moveSpeed: 0.2,
         jumpSpeed: 0.4,
         gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(2+Math.random(), 30 + i * 3, Math.random()),
+        position: new Vector3(-20+Math.random(), 20 + i * 3, 72+Math.random()),
         mass: 1,
         gameEngine: gameEngine
     });
-    a.composite.global.body.angularDamping = 0;
     a.setMeshAndAddToScene({}, gameEngine);
-    // gameEngine.entitySystem.register(a);
+    gameEngine.entitySystem.register(a);
     a.addToWorld(gameEngine.world);
     players.push(a);
 
@@ -433,10 +433,9 @@ for (var x = 1; x < 8; x++) {
 }
 
 
-var map = await gameEngine.loadMap("abandoned_city.glb", {});
+var map = await gameEngine.loadMap("map.glb", {});
 var damageTimeStamp = 0;
 for (const obj of map.objects) {
-    obj.setFriction(1);
     gameEngine.world.addComposite(obj);
     if (obj.name.toLowerCase().includes("death")) {
         obj.addEventListener("collision", function (contact) {
