@@ -6,6 +6,7 @@ import Sphere from "../Shapes/Sphere.mjs";
 import Polyhedron from "../Shapes/Polyhedron.mjs";
 import Box from "../Shapes/Box.mjs";
 import ClassRegistry from "../Core/ClassRegistry.mjs";
+import DistanceConstraint from "./DistanceConstraint.mjs";
 
 const CollisionDetector = class {
 
@@ -111,7 +112,9 @@ const CollisionDetector = class {
     }
 
     resolveAllContacts() {
-        this.contacts = this.contacts.concat(this.world.constraints);
+        for (const constraint of this.world.constraints) {
+            this.contacts.push(constraint);
+        }
         const maxParentMap = new Object(null);
 
         for (const contact of this.contacts) {
@@ -158,24 +161,7 @@ const CollisionDetector = class {
 
         for (var iter = 0; iter < this.penetrationIterations; iter++) {
             for (const contact of this.contacts) {
-                const pointA = contact.pointA.add(contact.body1Map.translation);
-                const pointB = contact.pointB.add(contact.body2Map.translation);
-                const delta = pointA.subtract(pointB);
-                const penetration = delta.dot(contact.normal);
-                if (penetration >= 0) {
-                    continue;
-                }
-                const wA = contact.body1.maxParent.getEffectiveTotalInverseMass(contact.normal);
-                const wB = contact.body2.maxParent.getEffectiveTotalInverseMass(contact.normal);
-                const totalInverse = wA + wB;
-
-                const correction = contact.normal.scale(penetration / totalInverse);
-                if (wA > 0) {
-                    contact.body1Map.translation.subtractInPlace(correction.scale(wA / totalInverse));
-                }
-                if (wB > 0) {
-                    contact.body2Map.translation.addInPlace(correction.scale(wB / totalInverse));
-                }
+                contact.iteratePenetration();
             }
         }
         for (const id in maxParentMap) {

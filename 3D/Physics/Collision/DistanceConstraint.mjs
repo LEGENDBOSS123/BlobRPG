@@ -27,10 +27,43 @@ const DistanceConstraint = class extends Constraint {
         this.lowerBound = options?.lowerBound ?? options?.restLength ?? 0;
         this.upperBound = options?.upperBound ?? options?.restLength ?? Infinity;
 
-        this.penetration = options?.penetration ?? new Vector3();
         this.denominator = options?.denominator ?? 0;
         this.solved = false;
 
+    }
+
+    iteratePenetration() {
+        this.point1 = this.body1.global.body.position.add(this.body1.global.body.rotation.multiplyVector3(this.anchor1)).add(this.body1Map.translation);
+        this.point2 = this.body2.global.body.position.add(this.body2.global.body.rotation.multiplyVector3(this.anchor2)).add(this.body2Map.translation);
+        var delta = this.point2.subtract(this.point1);
+        var deltaLength = delta.magnitude();
+        if (deltaLength == 0) {
+            delta = new Vector3(0, 0.0001, 0);
+            deltaLength = 0.0001;
+        }
+        const normal = delta.scale(1 / deltaLength);
+        var error = 0;
+        if (deltaLength < this.upperBound && deltaLength > this.lowerBound) {
+            return;
+        }
+        if (deltaLength > this.upperBound) {
+            error = deltaLength - this.upperBound;
+        }
+        else if (deltaLength < this.lowerBound) {
+            error = deltaLength - this.lowerBound;
+        }
+
+        const wA = this.body1.maxParent.getEffectiveTotalInverseMass(normal);
+        const wB = this.body2.maxParent.getEffectiveTotalInverseMass(normal);
+        const totalInverse = wA + wB;
+
+        const correction = normal.scale(-error / totalInverse);
+        if (wA > 0) {
+            this.body1Map.translation.subtractInPlace(correction.scale(wA / totalInverse));
+        }
+        if (wB > 0) {
+            this.body2Map.translation.addInPlace(correction.scale(wB / totalInverse));
+        }
     }
 
     getPoints() {
@@ -71,19 +104,10 @@ const DistanceConstraint = class extends Constraint {
             deltaLength = delta.magnitude();
         }
         var n = delta.scale(1 / deltaLength);
-        var error = 0;
-        if(deltaLength < this.upperBound && deltaLength > this.lowerBound){
+        if (deltaLength < this.upperBound && deltaLength > this.lowerBound) {
             this.impulse = new Vector3();
-            this.penetration = new Vector3();
             return;
         }
-        if (deltaLength > this.upperBound) {
-            error = deltaLength - this.upperBound;
-        }
-        else if (deltaLength < this.lowerBound) {
-            error = deltaLength - this.lowerBound;
-        }
-        this.penetration = n.scale(error);
         var velocity1 = this.body1.getVelocityAtPosition(this.point1);
         var velocity2 = this.body2.getVelocityAtPosition(this.point2);
         var relVel = n.dot(velocity2.subtract(velocity1));
@@ -186,7 +210,6 @@ const DistanceConstraint = class extends Constraint {
         json.upperBound = this.upperBound;
         json.bias = this.bias;
 
-        json.penetration = this.penetration.toJSON();
         json.denominator = this.denominator;
         json.solved = this.solved;
 
@@ -205,7 +228,6 @@ const DistanceConstraint = class extends Constraint {
         distanceConstraint.lowerBound = json.upperBound;
         distanceConstraint.upperBound = json.upperBound;
         distanceConstraint.bias = json.bias;
-        distanceConstraint.penetration = Vector3.fromJSON(json.penetration);
         distanceConstraint.denominator = json.denominator;
         distanceConstraint.solved = json.solved;
         return distanceConstraint;

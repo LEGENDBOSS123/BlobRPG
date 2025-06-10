@@ -337,7 +337,7 @@ player.addToWorld(gameEngine.world);
 
 var players = [];
 
-for (var i = 0; i < 3; i++) {
+for (var i = 0; i < 1; i++) {
     const a = new Player({
         radius: 0.5,
         height: 4,
@@ -355,7 +355,6 @@ for (var i = 0; i < 3; i++) {
     gameEngine.entitySystem.register(a);
     a.addToWorld(gameEngine.world);
     players.push(a);
-
 }
 
 var inventory = new Inventory({

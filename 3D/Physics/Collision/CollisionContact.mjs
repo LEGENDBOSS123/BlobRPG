@@ -32,6 +32,27 @@ const CollisionContact = class extends Constraint {
         this.solved = false;
     }
 
+    iteratePenetration() {
+        const pointA = this.pointA.add(this.body1Map.translation);
+        const pointB = this.pointB.add(this.body2Map.translation);
+        const delta = pointA.subtract(pointB);
+        const penetration = delta.dot(this.normal);
+        if (penetration >= 0) {
+            return;
+        }
+        const wA = this.body1.maxParent.getEffectiveTotalInverseMass(this.normal);
+        const wB = this.body2.maxParent.getEffectiveTotalInverseMass(this.normal);
+        const totalInverse = wA + wB;
+
+        const correction = this.normal.scale(penetration / totalInverse);
+        if (wA > 0) {
+            this.body1Map.translation.subtractInPlace(correction.scale(wA / totalInverse));
+        }
+        if (wB > 0) {
+            this.body2Map.translation.addInPlace(correction.scale(wB / totalInverse));
+        }
+    }
+
     solve() {
         const globalBody1 = this.body1.maxParent.global.body;
         const globalBody2 = this.body2.maxParent.global.body;
