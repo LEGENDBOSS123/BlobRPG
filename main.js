@@ -26,6 +26,7 @@ import Hotbar from "./3D/Web/Inventory/Hotbar.mjs";
 import ToastManager from "./3D/Web/Toast/ToastManager.mjs";
 import ProgressBar from "./3D/Web/ProgressBar/ProgressBar.mjs";
 import Settings from "./3D/Web/Settings/Settings.mjs";
+import Tooltip from "./3D/Web/Tooltip/Tooltip.mjs";
 var stats = new Stats();
 var stats2 = new Stats();
 
@@ -347,7 +348,7 @@ for (var i = 0; i < 1; i++) {
         moveSpeed: 0.2,
         jumpSpeed: 0.4,
         gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(-20+Math.random(), 20 + i * 3, 72+Math.random()),
+        position: new Vector3(-20 + Math.random(), 20 + i * 3, 72 + Math.random()),
         mass: 1,
         gameEngine: gameEngine
     });
@@ -356,6 +357,16 @@ for (var i = 0; i < 1; i++) {
     a.addToWorld(gameEngine.world);
     players.push(a);
 }
+
+var toolTip = new Tooltip({
+    gameEngine: gameEngine
+});
+
+toolTip.createHTML({
+    container: document.body,
+    width: 120,
+    height: 90
+});
 
 var inventory = new Inventory({
     gameEngine: gameEngine,
@@ -535,6 +546,7 @@ function render() {
         gameEngine.stepWorld();
         stats2.end();
     }
+    toolTip.update();
     inventory.update();
     setHotbarPosition();
     hotbar.update();

@@ -69,9 +69,6 @@ const InventorySlot = class extends WebComponent {
     }
 
     updateHTML() {
-        if (this.item) {
-            this.item.updateHTML();
-        }
         if (!this.item) {
             this.html.classList.add('empty');
             this.itemContainer.innerHTML = '';
@@ -88,6 +85,9 @@ const InventorySlot = class extends WebComponent {
     }
 
     update() {
+        if(this.item){
+            this.item.update();
+        }
         this.updateHTML();
     }
 
@@ -153,8 +153,6 @@ const InventorySlot = class extends WebComponent {
                 }
                 InventorySlot.dragging = this;
                 Inventory.hideActionContainer();
-                Inventory.hideToolTip();
-                
             }.bind(this)
         );
 
@@ -185,7 +183,7 @@ const InventorySlot = class extends WebComponent {
 
         this.addEventListener("click", this.html, "click",
             function (e) {
-                if (Inventory.actionButtonAround == this) {
+                if (Inventory.actionButtonTarget == this) {
                     Inventory.hideActionContainer();
                     return;
                 }
@@ -196,33 +194,18 @@ const InventorySlot = class extends WebComponent {
                         behavior: "auto"
                     });
                 }
-                Inventory.centerActionButtonAround(this);
+                Inventory.centerActionButtonTarget(this);
             }.bind(this)
         )
 
         this.addEventListener("mousedown", this.html, "mousedown",
             function (e) {
-                if (Inventory.actionButtonAround && Inventory.actionButtonAround != this) {
+                if (Inventory.actionButtonTarget && Inventory.actionButtonTarget != this) {
                     Inventory.hideActionContainer();
                 }
             }.bind(this)
         );
-        this.addEventListener("mouseenter", this.html, "mouseenter",
-            function (e) {
-                if (!this.item) {
-                    Inventory.hideToolTip();
-                    return;
-                }
-                this.item.addToolTip(Inventory.toolTip);
-                Inventory.centerToolTipAround(this);
-                Inventory.eventListeners.mousemove(e);
-            }.bind(this)
-        );
-        this.addEventListener("mouseleave", this.html, "mouseleave",
-            function (e) {
-                Inventory.hideToolTip();
-            }.bind(this)
-        );
+
     }
 
     destroy() {

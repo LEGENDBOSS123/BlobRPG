@@ -8,19 +8,8 @@
     --slot-opacity: 0.85;
     --action-button-bg: #a6cad7;
     --action-button-border: 1px solid #8be2ff;
-    --tooltip-bg: #000;
-    --tooltip-border: 1px solid #fff;
-    --tooltip-opacity: 0.9;
 }
 
-
-.inventory-tooltip {
-    border: var(--tooltip-border);
-    border-radius: var(--slot-radius);
-    background-color: var(--tooltip-bg);
-    opacity: var(--tooltip-opacity);
-    pointer-events: none;
-}
 
 .inventory-container {
     display: grid;
@@ -56,6 +45,7 @@
         background-color var(--slot-transition),
         transform calc(var(--slot-transition) * 1.5);
     cursor: pointer;
+    pointer-events: none;
 }
 
 .inventory-slot:hover {
@@ -66,6 +56,7 @@
 
 .inventory-slot.empty {
     opacity: var(--slot-opacity);
+    pointer-events: auto;
 }
 
 .item-count {
@@ -76,6 +67,7 @@
     border-radius: 4px;
     padding: 2px 4px;
     font-size: 0.75rem;
+    pointer-events: none;
 }
 
 .inventory-item {
@@ -86,6 +78,7 @@
     border-radius: var(--slot-radius);
     width: 100%;
     height: 100%;
+    pointer-events: auto;
 }
 
 .item-name {
@@ -102,6 +95,7 @@
     text-overflow: ellipsis;
     margin-bottom: 4px;
     font-size: 1em;
+    pointer-events: none;
 }
 
 

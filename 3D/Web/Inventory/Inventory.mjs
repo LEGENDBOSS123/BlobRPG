@@ -4,14 +4,10 @@ import WebComponent from "../WebComponent.mjs";
 
 const Inventory = class extends WebComponent {
 
-    static actionButtonAround = null;
+    static actionButtonTarget = null;
     static actionContainer = null;
     static actionButtons = [];
     static actionButtonSize = 50;
-
-    static toolTipAround = null;
-    static toolTip = null;
-
 
     static ACTIONS = {
         TRASH: 0,
@@ -37,49 +33,27 @@ const Inventory = class extends WebComponent {
         this.html = null;
     }
 
-    static showToolTip() {
-        if (Inventory.toolTipAround) {
-            Inventory.toolTip.html.style.zIndex = Number(Inventory.toolTipAround.parent.modal.html.style.zIndex) + 1;
-            Inventory.toolTip.show();
-        }
-    }
-
-    static hideToolTip() {
-        if (Inventory.toolTipAround) {
-            Inventory.toolTip.hide();
-            Inventory.toolTipAround = null;
-        }
-    }
 
     static hideActionContainer() {
-        if (Inventory.actionButtonAround) {
+        if (Inventory.actionButtonTarget) {
             Inventory.actionContainer.style.display = 'none';
-            Inventory.actionButtonAround = null;
+            Inventory.actionButtonTarget = null;
         }
     }
 
     static showActionContainer() {
-        if (Inventory.actionButtonAround) {
+        if (Inventory.actionButtonTarget) {
             Inventory.actionContainer.style.display = 'flex';
-            Inventory.actionContainer.style.zIndex = Number(Inventory.actionButtonAround.parent.modal.html.style.zIndex) + 2;
+            Inventory.actionContainer.style.zIndex = Number(Inventory.actionButtonTarget.parent.modal.html.style.zIndex) + 2;
         }
     }
 
-    static centerToolTipAround(slot) {
-        Inventory.hideToolTip();
-        if (!slot.item) {
-            return;
-        }
-        Inventory.toolTipAround = slot;
-        Inventory.showToolTip();
-    }
-
-    static centerActionButtonAround(slot) {
+    static centerActionButtonTarget(slot) {
         Inventory.hideActionContainer();
         if (!slot.item) {
             return;
         }
-        Inventory.actionButtonAround = slot;
+        Inventory.actionButtonTarget = slot;
         Inventory.showActionContainer();
 
         var slotRect = slot.html.getBoundingClientRect();
@@ -195,17 +169,10 @@ const Inventory = class extends WebComponent {
             }
         }
         this.modal.update();
-        if (Inventory.actionButtonAround && Inventory.actionButtonAround.parent == this) {
-            Inventory.centerActionButtonAround(Inventory.actionButtonAround);
+        if (Inventory.actionButtonTarget && Inventory.actionButtonTarget.parent == this) {
+            Inventory.centerActionButtonTarget(Inventory.actionButtonTarget);
             if (!this.modal.isVisible()) {
                 Inventory.hideActionContainer();
-            }
-        }
-
-        if (Inventory.toolTipAround && Inventory.toolTipAround.parent == this) {
-            Inventory.centerToolTipAround(Inventory.toolTipAround);
-            if (!this.modal.isVisible()) {
-                Inventory.hideToolTip();
             }
         }
     }
@@ -259,21 +226,6 @@ const Inventory = class extends WebComponent {
             document.body.appendChild(this.actionContainer);
             this.actionContainer.style.display = 'none';
         }
-
-        this.toolTip = new Modal({
-            gameEngine: this.gameEngine,
-            draggable: false,
-            closeable: false,
-            resizable: false,
-            fullscreenable: false
-        })
-        this.toolTip.createHTML({
-            container: document.body,
-            width: 120,
-            height: 90
-        });
-        this.toolTip.html.classList.add('inventory-tooltip');
-        this.toolTip.hide();
     }
     static setupEventListeners() {
         if (this.eventListeners) {
@@ -284,42 +236,30 @@ const Inventory = class extends WebComponent {
             if (!e.target.closest('.inventory-slot') && !e.target.closest('.action-button')) {
                 this.hideActionContainer();
             }
-            this.eventListeners.mousemove(e);
-        }.bind(this);
-
-        this.eventListeners.mousemove = function (e) {
-            if (this.toolTipAround && this.toolTipAround) {
-                this.toolTip.html.style.left = `${e.clientX}px`;
-                this.toolTip.html.style.top = `${e.clientY}px`;
-                if (!this.toolTipAround.parent.modal.isVisible()) {
-                    this.hideToolTip();
-                }
-            }
         }.bind(this);
 
         this.eventListeners.inspectClick = function (e) {
-            if (this.actionButtonAround) {
-                this.actionButtonAround.inspectItem();
+            if (this.actionButtonTarget) {
+                this.actionButtonTarget.inspectItem();
                 this.hideActionContainer();
             }
         }.bind(this);
 
         this.eventListeners.trashClick = function (e) {
-            if (this.actionButtonAround) {
-                this.actionButtonAround.trashItem();
+            if (this.actionButtonTarget) {
+                this.actionButtonTarget.trashItem();
                 this.hideActionContainer();
             }
         }.bind(this);
 
         this.eventListeners.splitClick = function (e) {
-            if (this.actionButtonAround) {
-                this.actionButtonAround.splitItem();
+            if (this.actionButtonTarget) {
+                this.actionButtonTarget.splitItem();
                 this.hideActionContainer();
             }
         }.bind(this);
 
         document.addEventListener("mousedown", this.eventListeners.mousedown);
-        document.addEventListener("mousemove", this.eventListeners.mousemove);
         this.actionButtons[this.ACTIONS.INSPECT].addEventListener("click", this.eventListeners.inspectClick);
         this.actionButtons[this.ACTIONS.TRASH].addEventListener("click", this.eventListeners.trashClick);
         this.actionButtons[this.ACTIONS.SPLIT].addEventListener("click", this.eventListeners.splitClick);
@@ -329,14 +269,12 @@ const Inventory = class extends WebComponent {
     setupEventListeners() {
         this.addEventListener("scroll", this.html, "scroll",
             function (e) {
-                if (Inventory.actionButtonAround) {
-                    if (Modal.isChildClipped(Inventory.actionContainer, Inventory.actionButtonAround.parent.html, null, 1)) {
+                if (Inventory.actionButtonTarget) {
+                    if (Modal.isChildClipped(Inventory.actionContainer, Inventory.actionButtonTarget.parent.html, null, 1)) {
                         Inventory.hideActionContainer();
                     }
                 }
-                if (Inventory.toolTipAround) {
-                    Inventory.hideToolTip();
-                }
+
             }.bind(this)
         );
     }

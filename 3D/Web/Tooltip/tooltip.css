@@ -1,0 +1,24 @@
+:root {
+    --tooltip-bg: #000;
+    --tooltip-border: 1px solid #fff;
+    --tooltip-opacity: 0.9;
+    --tooltip-radius: 4px;
+}
+
+
+.tooltip {
+    border: var(--tooltip-border);
+    border-radius: var(--tooltip-radius) !important;
+    background-color: var(--tooltip-bg);
+    opacity: var(--tooltip-opacity);
+    pointer-events: none;
+    overflow: visible;
+}
+
+.tooltip-content {
+    overflow: visible;
+    width: unset;
+    height: unset;
+    position: unset;
+    padding: 10px;
+}

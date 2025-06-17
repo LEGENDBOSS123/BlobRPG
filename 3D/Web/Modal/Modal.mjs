@@ -27,6 +27,10 @@ const Modal = class extends WebComponent {
         this.html.style.zIndex = Modal.zIndexCounter;
     }
 
+    isInFront(){
+        return this.html.style.zIndex >= Modal.zIndexCounter;
+    }
+
     headerVisible() {
         return this.title || this.closeable || this.draggable;
     }

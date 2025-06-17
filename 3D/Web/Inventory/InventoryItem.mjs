@@ -2,7 +2,7 @@ import Modal from "../Modal/Modal.mjs";
 import Inventory from "./Inventory.mjs";
 import WebComponent from "../WebComponent.mjs";
 
-const InventoryItem = class extends WebComponent{
+const InventoryItem = class extends WebComponent {
     constructor(options) {
         super(options);
         this.name = options?.name ?? "";
@@ -13,7 +13,7 @@ const InventoryItem = class extends WebComponent{
         this.icon = options?.icon ?? null;
         this.html = options?.html ?? null;
         this.actions = structuredClone(Inventory.ACTIONS);
-        for(var action in this.actions) {
+        for (var action in this.actions) {
             this.actions[action] = options?.actions?.[action] ?? true;
         }
         this.nameElement = null;
@@ -64,6 +64,14 @@ const InventoryItem = class extends WebComponent{
         modal.setContent(modal.content);
     }
 
+    createTooltipDescription(){
+        return this.description + "<br>" + this.quantity + " " + this.name;
+    }
+
+    setTooltipDescription(x){
+        this.html.dataset.tooltipHTML = x;
+    }
+
     createInspectModal({ container }) {
 
         if (this.inspectModal) {
@@ -99,13 +107,14 @@ const InventoryItem = class extends WebComponent{
 
     update() {
         this.updateHTML();
+        this.setTooltipDescription(this.createTooltipDescription());
+        
     }
 
     updateHTML() {
         if (!this.html) {
             return this.createHTML();
         }
-
 
         if (this.icon) {
             this.iconElement.style.display = 'block';
@@ -148,8 +157,8 @@ const InventoryItem = class extends WebComponent{
         this.inspectModal = null;
     }
 
-    clone(){
-        
+    clone() {
+
     }
 
 }
