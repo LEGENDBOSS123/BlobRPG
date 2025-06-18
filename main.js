@@ -17,7 +17,7 @@ import TextParticle from "./3D/Graphics/Particle/TextParticle.mjs";
 import DistanceConstraint from "./3D/Physics/Collision/DistanceConstraint.mjs";
 import GameEngine from "./3D/GameEngine.mjs";
 import Sphere from "./3D/Physics/Shapes/Sphere.mjs";
-
+import Slime from "./3D/Entity/Slime.mjs";
 import Inventory from "./3D/Web/Inventory/Inventory.mjs";
 import InventorySlot from "./3D/Web/Inventory/InventorySlot.mjs";
 import InventoryItem from "./3D/Web/Inventory/InventoryItem.mjs";
@@ -41,14 +41,6 @@ document.addEventListener('contextmenu', (event) => {
     event.preventDefault();
 });
 
-window.addEventListener('keydown', function (e) {
-    if (e.key == "r") {
-        player.respawn();
-        return;
-    }
-});
-
-
 
 var gameEngine = new GameEngine(
     {
@@ -59,16 +51,17 @@ var gameEngine = new GameEngine(
             canvas: document.getElementById("canvas")
         },
         gameCamera: {
-            pullback: 0,
-            maxPullback: 100
+            pullback: 25,
+            maxPullback: 25,
+            minPullback: 25
         },
         cameraControls: {
             speed: 1,
             pullbackRate: 0.2,
             rotateMethods: {
-                wheel: true,
-                shiftLock: true,
-                drag: true
+                wheel: false,
+                shiftLock: false,
+                drag: false
             },
             rotateSensitivity: {
                 wheel: 0.01,
@@ -84,6 +77,8 @@ var gameEngine = new GameEngine(
     }
 );
 
+
+
 window.gameEngine = gameEngine;
 gameEngine.graphicsEngine.ambientLight.intensity = 1;
 gameEngine.graphicsEngine.setBackgroundImage("autumn_field_puresky_8k.hdr", true, false);
@@ -93,6 +88,8 @@ gameEngine.graphicsEngine.renderDistance = 1600;
 gameEngine.graphicsEngine.cameraFar = 2000;
 gameEngine.cameraControls.renderDomElement = gameEngine.graphicsEngine.canvas;
 gameEngine.cameraControls.setupEventListeners();
+gameEngine.gameCamera.looking.xz = 0;
+gameEngine.gameCamera.looking.y = -Math.PI / 2 - 0.2;
 
 
 gameEngine.toastManager.createHTML({
@@ -331,32 +328,13 @@ var player = new Player({
 });
 
 
+
+
 player.setMeshAndAddToScene({}, gameEngine);
 gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
 
-var players = [];
-
-for (var i = 0; i < 1; i++) {
-    const a = new Player({
-        radius: 0.5,
-        height: 4,
-        tiltable: false,
-        moveStrength: 0.5,
-        airMoveStrength: 0.1,
-        moveSpeed: 0.2,
-        jumpSpeed: 0.4,
-        gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(-20 + Math.random(), 20 + i * 3, 72 + Math.random()),
-        mass: 1,
-        gameEngine: gameEngine
-    });
-    a.setMeshAndAddToScene({}, gameEngine);
-    gameEngine.entitySystem.register(a);
-    a.addToWorld(gameEngine.world);
-    players.push(a);
-}
 
 var toolTip = new Tooltip({
     gameEngine: gameEngine
@@ -386,7 +364,6 @@ inventory.createHTML({
 
 inventory.modal.hide();
 
-
 var hotbar = new Hotbar({
     rows: 1,
     columns: 9,
@@ -401,8 +378,8 @@ var hotbar = new Hotbar({
 hotbar.createHTML({
     container: document.body,
     overflow: false,
-    width: 900,
-    height: 108
+    width: 600,
+    height: 75.666
 });
 
 var setHotbarPosition = function () {
@@ -443,7 +420,7 @@ for (var x = 1; x < 8; x++) {
 }
 
 
-var map = await gameEngine.loadMap("map.glb", {});
+var map = await gameEngine.loadMap("lawn.glb", {});
 var damageTimeStamp = 0;
 for (const obj of map.objects) {
     gameEngine.world.addComposite(obj);
