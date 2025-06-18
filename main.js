@@ -51,17 +51,17 @@ var gameEngine = new GameEngine(
             canvas: document.getElementById("canvas")
         },
         gameCamera: {
-            pullback: 25,
+            pullback: 10,
             maxPullback: 25,
-            minPullback: 25
+            minPullback: 3
         },
         cameraControls: {
             speed: 1,
             pullbackRate: 0.2,
             rotateMethods: {
-                wheel: false,
-                shiftLock: false,
-                drag: false
+                wheel: true,
+                shiftLock: true,
+                drag: true
             },
             rotateSensitivity: {
                 wheel: 0.01,
@@ -80,7 +80,7 @@ var gameEngine = new GameEngine(
 
 
 window.gameEngine = gameEngine;
-gameEngine.graphicsEngine.ambientLight.intensity = 1;
+gameEngine.graphicsEngine.ambientLight.intensity = 3;
 gameEngine.graphicsEngine.setBackgroundImage("autumn_field_puresky_8k.hdr", true, false);
 gameEngine.graphicsEngine.setSunlightDirection(new Vector3(-2, -8, -5));
 gameEngine.graphicsEngine.setSunlightBrightness(1);
@@ -88,8 +88,6 @@ gameEngine.graphicsEngine.renderDistance = 1600;
 gameEngine.graphicsEngine.cameraFar = 2000;
 gameEngine.cameraControls.renderDomElement = gameEngine.graphicsEngine.canvas;
 gameEngine.cameraControls.setupEventListeners();
-gameEngine.gameCamera.looking.xz = 0;
-gameEngine.gameCamera.looking.y = -Math.PI / 2 - 0.2;
 
 
 gameEngine.toastManager.createHTML({
