@@ -62,7 +62,7 @@ const GameEngine = class {
                 child.castShadow = true;
                 child.receiveShadow = true;
                 child.material.depthWrite = true;
-                child.material.side = gameEngine.graphicsEngine.THREE.DoubleSide;
+                child.material.side = this.graphicsEngine.THREE.DoubleSide;
                 child.geometry.computeVertexNormals();
                 if(child.userData?.invisible){
                     child.visible = false;

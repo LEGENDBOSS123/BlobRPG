@@ -446,8 +446,7 @@ for (const obj of map.objects) {
                 player.respawn();
                 player.health = player.maxHealth;
             }
-            // player.respawn();
-        })
+        });
     }
     if (obj.name.toLowerCase().includes("start")) {
         player.setStartPoint(obj.global.body.position);
