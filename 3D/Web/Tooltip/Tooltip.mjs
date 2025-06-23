@@ -43,8 +43,8 @@ const Tooltip = class extends Modal {
     }
 
     update() {
-        this.html.style.left = `${this.mouse.x}px`;
-        this.html.style.top = `${this.mouse.y}px`;
+        this.html.style.left = `${this.mouse.x + 8}px`;
+        this.html.style.top = `${this.mouse.y + 8}px`;
 
         const hoveringElement = document.elementFromPoint(this.mouse.x, this.mouse.y);
         if (hoveringElement?.dataset?.tooltipHTML) {

@@ -13,6 +13,8 @@
     width: unset;
     height: unset;
     position: unset;
-    padding: 10px;
+    padding: var(--gap-medium);
     user-select: none;
+    white-space: nowrap;
+    
 }

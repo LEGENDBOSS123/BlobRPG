@@ -1,3 +1,9 @@
+.shop-inventory-container {
+    container-type: inline-size;
+    width: 100%;
+    height: 100%;
+}
+
 .shop-inventory {
     display: flex;
     flex-direction: row;
@@ -7,7 +13,7 @@
     container-type: inline-size;
 }
 
-.item-info-container {
+.shop-inventory .item-info-container {
     flex: 3;
     padding: var(--gap-large);
     display: flex;
@@ -17,7 +23,7 @@
     background-color: var(--tertiary-color);
 }
 
-.item-element-container {
+.shop-inventory .item-element-container {
     overflow-y: auto;
     padding: var(--gap-large);
     flex: 2;
@@ -32,15 +38,12 @@
     .shop-inventory {
         flex-direction: column;
     }
-    .item-info-container {
+
+    .shop-inventory.item-info-container {
         flex: 2;
     }
-    .item-element-container {
+
+    .shop-inventory.item-element-container {
         flex: 3;
     }
-
 }
-.item-name{
-
-}
-
