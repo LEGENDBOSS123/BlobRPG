@@ -7,7 +7,7 @@
     display: flex;
     align-items: center;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin: 20px auto;
+    margin: var(--gap-large) auto;
 }
 
 .progress-bar-fill {
@@ -17,7 +17,7 @@
     height: 100%;
     background: linear-gradient(to right, #4CAF50, #8BC34A);
     border-radius: 999999px;
-    transition: width 0.1s ease-in-out;
+    transition: width var(--transition-time-medium) ease-in-out;
     will-change: width; 
 }
 
@@ -27,16 +27,16 @@
     font-size: 0.9em;
     font-weight: 600;
     z-index: 1;
-    padding: 0 10px;
+    padding: 0 var(--gap-medium);
     text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
 }
 
 .progress-bar-text-left {
-    left: 10px;
+    left: var(--gap-medium);
 }
 
 .progress-bar-text-right {
-    right: 10px;
+    right: var(--gap-medium);
 }
 
 .progress-bar-text-middle {

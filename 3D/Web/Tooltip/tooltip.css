@@ -1,16 +1,9 @@
-:root {
-    --tooltip-bg: #000;
-    --tooltip-border: 1px solid #fff;
-    --tooltip-opacity: 0.9;
-    --tooltip-radius: 4px;
-}
-
 
 .tooltip {
-    border: var(--tooltip-border);
-    border-radius: var(--tooltip-radius) !important;
-    background-color: var(--tooltip-bg);
-    opacity: var(--tooltip-opacity);
+    border: var(--border-radius-extra-small) solid var(--secondary-border-color);
+    border-radius: var(--border-radius-medium) !important;
+    background-color: var(--secondary-color);
+    opacity: var(--opacity-medium);
     pointer-events: none;
     overflow: visible;
 }
@@ -21,4 +14,5 @@
     height: unset;
     position: unset;
     padding: 10px;
+    user-select: none;
 }

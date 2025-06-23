@@ -1,0 +1,70 @@
+@import url('./Modal/modal.css');
+@import url('./Inventory/inventory.css');
+@import url('./Toast/toast.css');
+@import url('./ProgressBar/progress_bar.css');
+@import url('./Settings/settings.css');
+@import url('./Tooltip/tooltip.css');
+@import url('./ShopInventory/shop_inventory.css');
+
+html * {
+    font-size: 1em;
+    color: #ffffff;
+    font-family: sans-serif;
+    font-style: normal;
+    font-weight: normal;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --primary-color: #1e1e2f;
+    --secondary-color: #2c2f3f;
+    --tertiary-color: #3a3f5c;
+
+    --primary-border-color: #3b82f6;
+    --secondary-border-color: #4b5563;
+    --tertiary-border-color: #6b7280;
+
+    --accent-color: #14b8a6;
+    --accent-secondary-color: #a3e635;
+
+    --error-color: #ef4444;
+    --warning-color: #facc15;
+    --success-color: #22c55e;
+    --info-color: #3b82f6;
+    --default-color: #9ca3af;
+
+
+    --border-radius-extra-small: 1px;
+    --border-radius-small: 2px;
+    --border-radius-medium: 12px;
+    --border-radius-large: 24px;
+
+    --border-size-small: 1px;
+    --border-size-medium: 12px;
+    --border-size-large: 24px;
+
+    --modal-header-height: 40px;
+    --modal-close-button-size: 26px;
+
+    --transition-time-short: 0.1s;
+    --transition-time-medium: 0.25s;
+    --transition-time-long: 0.5s;
+
+    --gap-small: 4px;
+    --gap-medium: 8px;
+    --gap-large: 14px;
+
+
+    --settings-panel-min-width: 120px;
+    --settings-panel-max-width: 300px;
+    --settings-panel-button-min-height: 60px;
+    --settings-panel-button-max-height: 120px;
+    --settings-checkbox-width: 75px;
+    --settings-slider-width: 200px;
+    --settings-slider-value-width: 75px;
+
+    --opacity-low: 0.25;
+    --opacity-medium: 0.75;
+    --opacity-high: 0.9;
+}

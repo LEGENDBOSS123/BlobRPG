@@ -27,6 +27,7 @@ import ToastManager from "./3D/Web/Toast/ToastManager.mjs";
 import ProgressBar from "./3D/Web/ProgressBar/ProgressBar.mjs";
 import Settings from "./3D/Web/Settings/Settings.mjs";
 import Tooltip from "./3D/Web/Tooltip/Tooltip.mjs";
+import ShopInventory from "./3D/Web/ShopInventory/ShopInventory.mjs";
 var stats = new Stats();
 var stats2 = new Stats();
 
@@ -344,6 +345,21 @@ toolTip.createHTML({
     height: 90
 });
 
+var shopInventory = new ShopInventory({
+    gameEngine: gameEngine,
+    document: document,
+    title: "Shop Inventory",
+    hideOnClose: true
+})
+
+shopInventory.createHTML({
+    container: document.body,
+    overflow: true,
+    width: 750,
+    height: 500,
+    centered: true
+})
+
 var inventory = new Inventory({
     gameEngine: gameEngine,
     rows: 12,
@@ -522,6 +538,7 @@ function render() {
     }
     toolTip.update();
     inventory.update();
+    shopInventory.update();
     setHotbarPosition();
     hotbar.update();
     healthBar.value = player.health;

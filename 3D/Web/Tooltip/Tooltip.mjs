@@ -24,7 +24,7 @@ const Tooltip = class extends Modal {
 
     setupEventListeners() {
         super.setupEventListeners();
-        this.addEventListener("mousemove", document, "mousemove",
+        this.addEventListener("pointermove", document, "mousemove",
             function (e) {
                 this.mouse.x = e.clientX;
                 this.mouse.y = e.clientY;

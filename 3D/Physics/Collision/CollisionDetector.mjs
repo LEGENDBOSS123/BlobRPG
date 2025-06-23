@@ -41,22 +41,21 @@ const CollisionDetector = class {
     }
 
     addPair(shape1, shape2) {
-        if (shape1.id > shape2.id) {
-            const temp = shape1;
-            shape1 = shape2;
-            shape2 = temp;
-        }
         if (!shape1.canCollideWith(shape2)) {
-            return;
-        }
-        if (this.pairs.has(shape1.id + this.constructor.seperatorCharacter + shape2.id) || !(this.handlers[shape1.type]?.[shape2.type] || this.handlers[shape2.type]?.[shape1.type])) {
             return;
         }
         if (!shape1.global.expandedHitbox.intersects(shape2.global.expandedHitbox)) {
             return;
         }
-
-
+        if (shape1.id > shape2.id) {
+            const temp = shape1;
+            shape1 = shape2;
+            shape2 = temp;
+        }
+        if (this.pairs.has(shape1.id + this.constructor.seperatorCharacter + shape2.id) || !(this.handlers[shape1.type]?.[shape2.type] || this.handlers[shape2.type]?.[shape1.type])) {
+            return;
+        }
+        
         return this.pairs.set(shape1.id + this.constructor.seperatorCharacter + shape2.id, [shape1, shape2]);
     }
 

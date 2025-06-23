@@ -1,13 +1,4 @@
-:root {
-    --settings-panel-button-color: rgb(69, 86, 86);
-    --settings-panel-min-width: 120px;
-    --settings-panel-max-width: 300px;
-    --settings-panel-button-min-height: 60px;
-    --settings-panel-button-max-height: 120px;
-    --settings-checkbox-width: 75px;
-    --settings-slider-width: 200px;
-    --settings-slider-value-width: 75px;
-}
+
 
 .settings-panel-container {
     width: 100%;
@@ -20,7 +11,7 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    background-color: black;
+    background-color: var(--secondary-color);
     overflow: auto;
     padding: 10px;
     min-width: var(--settings-panel-min-width);
@@ -44,8 +35,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    background-color: var(--settings-panel-button-color);
+    background-color: var(--primary-color);
     border-radius: 10px;
     box-sizing: border-box;
     cursor: pointer;
@@ -75,6 +65,7 @@
 .settings-panel-content {
     flex: 1;
     overflow: hidden;
+    background-color: var(--secondary-color);
 }
 
 .settings-screen {
@@ -111,8 +102,8 @@
 }
 
 .settings-screen-item-container:hover {
-    background-color: rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
+    background-color: var(--secondary-border-color);
+    border-radius: var(--border-radius-medium);
 }
 
 
@@ -300,7 +291,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+    transition: background-color var(--transition-time-medium) ease-in-out, transform var(--transition-time-short) ease-in-out;
 }
 
 .keybind .add:hover {
