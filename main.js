@@ -393,7 +393,8 @@ hotbar.createHTML({
     container: document.body,
     overflow: false,
     width: 600,
-    height: 75.666
+    height: 70.2337,
+    gap: "4px"
 });
 
 var setHotbarPosition = function () {

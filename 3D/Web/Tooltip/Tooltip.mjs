@@ -24,10 +24,16 @@ const Tooltip = class extends Modal {
 
     setupEventListeners() {
         super.setupEventListeners();
-        this.addEventListener("pointermove", document, "mousemove",
+        this.addEventListener("pointermove", document, "pointermove",
             function (e) {
                 this.mouse.x = e.clientX;
                 this.mouse.y = e.clientY;
+            }.bind(this)
+        );
+        this.addEventListener("drag", document, "drag",
+            function (e) {
+                this.mouse.x = null;
+                this.mouse.y = null;
             }.bind(this)
         );
     }
@@ -43,6 +49,10 @@ const Tooltip = class extends Modal {
     }
 
     update() {
+        if(!Number.isFinite(this.mouse.x) || !Number.isFinite(this.mouse.y)){
+            this.hideToolTip();
+            return;
+        }
         this.html.style.left = `${this.mouse.x + 8}px`;
         this.html.style.top = `${this.mouse.y + 8}px`;
 

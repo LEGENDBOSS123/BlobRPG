@@ -1,22 +1,21 @@
-
 .toast.success {
-    background-color: #22c55e;
+    background-color: var(--success-color);
 }
 
 .toast.error {
-    background-color: #ef4444;
+    background-color: var(--error-color);
 }
 
 .toast.info {
-    background-color: #3b82f6;
+    background-color: var(--info-color);
 }
 
 .toast.warning {
-    background-color: #f59e0b;
+    background-color: var(--warning-color);
 }
 
 .toast.default {
-    background-color: #6b7280;
+    background-color: var(--default-color);
 }
 
 @keyframes slide-in-fade-in {
@@ -54,8 +53,8 @@
 .toast {
     padding: 5px;
     min-height: var(--toast-height);
-    border-radius: 0.5rem;
-    border: var(--toast-border);
+    border-radius: var(--border-radius-medium);
+    border: var(--border-size-extra-small) solid var(--secondary-border-color);
     box-sizing: border-box;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
     color: #ffffff;

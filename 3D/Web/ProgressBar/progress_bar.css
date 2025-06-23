@@ -29,6 +29,7 @@
     z-index: 1;
     padding: 0 var(--gap-medium);
     text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+    user-select: none;
 }
 
 .progress-bar-text-left {

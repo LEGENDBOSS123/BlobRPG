@@ -1,6 +1,6 @@
 
 .tooltip {
-    border: var(--border-radius-extra-small) solid var(--secondary-border-color);
+    border: var(--border-size-extra-small) solid var(--secondary-border-color);
     border-radius: var(--border-radius-medium) !important;
     background-color: var(--secondary-color);
     opacity: var(--opacity-medium);
@@ -16,5 +16,4 @@
     padding: var(--gap-medium);
     user-select: none;
     white-space: nowrap;
-    
 }

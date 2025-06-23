@@ -17,16 +17,17 @@ html * {
 }
 
 :root {
-    --primary-color: #1e1e2f;
-    --secondary-color: #2c2f3f;
-    --tertiary-color: #3a3f5c;
+    --primary-color: #1a202c;
+    --secondary-color: #2d3748;
+    --tertiary-color: #4a5568;
 
-    --primary-border-color: #3b82f6;
-    --secondary-border-color: #4b5563;
-    --tertiary-border-color: #6b7280;
+    --primary-border-color: #718096;
+    --secondary-border-color: #4a5568;
+    --tertiary-border-color: #a0aec0;
 
-    --accent-color: #14b8a6;
-    --accent-secondary-color: #a3e635;
+    --accent-color: #4d92c3;
+    --accent-secondary-color: #539f95;
+
 
     --error-color: #ef4444;
     --warning-color: #facc15;
@@ -40,21 +41,24 @@ html * {
     --border-radius-medium: 12px;
     --border-radius-large: 24px;
 
-    --border-size-small: 1px;
-    --border-size-medium: 12px;
-    --border-size-large: 24px;
+    --border-size-extra-small: 1px;
+    --border-size-small: 2px;
+    --border-size-medium: 4px;
+    --border-size-large: 12px;
 
-    --modal-header-height: 40px;
-    --modal-close-button-size: 26px;
 
     --transition-time-short: 0.1s;
     --transition-time-medium: 0.25s;
     --transition-time-long: 0.5s;
 
+    --gap-extra-small: 2px;
     --gap-small: 4px;
     --gap-medium: 8px;
     --gap-large: 14px;
 
+    --opacity-low: 25%;
+    --opacity-medium: 75%;
+    --opacity-high: 90%;
 
     --settings-panel-min-width: 120px;
     --settings-panel-max-width: 300px;
@@ -64,7 +68,12 @@ html * {
     --settings-slider-width: 200px;
     --settings-slider-value-width: 75px;
 
-    --opacity-low: 0.25;
-    --opacity-medium: 0.75;
-    --opacity-high: 0.9;
+
+
+    --toast-height: 2.5rem;
+
+
+    --modal-header-height: 40px;
+    --modal-close-button-size: 26px;
+
 }

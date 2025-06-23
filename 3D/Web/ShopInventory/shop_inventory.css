@@ -39,11 +39,11 @@
         flex-direction: column;
     }
 
-    .shop-inventory.item-info-container {
+    .shop-inventory .item-info-container {
         flex: 2;
     }
 
-    .shop-inventory.item-element-container {
+    .shop-inventory .item-element-container {
         flex: 3;
     }
 }

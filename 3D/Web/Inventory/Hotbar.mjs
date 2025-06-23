@@ -8,6 +8,14 @@ const Hotbar = class extends Inventory {
         this.selectedSlot = null;
     }
 
+    createHTML(options){
+        super.createHTML(options);
+        this.html.style.width = "100%";
+        this.html.style.height = "100%";
+        this.modal.html.style.borderRadius = `calc(var(--border-radius-medium) + ${options.gap ?? "8px"})`;
+        return this.html;
+    }
+
     setupEventListeners() {
         super.setupEventListeners();
         for (var s_ in this.slots[0]) {

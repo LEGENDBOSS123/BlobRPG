@@ -127,6 +127,7 @@ const InventoryItem = class extends WebComponent {
         if (this.name) {
             this.nameElement.style.display = 'block';
             this.nameElement.textContent = this.name;
+            this.nameElement.style.fontSize = this.nameElement.clientWidth / 4 + 'px';
         } else {
             this.nameElement.style.display = 'none';
         }

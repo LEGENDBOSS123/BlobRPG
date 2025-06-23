@@ -128,7 +128,9 @@ const Panel = class extends SettingsComponent {
             buttonContent.createHTML(buttonContent.htmlOptions);
         }
 
-        this.buttonElements[Object.keys(this.buttonElements)[0]].content.show();
+        const firstButton = this.buttonElements[Object.keys(this.buttonElements)[0]];
+        firstButton.content.show();
+        firstButton.element.classList.add("selected");
 
         container.appendChild(this.html);
 
@@ -141,7 +143,11 @@ const Panel = class extends SettingsComponent {
             this.addEventListener(buttonTitle + "-click", button.element, "click",
                 function (e) {
                     button.content.show();
-                }
+                    for(const b in this.buttonElements){
+                        this.buttonElements[b].element.classList.remove("selected");
+                    }
+                    button.element.classList.add("selected");
+                }.bind(this)
             )
         }
     }

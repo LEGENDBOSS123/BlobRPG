@@ -36,11 +36,18 @@
     align-items: center;
     justify-content: center;
     background-color: var(--primary-color);
-    border-radius: 10px;
+    border-radius: var(--border-radius-medium);
     box-sizing: border-box;
     cursor: pointer;
 }
 
+.settings-panel-button.selected .settings-panel-button-label {
+    transform: scale(1.2);
+}
+
+.settings-panel-button.selected {
+    background-color: var(--accent-color);
+}
 
 
 .settings-panel-button-label {
@@ -146,7 +153,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #ccc;
+    background-color: var(--default-color);
     transition: 0.4s;
     border-radius: 99999px;
 }
@@ -157,13 +164,13 @@
     height: 100%;
     aspect-ratio: 1/1;
     width: auto;
-    background-color: white;
+    background-color: var(--primary-color);
     transition: 0.2s;
     border-radius: 50%;
 }
 
 .checkbox .switch input:checked+.slider {
-    background-color: #4CAF50;
+    background-color: var(--success-color);
 }
 
 .checkbox .switch input:checked+.slider::before {
@@ -210,7 +217,7 @@
 
 
 .keybind-container {
-    padding: 5px;
+    padding: var(--gap-small);
 }
 
 
@@ -218,23 +225,23 @@
     height: 75px;
     display: flex;
     flex-direction: row;
-    gap: 4px;
+    gap: var(--gap-small);
     overflow: scroll;
     scrollbar-width: none;
     flex: 1 1 0;
-    border: 2px dashed white;
-    border-radius: 16px;
+    border: var(--border-size-small) dashed white;
+    border-radius: var(--border-radius-medium);
     box-sizing: border-box;
-    padding: 2px;
+    padding: var(--gap-extra-small);
 }
 
 .keybind .key {
     position: relative;
     aspect-ratio: 1/1;
     background-color: white;
-    border-radius: 16px;
+    border-radius: calc(var(--border-radius-medium) - var(--border-size-small) - var(--gap-extra-small));
     box-sizing: border-box;
-    padding: 6px;
+    padding: var(--gap-medium);
     overflow: hidden;
     flex-shrink: 0;
 }
@@ -263,7 +270,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    transition: opacity 0.2s ease-in-out;
+    transition: opacity var(--transition-time-medium) ease-in-out;
 }
 
 .keybind .key:hover .delete {

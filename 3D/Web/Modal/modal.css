@@ -16,19 +16,19 @@
     position: absolute;
     top: 0;
     left: 0;
-    background-color: var(--primary-color);
+    background-color: color-mix(in srgb, var(--secondary-color) var(--opacity-high), transparent);
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: var(--border-radius-large);
     overflow: hidden;
-    border: var(--border-radius-extra-small) solid var(--secondary-border-color);
+    border: var(--border-size-extra-small) solid var(--secondary-border-color);
 }
 
 .modal-header {
     width: 100%;
     height: var(--modal-header-height);
-    background-color: var(--secondary-color);
+    background-color: var(--primary-color);
     opacity: 1;
     display: flex;
     align-items: center;
@@ -37,7 +37,7 @@
     top: 0;
     left: 0;
     position: absolute;
-    padding: 0 10px;
+    padding: 0 var(--border-radius-large);
     box-sizing: border-box;
 }
 
@@ -64,7 +64,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 0 0 var(--border-radius-large) var(--border-radius-large);
     overflow: hidden;
 }
 
