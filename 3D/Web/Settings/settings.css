@@ -226,7 +226,7 @@
     display: flex;
     flex-direction: row;
     gap: var(--gap-small);
-    overflow: scroll;
+    overflow: auto;
     scrollbar-width: none;
     flex: 1 1 0;
     border: var(--border-size-small) dashed white;

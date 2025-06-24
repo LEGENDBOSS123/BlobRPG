@@ -39,6 +39,7 @@
     position: absolute;
     padding: 0 var(--border-radius-large);
     box-sizing: border-box;
+    white-space: nowrap;
 }
 
 .modal-close-button {

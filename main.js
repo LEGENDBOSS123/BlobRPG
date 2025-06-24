@@ -349,8 +349,7 @@ var shopInventory = new ShopInventory({
     gameEngine: gameEngine,
     document: document,
     title: "Shop Inventory",
-    hideOnClose: true
-})
+});
 
 shopInventory.createHTML({
     container: document.body,
@@ -358,7 +357,26 @@ shopInventory.createHTML({
     width: 750,
     height: 500,
     centered: true
-})
+});
+
+shopInventory.close();
+
+shopInventory.items = [
+    {
+        name: "Box",
+        icon: "./3D/Graphics/Assets/box.png",
+    },
+    {
+        name: "Grass",
+        icon: "./3D/Graphics/Assets/grass.png",
+    },
+    {
+        name: "Chess",
+        icon: "./3D/Graphics/Assets/checkerboard.jpg",
+    }
+];
+
+shopInventory.updateItems();
 
 var inventory = new Inventory({
     gameEngine: gameEngine,
@@ -483,6 +501,22 @@ for (const obj of map.objects) {
                 return;
             }
             player.setSpawnPoint(player.getMainShape().global.body.position, true);
+        })
+    }
+    if (obj.name.toLowerCase().includes("shop")) {
+        obj.addEventListener("collision", function (contact) {
+            var player = null;
+            if (gameEngine.entitySystem.getEntityFromShape(contact.body1) instanceof Player) {
+                player = gameEngine.entitySystem.getEntityFromShape(contact.body1);
+            }
+            else if (gameEngine.entitySystem.getEntityFromShape(contact.body2) instanceof Player) {
+                player = gameEngine.entitySystem.getEntityFromShape(contact.body2);
+            }
+
+            if (!player) {
+                return;
+            }
+            shopInventory.open();
         })
     }
 }
