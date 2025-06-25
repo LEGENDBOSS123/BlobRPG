@@ -2,7 +2,7 @@ import Inventory from "./Inventory.mjs";
 import Modal from "../Modal/Modal.mjs";
 import Toast from "../Toast/Toast.mjs";
 import WebComponent from "../WebComponent.mjs";
-
+import InventoryItem from "./InventoryItem.mjs";
 
 const InventorySlot = class extends WebComponent {
 
@@ -85,7 +85,7 @@ const InventorySlot = class extends WebComponent {
     }
 
     update() {
-        if(this.item){
+        if (this.item) {
             this.item.update();
         }
         this.updateHTML();
@@ -110,7 +110,7 @@ const InventorySlot = class extends WebComponent {
     }
 
     inspectItem() {
-        if (!this.item) {
+        if (!this.item || !this.item.actions.INSPECT) {
             return;
         }
 
@@ -120,7 +120,7 @@ const InventorySlot = class extends WebComponent {
     }
 
     trashItem() {
-        if (!this.item) {
+        if (!this.item || !this.item.actions.TRASH) {
             return;
         }
 
@@ -129,18 +129,32 @@ const InventorySlot = class extends WebComponent {
     }
 
     splitItem() {
-        if (!this.item) {
+        if (!this.item || this.item.quantity <= 1 || !this.item.actions.SPLIT) {
             return;
         }
 
         var index = this.parent.emptyIndex();
         if (index == -1) {
-            this.gameEngine.toastManager.createToast({ duration: 1000, type: Toast.TYPES.ERROR, message: "No space in inventory" });
+            this.gameEngine.toastManager.createToast({ duration: 1000, type: Toast.TYPES.ERROR, message: "No space to split item." });
             return;
         }
 
-        this.gameEngine.toastManager.createToast({ duration: 1000, type: Toast.TYPES.ERROR, message: "Not implemented yet lol" });
+        var portion1 = Math.floor(this.item.quantity / 2);
+        var portion2 = this.item.quantity - portion1;
 
+        const emptySlot = this.parent.getSlot(index.x, index.y);
+        emptySlot.item = new InventoryItem({
+            gameEngine: this.gameEngine,
+            item: this.item.item.clone(),
+            quantity: portion2,
+            stackable: this.item.stackable,
+            maxStack: this.item.maxStack,
+            actions: structuredClone(this.item.actions),
+        });
+
+        this.item.quantity = portion1;
+        this.item.update();
+        emptySlot.update();
 
     }
 

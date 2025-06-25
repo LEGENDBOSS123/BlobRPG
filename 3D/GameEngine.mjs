@@ -32,6 +32,8 @@ const GameEngine = class {
         this.gameCamera.camera = this.graphicsEngine.camera;
         this.cameraControls.camera = this.gameCamera;
         this.particleSystem.timer = this.timer;
+        this.graphicsEngine.gameEngine = this;
+        this.graphicsEngine.modelPool.gameEngine = this;
 
         this.fps = options?.fps ?? 20;
         this.fpsStepper = new Timer.Interval(1000 / this.fps);

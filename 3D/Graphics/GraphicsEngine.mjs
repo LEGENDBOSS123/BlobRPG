@@ -4,9 +4,12 @@ import { N8AOPostPass } from './N8AO.mjs';
 import AutoTextureLoader from "./AutoTextureLoader.mjs";
 import MeshLinker from "./MeshLinker.mjs";
 import Vector3 from "../Physics/Math3D/Vector3.mjs";
+import ModelPool from "./ModelPool.mjs";
+import GameEngineComponent from "../GameEngineComponent.mjs";
 
-var GraphicsEngine = class {
+var GraphicsEngine = class extends GameEngineComponent{
     constructor(options) {
+        super(options);
         this.THREE = THREE;
         this.window = options?.window ?? window;
         this.document = options?.document ?? document;
@@ -47,6 +50,7 @@ var GraphicsEngine = class {
         this.scene.add(this.camera);
 
         this.textureLoader = new AutoTextureLoader();
+        this.modelPool = new ModelPool();
         this.mixers = [];
         this.composer = new EffectComposer(this.renderer);
         this.renderPass = new RenderPass(this.scene, this.camera);
@@ -241,8 +245,8 @@ var GraphicsEngine = class {
     }
 
 
-    async load(url, onLoad, onProgress, onError) {
-        return this.textureLoader.load(url, onLoad, onProgress, onError);
+    async load(url) {
+        return this.textureLoader.load(url);
     }
 
     enableAO() {

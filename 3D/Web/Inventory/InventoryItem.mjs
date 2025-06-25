@@ -5,12 +5,10 @@ import WebComponent from "../WebComponent.mjs";
 const InventoryItem = class extends WebComponent {
     constructor(options) {
         super(options);
-        this.name = options?.name ?? "";
-        this.description = options?.description ?? "This is an item";
+        this.item = options?.item ?? null;
         this.stackable = options?.stackable ?? true;
         this.maxStack = options?.maxStack ?? 16;
         this.quantity = options?.quantity ?? 1;
-        this.icon = options?.icon ?? null;
         this.html = options?.html ?? null;
         this.actions = structuredClone(Inventory.ACTIONS);
         for (var action in this.actions) {
@@ -51,21 +49,8 @@ const InventoryItem = class extends WebComponent {
         return this.html;
     }
 
-    addToolTip(modal) {
-        if (!modal) {
-            return;
-        }
-        if (!modal.content) {
-            modal.content = document.createElement('p');
-        }
-
-        modal.content.innerHTML = this.description + "<br>" + this.quantity + " " + this.name;
-
-        modal.setContent(modal.content);
-    }
-
     createTooltipDescription(){
-        return this.description + "<br>" + this.quantity + " " + this.name;
+        return this.item.getToolTipHTML();
     }
 
     setTooltipDescription(x){
@@ -85,8 +70,7 @@ const InventoryItem = class extends WebComponent {
             title: this.name
         });
 
-        this.inspectModal.content = document.createElement('p');
-        this.inspectModal.content.textContent = this.description;
+        this.inspectModal.content = document.createElement('div');
 
         this.inspectModal.createHTML({
             container: container,
@@ -98,7 +82,7 @@ const InventoryItem = class extends WebComponent {
     }
 
     canMergeWith(item) {
-        return this.name == item.name && this.stackable;
+        return this.item.name == item.item.name && this.stackable;
     }
 
     canSwapWith(item) {
@@ -108,7 +92,6 @@ const InventoryItem = class extends WebComponent {
     update() {
         this.updateHTML();
         this.setTooltipDescription(this.createTooltipDescription());
-        
     }
 
     updateHTML() {
@@ -116,17 +99,19 @@ const InventoryItem = class extends WebComponent {
             return this.createHTML();
         }
 
-        if (this.icon) {
+        if (this.item.iconPath) {
             this.iconElement.style.display = 'block';
-            this.iconElement.src = this.icon;
+            if(this.iconElement.src != this.item.iconPath){
+                this.iconElement.src = this.item.iconPath;
+            }
         } else {
             this.iconElement.style.display = 'none';
             this.iconElement.src = '';
         }
 
-        if (this.name) {
+        if (this.item.name) {
             this.nameElement.style.display = 'block';
-            this.nameElement.textContent = this.name;
+            this.nameElement.textContent = this.item.name;
             this.nameElement.style.fontSize = this.nameElement.clientWidth / 4 + 'px';
         } else {
             this.nameElement.style.display = 'none';
@@ -140,7 +125,13 @@ const InventoryItem = class extends WebComponent {
         }
 
         if (this.inspectModal) {
-            this.inspectModal.content.textContent = this.description + " and has " + this.quantity + " " + this.name;
+            const itemInspectContent = this.item.getInspectHTML();
+            if(this.inspectModal.content.innerHTML != itemInspectContent){
+                this.inspectModal.content.innerHTML = itemInspectContent;
+            }
+            if(this.inspectModal.title != this.item.name){
+                this.inspectModal.setTitle(this.item.name);
+            }
         }
     }
 
@@ -151,7 +142,6 @@ const InventoryItem = class extends WebComponent {
         }
         this.html.remove();
         this.html = null;
-        this.icon = null;
         this.nameElement = null;
         this.countElement = null;
         this.iconElement = null;

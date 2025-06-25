@@ -27,6 +27,11 @@ const Modal = class extends WebComponent {
         this.html.style.zIndex = Modal.zIndexCounter;
     }
 
+    setTitle(x){
+        this.title = x;
+        this.modalTitleElement.innerHTML = this.title;
+    }
+
     isInFront(){
         return this.html.style.zIndex >= Modal.zIndexCounter;
     }
