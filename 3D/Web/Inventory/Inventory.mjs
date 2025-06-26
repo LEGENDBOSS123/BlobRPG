@@ -105,8 +105,6 @@ const Inventory = class extends WebComponent {
             button.style.width = `${Inventory.actionButtonSize}px`;
             button.style.height = `${Inventory.actionButtonSize}px`;
         }
-
-
     }
 
     getSlot(x, y) {

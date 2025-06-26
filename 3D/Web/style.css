@@ -55,6 +55,7 @@ html * {
     --gap-small: 4px;
     --gap-medium: 8px;
     --gap-large: 14px;
+    --gap-extra-large: 24px;
 
     --opacity-low: 25%;
     --opacity-medium: 75%;

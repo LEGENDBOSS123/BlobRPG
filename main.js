@@ -29,6 +29,9 @@ import Settings from "./3D/Web/Settings/Settings.mjs";
 import Tooltip from "./3D/Web/Tooltip/Tooltip.mjs";
 import ShopInventory from "./3D/Web/ShopInventory/ShopInventory.mjs";
 import Item from "./3D/Item/Item.mjs";
+import Sword from "./3D/Item/Sword.mjs";
+import Apple from "./3D/Item/Apple.mjs";
+import ShopOffer from "./3D/Web/ShopInventory/ShopOffer.mjs";
 var stats = new Stats();
 var stats2 = new Stats();
 
@@ -346,12 +349,18 @@ toolTip.createHTML({
     height: 90
 });
 
-const sword = new Item({
+const sword = new Sword({
     gameEngine: gameEngine,
     name: "Sword",
     iconPath: "./3D/Graphics/Assets/sword.png",
     type: "weapon",
     description: "Attack your enemies with this sharp sword.",
+});
+const apple = new Apple({
+    gameEngine: gameEngine,
+    name: "Apple",
+    iconPath: "./3D/Graphics/Assets/apple.png",
+    type: "consumable"
 });
 
 var shopInventory = new ShopInventory({
@@ -368,10 +377,89 @@ shopInventory.createHTML({
     centered: true
 });
 
+shopInventory.purchaseCallback = function (item, quantity) {
+    var index = inventory.emptyIndex();
+    var hotbarIndex = hotbar.emptyIndex();
+    if ((index == -1 && hotbarIndex == -1) || player.health - item.price * quantity < 0) {
+        return 0;
+    }
+    player.health -= item.price * quantity;
+    let emptySlot;
+    if (hotbarIndex != -1) {
+        emptySlot = hotbar.getSlot(hotbarIndex.x, hotbarIndex.y);
+    }
+    else {
+        emptySlot = inventory.getSlot(index.x, index.y);
+    }
+    emptySlot.item = new InventoryItem({
+        gameEngine: this.gameEngine,
+        item: item.item.clone()
+    });
+
+    emptySlot.item.item.quantity = quantity;
+    emptySlot.update();
+
+    return quantity;
+};
+
 shopInventory.close();
 
 shopInventory.items = [
-    sword.clone()
+    new ShopOffer({
+        gameEngine: gameEngine,
+        item: sword.clone(),
+        price: 50
+    }),
+    new ShopOffer({
+        gameEngine: gameEngine,
+        item: apple.clone(),
+        price: 10
+    }),
+    new ShopOffer({
+        gameEngine: gameEngine,
+        item: apple.clone(),
+        price: 10
+    }),
+    new ShopOffer({
+        gameEngine: gameEngine,
+        item: apple.clone(),
+        price: 10
+    }),
+    new ShopOffer({
+        gameEngine: gameEngine,
+        item: apple.clone(),
+        price: 10
+    }),
+    new ShopOffer({
+        gameEngine: gameEngine,
+        item: apple.clone(),
+        price: 10
+    }),
+    new ShopOffer({
+        gameEngine: gameEngine,
+        item: apple.clone(),
+        price: 10
+    }),
+    new ShopOffer({
+        gameEngine: gameEngine,
+        item: apple.clone(),
+        price: 10
+    }),
+    new ShopOffer({
+        gameEngine: gameEngine,
+        item: apple.clone(),
+        price: 10
+    }),
+    new ShopOffer({
+        gameEngine: gameEngine,
+        item: apple.clone(),
+        price: 10
+    }),
+    new ShopOffer({
+        gameEngine: gameEngine,
+        item: apple.clone(),
+        price: 10
+    })
 ];
 
 shopInventory.updateItems();
@@ -430,15 +518,15 @@ document.addEventListener("keydown", function (e) {
     }
 });
 
-for (var x = 1; x < 8; x++) {
-    for (var y = 1; y < 10; y++) {
+// for (var x = 1; x < 8; x++) {
+//     for (var y = 1; y < 10; y++) {
 
-        inventory.getSlot(x, y).setItem(new InventoryItem({
-            gameEngine: gameEngine,
-            item: sword.clone()
-        }))
-    }
-}
+//         inventory.getSlot(x, y).setItem(new InventoryItem({
+//             gameEngine: gameEngine,
+//             item: Math.random() > 0.2 ? apple.clone() : sword.clone()
+//         }))
+//     }
+// }
 
 
 var map = await gameEngine.loadMap("lawn.glb", {});

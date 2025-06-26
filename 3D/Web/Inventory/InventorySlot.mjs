@@ -27,16 +27,17 @@ const InventorySlot = class extends WebComponent {
         if (slot == this) {
             return false;
         }
-        slot.item.quantity += this.item.quantity;
-        if (slot.item.quantity > slot.item.maxStack) {
-            var extra = slot.item.quantity - slot.item.maxStack;
-            slot.item.quantity = slot.item.maxStack;
-            this.item.quantity = extra;
+        slot.item.item.quantity += this.item.item.quantity;
+        if (slot.item.item.quantity > slot.item.item.maxStack) {
+            var extra = slot.item.item.quantity - slot.item.item.maxStack;
+            slot.item.item.quantity = slot.item.item.maxStack;
+            this.item.item.quantity = extra;
             this.item.update();
         }
         else {
             this.item.destroy();
             this.item = null;
+            this.update();
         }
     }
 
@@ -48,7 +49,7 @@ const InventorySlot = class extends WebComponent {
         if (!slot.item) {
             return false;
         }
-        if (this.item.quantity == this.item.maxStack || slot.item.quantity == slot.item.maxStack) {
+        if (this.item.item.quantity == this.item.item.maxStack || slot.item.item.quantity == slot.item.item.maxStack) {
             return false;
         }
         return this.item.canMergeWith(slot.item);
@@ -92,15 +93,15 @@ const InventorySlot = class extends WebComponent {
     }
 
     isTrashable() {
-        return this.item && this.item.actions.TRASH;
+        return this.item && this.item.item.actions.TRASH;
     }
 
     isInspectable() {
-        return this.item && this.item.actions.INSPECT;
+        return this.item && this.item.item.actions.INSPECT;
     }
 
     isSplittable() {
-        return this.item && this.item.quantity > 1 && this.item.actions.SPLIT;
+        return this.item && this.item.item.quantity > 1 && this.item.item.actions.SPLIT;
     }
 
 
@@ -110,7 +111,7 @@ const InventorySlot = class extends WebComponent {
     }
 
     inspectItem() {
-        if (!this.item || !this.item.actions.INSPECT) {
+        if (!this.item || !this.item.item.actions.INSPECT) {
             return;
         }
 
@@ -120,16 +121,17 @@ const InventorySlot = class extends WebComponent {
     }
 
     trashItem() {
-        if (!this.item || !this.item.actions.TRASH) {
+        if (!this.item || !this.item.item.actions.TRASH) {
             return;
         }
 
         this.item.destroy();
         this.item = null;
+        this.update();
     }
 
     splitItem() {
-        if (!this.item || this.item.quantity <= 1 || !this.item.actions.SPLIT) {
+        if (!this.item || this.item.item.quantity <= 1 || !this.item.item.actions.SPLIT) {
             return;
         }
 
@@ -139,20 +141,18 @@ const InventorySlot = class extends WebComponent {
             return;
         }
 
-        var portion1 = Math.floor(this.item.quantity / 2);
-        var portion2 = this.item.quantity - portion1;
+        var portion1 = Math.floor(this.item.item.quantity / 2);
+        var portion2 = this.item.item.quantity - portion1;
 
         const emptySlot = this.parent.getSlot(index.x, index.y);
         emptySlot.item = new InventoryItem({
             gameEngine: this.gameEngine,
-            item: this.item.item.clone(),
-            quantity: portion2,
-            stackable: this.item.stackable,
-            maxStack: this.item.maxStack,
-            actions: structuredClone(this.item.actions),
+            item: this.item.item.clone()
         });
 
-        this.item.quantity = portion1;
+        emptySlot.item.item.quantity = portion2;
+
+        this.item.item.quantity = portion1;
         this.item.update();
         emptySlot.update();
 

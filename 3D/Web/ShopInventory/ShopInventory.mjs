@@ -2,6 +2,8 @@ import Modal from "../Modal/Modal.mjs";
 import Toast from "../Toast/Toast.mjs";
 
 const ShopInventory = class extends Modal {
+    static itemEventListenerIndex = 0;
+
     constructor(options) {
         super(options);
 
@@ -16,6 +18,10 @@ const ShopInventory = class extends Modal {
         this.itemInfoDescription = null;
         this.itemInfoPrice = null;
         this.buyButton = null;
+
+        this.purchaseCallback = function (offer, quantity) {
+            return 0;
+        };
     }
 
     createHTML(options) {
@@ -52,6 +58,14 @@ const ShopInventory = class extends Modal {
         itemInfoImageContainer.appendChild(this.itemInfoImage);
         nameImageContainer.appendChild(itemInfoImageContainer);
 
+        const itemInfoDescriptionContainer = document.createElement('div');
+        itemInfoDescriptionContainer.classList.add('description-container');
+        this.itemInfoContainer.appendChild(itemInfoDescriptionContainer);
+
+        this.itemInfoDescription = document.createElement('div');
+        this.itemInfoDescription.classList.add('description');
+        itemInfoDescriptionContainer.appendChild(this.itemInfoDescription);
+
         const buyButtonContainer = document.createElement('div');
         buyButtonContainer.classList.add('buy-button-container');
         this.itemInfoContainer.appendChild(buyButtonContainer);
@@ -80,27 +94,54 @@ const ShopInventory = class extends Modal {
 
         const itemName = document.createElement('span');
         itemName.classList.add('item-name');
-        itemName.textContent = item.name;
+        itemName.textContent = item.item.name;
         itemElement.appendChild(itemName);
 
-        this.addEventListener("item-" + Math.random().toString(), itemElement, "click",
+        const price = document.createElement('span');
+        price.classList.add('item-price');
+        price.textContent = "$" + item.price;
+        itemElement.appendChild(price);
+
+        item.id = ShopInventory.itemEventListenerIndex++;
+
+        this.addEventListener("item-" + item.id, itemElement, "click",
             function (e) {
-                for (const ie of this.itemElements) {
-                    ie.classList.remove('selected');
-                }
-                itemElement.classList.add('selected');
-                this.selectedIndex = this.itemElements.indexOf(itemElement);
-                this.updateItemInfo();
+                this.select(this.itemElements.indexOf(itemElement)); 
+                
             }.bind(this)
         );
+
         return itemElement;
     }
 
+    select(index) {
+        this.selectedIndex = index;
+        for (const ie of this.itemElements) {
+            ie.classList.remove('selected');
+        }
+        if(index == -1) {
+            return this.updateItemInfo();
+        }
+        this.itemElements[index].classList.add('selected');
+        this.updateItemInfo();
+    }
+
     updateItemInfo() {
+        if (this.selectedIndex == -1) {
+            if (this.itemInfoContainer.style.visibility != 'hidden') {
+                this.itemInfoContainer.style.visibility = 'hidden';
+            }
+            return;
+        }
+        if (this.itemInfoContainer.style.visibility != 'visible') {
+            this.itemInfoContainer.style.visibility = 'visible';
+        }
+
         const item = this.items[this.selectedIndex];
-        this.itemInfoName.textContent = item.name;
-        this.itemInfoImage.style.backgroundImage = `url(${item.icon})`;
-        this.itemInfoPrice.textContent = "$100";
+        this.itemInfoName.textContent = item.item.name;
+        this.itemInfoImage.style.backgroundImage = `url(${item.item.iconPath})`;
+        this.itemInfoPrice.textContent = "$" + item.price;
+        this.itemInfoDescription.innerHTML = item.item.getToolTipHTML();
     }
 
     updateItems() {
@@ -113,17 +154,35 @@ const ShopInventory = class extends Modal {
         this.itemElementContainer.innerHTML = '';
         for (const item of this.items) {
             const itemElement = this.createItemHTML(item);
-
             this.itemElementContainer.appendChild(itemElement);
             this.itemElements.push(itemElement);
         }
         this.itemElements[0]?.click();
     }
 
-    setupShopEventListeners(){
+    setupShopEventListeners() {
         this.addEventListener("buy-click", this.buyButton, "click",
             function (e) {
-                this.gameEngine.toastManager.createToast({ duration: 1000, type: Toast.TYPES.ERROR, message: "Buying not implemented yet" })
+                if (this.selectedIndex == -1) {
+                    return;
+                }
+                const itemToBuy = this.items[this.selectedIndex];
+                const quantityPurchase = this.purchaseCallback(itemToBuy, 1);
+                if (quantityPurchase) {
+                    this.gameEngine.toastManager.createToast({ duration: 1000, type: 0, message: `Purchased ${itemToBuy.item.name}` });
+                    itemToBuy.quantity -= quantityPurchase;
+                    if (itemToBuy.quantity <= 0) {
+                        this.items.splice(this.selectedIndex, 1);
+                        this.itemElements[this.selectedIndex].remove();
+                        this.removeEventListener("item-" + itemToBuy.id);
+                        this.itemElements.splice(this.selectedIndex, 1);
+                        this.selectedIndex = 0;
+                        if (this.items.length == 0) {
+                            this.selectedIndex = -1;
+                        }
+                        this.select(this.selectedIndex);
+                    }
+                }
             }.bind(this)
         );
     }

@@ -73,7 +73,20 @@
     text-overflow: ellipsis;
     text-align: left;
     align-items: center;
-    padding: var(--gap-medium);
+    pointer-events: none;
+    user-select: none;
+    padding: var(--gap-large);
+}
+
+.item-element .item-price {
+    padding: var(--gap-large);
+    font-weight: bold;
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: right;
+    align-items: center;
     pointer-events: none;
     user-select: none;
 }
@@ -121,6 +134,18 @@
     user-select: none;
     pointer-events: none;
 }
+
+.item-info-container .description-container {
+    width: 100%;
+    padding: var(--gap-medium);
+}
+
+.item-info-container .description {
+    font-size: 1rem;
+    user-select: none;
+    pointer-events: none;
+}
+
 
 .item-info-container .buy-button-container {
     width: 100%;

@@ -1,23 +1,18 @@
 import Modal from "../Modal/Modal.mjs";
 import Inventory from "./Inventory.mjs";
 import WebComponent from "../WebComponent.mjs";
+import Item from "../../Item/Item.mjs";
 
 const InventoryItem = class extends WebComponent {
     constructor(options) {
         super(options);
         this.item = options?.item ?? null;
-        this.stackable = options?.stackable ?? true;
-        this.maxStack = options?.maxStack ?? 16;
-        this.quantity = options?.quantity ?? 1;
         this.html = options?.html ?? null;
-        this.actions = structuredClone(Inventory.ACTIONS);
-        for (var action in this.actions) {
-            this.actions[action] = options?.actions?.[action] ?? true;
-        }
         this.nameElement = null;
         this.countElement = null;
         this.iconElement = null;
         this.inspectModal = null;
+        this.cooldownElement = null;
     }
 
     createHTML() {
@@ -44,16 +39,20 @@ const InventoryItem = class extends WebComponent {
         this.countElement.display = 'none';
         element.appendChild(this.countElement);
 
+        this.cooldownElement = document.createElement('div');
+        this.cooldownElement.className = 'cooldown';
+        element.appendChild(this.cooldownElement);
+
         this.html = element;
         this.updateHTML();
         return this.html;
     }
 
-    createTooltipDescription(){
+    createTooltipDescription() {
         return this.item.getToolTipHTML();
     }
 
-    setTooltipDescription(x){
+    setTooltipDescription(x) {
         this.html.dataset.tooltipHTML = x;
     }
 
@@ -82,7 +81,7 @@ const InventoryItem = class extends WebComponent {
     }
 
     canMergeWith(item) {
-        return this.item.name == item.item.name && this.stackable;
+        return this.item.name == item.item.name && this.item.stackable;
     }
 
     canSwapWith(item) {
@@ -100,36 +99,71 @@ const InventoryItem = class extends WebComponent {
         }
 
         if (this.item.iconPath) {
-            this.iconElement.style.display = 'block';
-            if(this.iconElement.src != this.item.iconPath){
+            if (this.iconElement.style.display != "block") {
+                this.iconElement.style.display = 'block';
+            }
+            if (!this.iconElement.src || new URL(this.iconElement.src).href !== new URL(this.item.iconPath, document.baseURI).href) {
                 this.iconElement.src = this.item.iconPath;
             }
+
         } else {
-            this.iconElement.style.display = 'none';
-            this.iconElement.src = '';
+            if (this.iconElement.style.display != "none") {
+                this.iconElement.style.display = 'none';
+            }
+            if(this.iconElement.src) {
+                this.iconElement.src = null;
+            }
         }
 
         if (this.item.name) {
-            this.nameElement.style.display = 'block';
-            this.nameElement.textContent = this.item.name;
-            this.nameElement.style.fontSize = this.nameElement.clientWidth / 4 + 'px';
+            if (this.nameElement.style.display != "block") {
+                this.nameElement.style.display = 'block';
+            }
+            if (this.item.name != this.nameElement.textContent) {
+                this.nameElement.textContent = this.item.name;
+            }
+            if (this.nameElement.style.fontSize != this.nameElement.clientWidth / 4 + 'px') {
+                this.nameElement.style.fontSize = this.nameElement.clientWidth / 4 + 'px';
+            }
         } else {
-            this.nameElement.style.display = 'none';
+            if (this.nameElement.style.display != "none") {
+                this.nameElement.style.display = 'none';
+            }
         }
 
-        if (this.quantity > 1) {
-            this.countElement.style.display = 'block';
-            this.countElement.textContent = this.quantity;
+        if (this.item.quantity > 1) {
+            if (this.countElement.style.display != "block") {
+                this.countElement.style.display = 'block';
+            }
+            if (this.item.quantity != this.countElement.textContent) {
+                this.countElement.textContent = this.item.quantity;
+            }
         } else {
-            this.countElement.style.display = 'none';
+            if (this.countElement.style.display != "none") {
+                this.countElement.style.display = 'none';
+            }
+        }
+
+        if (this.item.getCooldownRatio() >= 0) {
+            if (this.cooldownElement.style.display != "block") {
+                this.cooldownElement.style.display = 'block';
+            }
+            if (this.item.getCooldownRatio() != 0 || this.cooldownElement.style.height != "0%") {
+                this.cooldownElement.style.height = `${this.item.getCooldownRatio() * 100}%`;
+            }
+
+        } else {
+            if (this.cooldownElement.style.display != "none") {
+                this.cooldownElement.style.height = "0%";
+            }
         }
 
         if (this.inspectModal) {
             const itemInspectContent = this.item.getInspectHTML();
-            if(this.inspectModal.content.innerHTML != itemInspectContent){
+            if (this.inspectModal.content.innerHTML != itemInspectContent) {
                 this.inspectModal.content.innerHTML = itemInspectContent;
             }
-            if(this.inspectModal.title != this.item.name){
+            if (this.inspectModal.title != this.item.name) {
                 this.inspectModal.setTitle(this.item.name);
             }
         }
@@ -146,6 +180,7 @@ const InventoryItem = class extends WebComponent {
         this.countElement = null;
         this.iconElement = null;
         this.inspectModal = null;
+        this.cooldownElement = null;
     }
 
     clone() {
