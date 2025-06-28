@@ -8,6 +8,7 @@ const Sword = class extends Item {
         this.maxReloadTime = options?.maxCooldown ?? 1;
         this.maxStack = 1;
         this.stackable = false;
+        this.description = "A sharp sword.";
     }
 
     getToolTipHTML() {
@@ -25,12 +26,14 @@ const Sword = class extends Item {
     }
 
     getCooldownRatio() {
-        return this.reloadTime / this.maxReloadTime + 0.5+Math.sin(performance.now() * 0.01)/2;
+        return this.reloadTime / this.maxReloadTime;
     }
 
     clone() {
         const cloned = super.clone();
         cloned.damage = this.damage;
+        cloned.reloadTime = this.reloadTime;
+        cloned.maxReloadTime = this.maxReloadTime;
         return cloned;
     }
 }

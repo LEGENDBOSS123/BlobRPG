@@ -67,7 +67,6 @@
 
 .item-element .item-name {
     font-weight: bold;
-    flex-grow: 1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -78,10 +77,23 @@
     padding: var(--gap-large);
 }
 
+.item-element .item-quantity {
+    font-weight: bold;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+    align-items: center;
+    pointer-events: none;
+    user-select: none;
+}
+
 .item-element .item-price {
     padding: var(--gap-large);
     font-weight: bold;
     flex-grow: 1;
+    flex-shrink: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -103,6 +115,11 @@
 }
 
 .item-info-container .name-container {
+    width: 100%;
+    padding: var(--gap-medium);
+}
+
+.item-info-container .item-quantity {
     width: 100%;
     padding: var(--gap-medium);
 }

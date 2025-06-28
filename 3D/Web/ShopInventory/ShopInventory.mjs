@@ -16,6 +16,7 @@ const ShopInventory = class extends Modal {
         this.itemInfoName = null;
         this.itemInfoImage = null;
         this.itemInfoDescription = null;
+        this.itemInfoQuantity = null;
         this.itemInfoPrice = null;
         this.buyButton = null;
 
@@ -49,6 +50,11 @@ const ShopInventory = class extends Modal {
         this.itemInfoName = document.createElement('span');
         this.itemInfoName.classList.add('name');
         itemInfoNameContainer.appendChild(this.itemInfoName);
+
+
+        this.itemInfoQuantity = document.createElement('span');
+        this.itemInfoQuantity.classList.add('item-quantity');
+        itemInfoNameContainer.appendChild(this.itemInfoQuantity);
 
         const itemInfoImageContainer = document.createElement('div');
         itemInfoImageContainer.classList.add('image-container');
@@ -97,6 +103,11 @@ const ShopInventory = class extends Modal {
         itemName.textContent = item.item.name;
         itemElement.appendChild(itemName);
 
+        const quantity = document.createElement('span');
+        quantity.classList.add('item-quantity');
+        quantity.textContent = "x" + item.quantity;
+        itemElement.appendChild(quantity);
+
         const price = document.createElement('span');
         price.classList.add('item-price');
         price.textContent = "$" + item.price;
@@ -107,7 +118,6 @@ const ShopInventory = class extends Modal {
         this.addEventListener("item-" + item.id, itemElement, "click",
             function (e) {
                 this.select(this.itemElements.indexOf(itemElement)); 
-                
             }.bind(this)
         );
 
@@ -139,6 +149,7 @@ const ShopInventory = class extends Modal {
 
         const item = this.items[this.selectedIndex];
         this.itemInfoName.textContent = item.item.name;
+        this.itemInfoQuantity.textContent = "x" + item.quantity;
         this.itemInfoImage.style.backgroundImage = `url(${item.item.iconPath})`;
         this.itemInfoPrice.textContent = "$" + item.price;
         this.itemInfoDescription.innerHTML = item.item.getToolTipHTML();
@@ -181,6 +192,10 @@ const ShopInventory = class extends Modal {
                             this.selectedIndex = -1;
                         }
                         this.select(this.selectedIndex);
+                    }
+                    else{
+                        this.itemElements[this.selectedIndex].querySelector('.item-quantity').textContent = "x" + itemToBuy.quantity;
+                        this.updateItemInfo();
                     }
                 }
             }.bind(this)

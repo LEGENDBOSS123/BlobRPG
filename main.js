@@ -32,6 +32,7 @@ import Item from "./3D/Item/Item.mjs";
 import Sword from "./3D/Item/Sword.mjs";
 import Apple from "./3D/Item/Apple.mjs";
 import ShopOffer from "./3D/Web/ShopInventory/ShopOffer.mjs";
+import Toast from "./3D/Web/Toast/Toast.mjs";
 var stats = new Stats();
 var stats2 = new Stats();
 
@@ -353,8 +354,7 @@ const sword = new Sword({
     gameEngine: gameEngine,
     name: "Sword",
     iconPath: "./3D/Graphics/Assets/sword.png",
-    type: "weapon",
-    description: "Attack your enemies with this sharp sword.",
+    type: "weapon"
 });
 const apple = new Apple({
     gameEngine: gameEngine,
@@ -366,7 +366,7 @@ const apple = new Apple({
 var shopInventory = new ShopInventory({
     gameEngine: gameEngine,
     document: document,
-    title: "Shop Inventory",
+    title: "Shop Inventory"
 });
 
 shopInventory.createHTML({
@@ -381,6 +381,12 @@ shopInventory.purchaseCallback = function (item, quantity) {
     var index = inventory.emptyIndex();
     var hotbarIndex = hotbar.emptyIndex();
     if ((index == -1 && hotbarIndex == -1) || player.health - item.price * quantity < 0) {
+        if(index == -1) {
+            this.gameEngine.toastManager.createToast({ duration: 1000, type: Toast.TYPES.ERROR, message: "Inventory and hotbar full"});
+        }
+        else {
+            this.gameEngine.toastManager.createToast({ duration: 1000, type: Toast.TYPES.ERROR, message: "Cannot afford purchase" });
+        }
         return 0;
     }
     player.health -= item.price * quantity;
@@ -413,52 +419,8 @@ shopInventory.items = [
     new ShopOffer({
         gameEngine: gameEngine,
         item: apple.clone(),
-        price: 10
-    }),
-    new ShopOffer({
-        gameEngine: gameEngine,
-        item: apple.clone(),
-        price: 10
-    }),
-    new ShopOffer({
-        gameEngine: gameEngine,
-        item: apple.clone(),
-        price: 10
-    }),
-    new ShopOffer({
-        gameEngine: gameEngine,
-        item: apple.clone(),
-        price: 10
-    }),
-    new ShopOffer({
-        gameEngine: gameEngine,
-        item: apple.clone(),
-        price: 10
-    }),
-    new ShopOffer({
-        gameEngine: gameEngine,
-        item: apple.clone(),
-        price: 10
-    }),
-    new ShopOffer({
-        gameEngine: gameEngine,
-        item: apple.clone(),
-        price: 10
-    }),
-    new ShopOffer({
-        gameEngine: gameEngine,
-        item: apple.clone(),
-        price: 10
-    }),
-    new ShopOffer({
-        gameEngine: gameEngine,
-        item: apple.clone(),
-        price: 10
-    }),
-    new ShopOffer({
-        gameEngine: gameEngine,
-        item: apple.clone(),
-        price: 10
+        price: 10,
+        quantity: 4
     })
 ];
 
