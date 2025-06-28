@@ -121,7 +121,6 @@
 
 .item-info-container .item-quantity {
     width: 100%;
-    padding: var(--gap-medium);
 }
 
 .item-info-container .name {

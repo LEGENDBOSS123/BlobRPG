@@ -105,7 +105,7 @@ const ShopInventory = class extends Modal {
 
         const quantity = document.createElement('span');
         quantity.classList.add('item-quantity');
-        quantity.textContent = "x" + item.quantity;
+        quantity.textContent = item.quantity == Infinity ? "" : "x" + item.quantity;
         itemElement.appendChild(quantity);
 
         const price = document.createElement('span');
@@ -149,7 +149,7 @@ const ShopInventory = class extends Modal {
 
         const item = this.items[this.selectedIndex];
         this.itemInfoName.textContent = item.item.name;
-        this.itemInfoQuantity.textContent = "x" + item.quantity;
+        this.itemInfoQuantity.textContent = item.quantity == Infinity ? "" : "x" + item.quantity;
         this.itemInfoImage.style.backgroundImage = `url(${item.item.iconPath})`;
         this.itemInfoPrice.textContent = "$" + item.price;
         this.itemInfoDescription.innerHTML = item.item.getToolTipHTML();
@@ -194,7 +194,7 @@ const ShopInventory = class extends Modal {
                         this.select(this.selectedIndex);
                     }
                     else{
-                        this.itemElements[this.selectedIndex].querySelector('.item-quantity').textContent = "x" + itemToBuy.quantity;
+                        this.itemElements[this.selectedIndex].querySelector('.item-quantity').textContent = itemToBuy.quantity == Infinity ? "" : "x" + itemToBuy.quantity;
                         this.updateItemInfo();
                     }
                 }

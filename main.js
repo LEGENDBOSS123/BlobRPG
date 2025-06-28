@@ -420,7 +420,7 @@ shopInventory.items = [
         gameEngine: gameEngine,
         item: apple.clone(),
         price: 10,
-        quantity: 4
+        quantity: Infinity
     })
 ];
 
