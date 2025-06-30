@@ -193,7 +193,6 @@ var Player = class extends Entity {
     addToWorld(world) {
         world.addComposite(this.composite);
         world.addComposite(this.itemHeldBox);
-        console.log(this.itemHeldBox)
         world.addConstraint(this.itemHeldConstraint);
         this.updateShapeID();
     }

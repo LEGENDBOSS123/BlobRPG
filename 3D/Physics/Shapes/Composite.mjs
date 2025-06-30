@@ -274,9 +274,6 @@ const Composite = class extends WorldObject {
             if (this.getGlobalFlag(this.constructor.FLAGS.KINEMATIC | this.constructor.FLAGS.STATIC)) {
                 return null;
             }
-            if(this.id == 5){
-                console.log((position.subtract(this.global.body.position)));
-            }
             return [force, (position.subtract(this.global.body.position)).cross(force)];
         }
         return this.maxParent.getForceEffects(force, position);
