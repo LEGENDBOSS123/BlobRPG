@@ -3,6 +3,8 @@ import Sphere from "../Physics/Shapes/Sphere.mjs";
 import Vector3 from "../Physics/Math3D/Vector3.mjs";
 import Entity from "./Entity.mjs";
 import Quaternion from "../Physics/Math3D/Quaternion.mjs";
+import Box from "../Physics/Shapes/Box.mjs";
+import DistanceConstraint from "../Physics/Collision/DistanceConstraint.mjs";
 
 var Player = class extends Entity {
     constructor(options) {
@@ -71,6 +73,33 @@ var Player = class extends Entity {
         this.groundDetectDot = 0.8;
         this.wallDetectDot = 0.2;
 
+        this.itemHeldBox = new Box({
+            width: 0.75,
+            height: 5,
+            depth: 0.75,
+            global: {
+                body: {
+                    position: options?.position ?? new Vector3(0, 0, 0),
+                    acceleration: this.gravity,
+                }
+            },
+            local: {
+                body: {
+                    mass: 0.001
+                }
+            },
+            canCollideWithMask: 0
+        });
+        this.itemHeldBox.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
+
+        this.itemHeldConstraint = new DistanceConstraint({
+            body1: this.composite,
+            body2: this.itemHeldBox,
+            anchor1: new Vector3(0, 1.5, 0),
+            anchor2: new Vector3(0, 1.5, 0),
+            restLength: 0.5
+        });
+
         this.jumpPostCollision = function (contact) {
             if (contact.ignore) {
                 return;
@@ -78,7 +107,7 @@ var Player = class extends Entity {
             if (contact.body1.maxParent == this.composite) {
                 if (contact.normal.dot(new Vector3(0, 1, 0)) > this.groundDetectDot) {
                     this.canJump = true;
-                    if(contact.body2.isImmovable()){
+                    if (contact.body2.isImmovable()) {
                         this.touchingGround = true;
                         this.groundVelocity = contact.velocity;
                     }
@@ -91,7 +120,7 @@ var Player = class extends Entity {
             else {
                 if (contact.normal.dot(new Vector3(0, -1, 0)) > this.groundDetectDot) {
                     this.canJump = true;
-                    if(contact.body1.isImmovable()){
+                    if (contact.body1.isImmovable()) {
                         this.touchingGround = true;
                         this.groundVelocity = contact.velocity.scale(-1);
                     }
@@ -163,6 +192,9 @@ var Player = class extends Entity {
 
     addToWorld(world) {
         world.addComposite(this.composite);
+        world.addComposite(this.itemHeldBox);
+        console.log(this.itemHeldBox)
+        world.addConstraint(this.itemHeldConstraint);
         this.updateShapeID();
     }
 
@@ -170,6 +202,8 @@ var Player = class extends Entity {
         if (this.composite.mesh) {
             return;
         }
+        this.itemHeldBox.setMeshAndAddToScene({}, this.gameEngine);
+        this.itemHeldConstraint.setMeshAndAddToScene({}, this.gameEngine);
         // gameEngine.graphicsEngine.load("roblox_default_character.glb").then(function (gltf) {
         //     gltf.scene.scale.set(...(new Vector3(0.4, 0.4, 0.4).scale(this.sphere.radius * 1.95)));
         //     gltf.scene.children[0].quaternion.copy(Quaternion.from(gltf.scene.children[0].quaternion).rotateByAngularVelocity(new Vector3(0, 2, 0)));

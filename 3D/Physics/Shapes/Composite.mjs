@@ -68,7 +68,7 @@ const Composite = class extends WorldObject {
         if (this.isImmovable()) {
             return 0;
         }
-        return 1 / (this.global.body.mass * 1 / (1 - this.global.body.linearDamping.multiply(normal).magnitude()));
+        return 1 / (this.global.body.mass / (1 - this.global.body.linearDamping.multiply(normal).magnitude()));
     }
 
     toggleBitMask(mask, letter) {
@@ -273,6 +273,9 @@ const Composite = class extends WorldObject {
         if (this.isMaxParent()) {
             if (this.getGlobalFlag(this.constructor.FLAGS.KINEMATIC | this.constructor.FLAGS.STATIC)) {
                 return null;
+            }
+            if(this.id == 5){
+                console.log((position.subtract(this.global.body.position)));
             }
             return [force, (position.subtract(this.global.body.position)).cross(force)];
         }

@@ -59,10 +59,10 @@ const DistanceConstraint = class extends Constraint {
 
         const correction = normal.scale(-error / totalInverse);
         if (wA > 0) {
-            this.body1Map.translation.subtractInPlace(correction.scale(wA / totalInverse));
+            this.body1Map.translation.subtractInPlace(correction.scale(wA));
         }
         if (wB > 0) {
-            this.body2Map.translation.addInPlace(correction.scale(wB / totalInverse));
+            this.body2Map.translation.addInPlace(correction.scale(wB));
         }
     }
 
@@ -163,10 +163,10 @@ const DistanceConstraint = class extends Constraint {
     }
 
     applyForces() {
-        var f1 = this.body1.maxParent.getForceEffect(this.impulse, this.point);
-        var f2 = this.body2.maxParent.getForceEffect(this.impulse.scale(-1), this.point);
+        var f1 = this.body1.maxParent.getForceEffect(this.impulse, this.point1);
+        var f2 = this.body2.maxParent.getForceEffect(this.impulse.scale(-1), this.point2);
         if (f1) {
-            this.body1_netForce = f1[0]
+            this.body1_netForce = f1[0];
             this.body1_netTorque = f1[1];
         }
         if (f2) {
