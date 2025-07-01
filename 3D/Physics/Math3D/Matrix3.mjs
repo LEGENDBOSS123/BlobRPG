@@ -97,7 +97,7 @@ var Matrix3 = class {
 
     invert() {
         const determinant = this.elements[0] * (this.elements[4] * this.elements[8] - this.elements[5] * this.elements[7]) - this.elements[1] * (this.elements[3] * this.elements[8] - this.elements[5] * this.elements[6]) + this.elements[2] * (this.elements[3] * this.elements[7] - this.elements[4] * this.elements[6]);
-        if (Math.abs(determinant) < 1e-10) {
+        if (Math.abs(determinant) < 1e-24) {
             return this.constructor.zero();
         }
         const inverseDeterminant = 1 / determinant;
@@ -122,7 +122,7 @@ var Matrix3 = class {
             this.elements[1] * (this.elements[3] * this.elements[8] - this.elements[5] * this.elements[6]) +
             this.elements[2] * (this.elements[3] * this.elements[7] - this.elements[4] * this.elements[6]);
 
-        if (Math.abs(det) < 1e-10) {
+        if (Math.abs(det) < 1e-24) {
             return this.constructor.zero();
         }
 

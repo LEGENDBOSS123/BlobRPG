@@ -85,7 +85,7 @@ var Player = class extends Entity {
             },
             local: {
                 body: {
-                    mass: 0.001
+                    mass: 0.0000001
                 }
             },
             canCollideWithMask: 0
@@ -95,9 +95,9 @@ var Player = class extends Entity {
         this.itemHeldConstraint = new DistanceConstraint({
             body1: this.composite,
             body2: this.itemHeldBox,
-            anchor1: new Vector3(0, 1.5, 0),
-            anchor2: new Vector3(0, 1.5, 0),
-            restLength: 0.5
+            anchor1: new Vector3(0, 2.5, 0),
+            anchor2: new Vector3(0, 2.5, 0),
+            restLength: 2
         });
 
         this.jumpPostCollision = function (contact) {
@@ -202,7 +202,9 @@ var Player = class extends Entity {
             return;
         }
         this.itemHeldBox.setMeshAndAddToScene({}, this.gameEngine);
-        this.itemHeldConstraint.setMeshAndAddToScene({}, this.gameEngine);
+        this.itemHeldConstraint.setMeshAndAddToScene({
+            color: 0xffffff
+        }, this.gameEngine);
         // gameEngine.graphicsEngine.load("roblox_default_character.glb").then(function (gltf) {
         //     gltf.scene.scale.set(...(new Vector3(0.4, 0.4, 0.4).scale(this.sphere.radius * 1.95)));
         //     gltf.scene.children[0].quaternion.copy(Quaternion.from(gltf.scene.children[0].quaternion).rotateByAngularVelocity(new Vector3(0, 2, 0)));

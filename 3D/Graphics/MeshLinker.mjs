@@ -16,6 +16,7 @@ var MeshLinker = class {
         this.meshes[id] = mesh;
         mesh.id = id;
     }
+    
     removeMesh(id) {
         if (!this.meshes[id]) {
             return;

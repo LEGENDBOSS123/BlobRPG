@@ -32,6 +32,9 @@ const WorldObject = class {
             return;
         }
         this.events[event].splice(index, 1);
+        if (this.events[event].length == 0) {
+            delete this.events[event];
+        }
     }
 
     dispatchEvent(event, args = []) {
@@ -115,23 +118,29 @@ const WorldObject = class {
         var json = {};
         json.id = this.id;
         json.type = this.type;
-        json.toBeRemoved = this.toBeRemoved ?? false;
+        json.name = this.name;
+        json.toBeRemoved = this.toBeRemoved;
         return json;
     }
 
     static fromJSON(json, gameEngine) {
         var worldObject = new this();
         worldObject.id = json.id;
-        worldObject.world = gameEngine.world;
+        worldObject.type = json.type;
+        worldObject.name = json.name;
         worldObject.toBeRemoved = json.toBeRemoved;
         worldObject.gameEngine = gameEngine;
         return worldObject;
     }
 
     updateReferences(gameEngine = this.gameEngine) {
-
+        this.world = gameEngine.world;
+        this.gameEngine = gameEngine || this.gameEngine;
     }
 
+    destroy() {
+        this.events = {};
+    }
 }
 
 

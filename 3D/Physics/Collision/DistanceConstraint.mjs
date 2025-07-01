@@ -32,6 +32,11 @@ const DistanceConstraint = class extends Constraint {
 
     }
 
+
+    isValid() {
+        return this.body1.id != -1 && this.body2.id != -1;
+    }
+
     iteratePenetration() {
         this.point1 = this.body1.global.body.position.add(this.body1.global.body.rotation.multiplyVector3(this.anchor1)).add(this.body1Map.translation);
         this.point2 = this.body2.global.body.position.add(this.body2.global.body.rotation.multiplyVector3(this.anchor2)).add(this.body2Map.translation);
@@ -150,7 +155,7 @@ const DistanceConstraint = class extends Constraint {
 
     setMesh(options, gameEngine) {
         var geometry = new gameEngine.graphicsEngine.THREE.BufferGeometry().setFromPoints(this.getPoints());
-        var material = new gameEngine.graphicsEngine.THREE.LineBasicMaterial({ color: options?.color ?? 0xff0000 });
+        var material = new gameEngine.graphicsEngine.THREE.LineBasicMaterial({ color: options?.color ?? 0xff0000});
         material.side = gameEngine.graphicsEngine.THREE.DoubleSide;
         var line = new gameEngine.graphicsEngine.THREE.Line(geometry, material);
         line.frustumCulled = false;
@@ -216,7 +221,7 @@ const DistanceConstraint = class extends Constraint {
         return json;
     }
 
-    static fromJSON(json, world) {
+    static fromJSON(json, gameEngine) {
         var distanceConstraint = super.fromJSON(json, world);
         distanceConstraint.impulse = Vector3.fromJSON(json.impulse);
         distanceConstraint.body1 = json.body1;
@@ -234,11 +239,15 @@ const DistanceConstraint = class extends Constraint {
     }
 
     updateReferences(gameEngine = this.gameEngine) {
+        super.updateReferences(gameEngine);
         this.body1 = gameEngine.world.getByID(this.body1);
         this.body2 = gameEngine.world.getByID(this.body2);
-        if (gameEngine) {
-            this.gameEngine = gameEngine;
-        }
+    }
+
+    destroy(){
+        super.destroy();
+        this.body1 = null;
+        this.body2 = null;
     }
 };
 

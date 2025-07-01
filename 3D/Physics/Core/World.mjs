@@ -84,7 +84,7 @@ const World = class {
             this.removeComposite(child, false);
         }
         this.composites.splice(this.composites.indexOf(element), 1);
-
+        this.spatialHash.removeHitbox(element.id);
         this.remove(element);
     }
 
@@ -98,12 +98,18 @@ const World = class {
         element.dispatchEvent("delete");
         element._mesh = element.mesh;
         this.gameEngine.graphicsEngine.meshLinker.removeMesh(element.id);
-        this.spatialHash.remove(element.id);
         delete this.all[element.id];
         element.id = -1;
     }
 
     step() {
+        for (let c = this.constraints.length - 1; c >= 0; c--) {
+            if (!this.constraints[c].isValid()) {
+                const cons = this.constraints[c];
+                this.constraints.splice(c, 1);
+                this.remove(cons);
+            }
+        }
         for (const i in this.all) {
             this.all[i].dispatchEvent("preStep");
         }
@@ -120,11 +126,11 @@ const World = class {
                     comp.updateBeforeCollisionAll();
                 }
             }
-            
+
             this.collisionDetector.handleAll(this.composites);
             this.collisionDetector.resolveAll();
-            
-            
+
+
             for (const comp of this.composites) {
                 if (comp.isMaxParent()) {
                     comp.updateAfterCollisionAll();
@@ -136,7 +142,7 @@ const World = class {
         for (const comp of this.composites) {
             comp.dispatchEvent("postStep");
         }
-
+        
         for (const comp of this.composites) {
             if (comp.toBeRemoved) {
                 this.removeComposite(comp);

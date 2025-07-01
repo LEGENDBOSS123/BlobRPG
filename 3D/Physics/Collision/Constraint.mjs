@@ -11,6 +11,10 @@ const Constraint = class extends WorldObject {
         this.ignore = false;
     }
 
+    isValid(){
+        return true;
+    }
+
     solve(){
         return null;
     }
@@ -25,6 +29,14 @@ const Constraint = class extends WorldObject {
         var constraint = super.fromJSON(json, gameEngine);
         constraint.ignore = json.ignore;
         return constraint;
+    }
+
+    updateReferences(gameEngine){
+        super.updateReferences(gameEngine);
+    }
+
+    destroy(){
+        super.destroy();
     }
 }
 

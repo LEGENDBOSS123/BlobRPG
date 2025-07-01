@@ -5,6 +5,7 @@ import Vector3 from "../Math3D/Vector3.mjs";
 import Matrix3 from "../Math3D/Matrix3.mjs";
 import WorldObject from "../Core/WorldObject.mjs";
 import ClassRegistry from "../Core/ClassRegistry.mjs";
+
 const Composite = class extends WorldObject {
 
     static FLAGS = {
@@ -519,15 +520,12 @@ const Composite = class extends WorldObject {
 
     toJSON() {
         const composite = super.toJSON();
-        composite.id = this.id;
-        composite.world = this.gameEngine?.world?.id ?? null;
         composite.parent = this.parent?.id ?? null;
         composite.maxParent = this.maxParent.id;
         composite.children = [];
         for (const child of this.children) {
             composite.children.push(child.id);
         }
-        composite.toBeRemoved = this.toBeRemoved;
         composite.material = this.material.toJSON();
         composite.global = {};
         composite.global.body = this.global.body.toJSON();
@@ -546,15 +544,12 @@ const Composite = class extends WorldObject {
 
     static fromJSON(json, gameEngine) {
         const composite = super.fromJSON(json, gameEngine);
-        composite.world = world;
-        composite.id = json.id;
         composite.parent = json.parent;
         composite.maxParent = json.maxParent;
         composite.children = [];
         for (const child of json.children) {
             composite.children.push(child);
         }
-        composite.toBeRemoved = json.toBeRemoved;
         composite.material = Material.fromJSON(json.material, world);
         composite.global.body = PhysicsBody3.fromJSON(json.global.body, world);
         composite.global.hitbox = Hitbox3.fromJSON(json.global.hitbox);
@@ -570,15 +565,25 @@ const Composite = class extends WorldObject {
         return composite;
     }
 
-    updateReferences(gameEngine = this.gameEngine) {
+    updateReferences(gameEngine) {
+        super.updateReferences(gameEngine);
         this.parent = this.parent == null ? null : world.getByID(this.parent);
-        this.maxParent = gameEngine.world.getByID(this.maxParent);
+        this.maxParent = this.maxParent == null ? null : world.getByID(this.maxParent);
         for (var i = 0; i < this.children.length; i++) {
             this.children[i] = world.getByID(this.children[i]);
         }
-        if (gameEngine) {
-            this.gameEngine = gameEngine;
-        }
+    }
+
+    destroy() {
+        this.parent = null;
+        this.maxParent = null;
+        this.children = null;
+        this.material = null;
+
+        this.global = null;
+        this.local = null;
+
+        this.contacts = null;
     }
 }
 

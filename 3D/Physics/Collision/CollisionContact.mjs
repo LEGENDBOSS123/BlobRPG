@@ -1,6 +1,7 @@
 import Vector3 from "../Math3D/Vector3.mjs";
 import Constraint from "./Constraint.mjs";
 import ClassRegistry from "../Core/ClassRegistry.mjs";
+import Material from "./Material.mjs";
 
 const CollisionContact = class extends Constraint {
     static name = "COLLISIONCONTACT";
@@ -30,6 +31,10 @@ const CollisionContact = class extends Constraint {
         this.denominator = 0;
         this.denominatorFric = 0;
         this.solved = false;
+    }
+
+    isValid(){
+        return this.body1.id != -1 && this.body2.id != -1;
     }
 
     iteratePenetration() {
@@ -168,21 +173,34 @@ const CollisionContact = class extends Constraint {
         }
     }
 
-    static fromJSON(json, world) {
-        var c = new this();
+    static fromJSON(json, gameEngine) {
+        var c = super.fromJSON(json, gameEngine);
         c.normal = new Vector3().fromJSON(json.normal);
 
-        c.body1 = world.getByID(json.body1);
-        c.body2 = world.getByID(json.body2);
-        c.pointA = new Vector3().fromJSON(json.pointA);
-        c.pointB = new Vector3().fromJSON(json.pointB);
-        c.velocity = new Vector3().fromJSON(json.velocity);
+        c.body1 = json.body1
+        c.body2 = json.body2
+        c.pointA = Vector3.fromJSON(json.pointA);
+        c.pointB = Vector3.fromJSON(json.pointB);
+        c.velocity = Vector3.fromJSON(json.velocity);
 
         c.solved = json.solved;
-        c.impulse = new Vector3().fromJSON(json.impulse);
+        c.impulse = Vector3.fromJSON(json.impulse);
 
-        c.combinedMaterial = new Material().fromJSON(json.combinedMaterial);
+        c.combinedMaterial = Material.fromJSON(json.combinedMaterial);
         return c;
+    }
+
+    updateReferences(gameEngine) {
+        super.updateReferences(gameEngine);
+        this.body1 = gameEngine.world.getByID(this.body1);
+        this.body2 = gameEngine.world.getByID(this.body2);
+    }
+
+    destroy() {
+        super.destroy();
+        this.body1 = null;
+        this.body2 = null;
+        this.material = null;
     }
 };
 ClassRegistry.register(CollisionContact);
