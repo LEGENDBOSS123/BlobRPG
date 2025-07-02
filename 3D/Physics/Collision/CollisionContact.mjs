@@ -51,10 +51,10 @@ const CollisionContact = class extends Constraint {
 
         const correction = this.normal.scale(penetration / totalInverse);
         if (wA > 0) {
-            this.body1Map.translation.subtractInPlace(correction.scale(wA / totalInverse));
+            this.body1Map.translation.subtractInPlace(correction.scale(wA));
         }
         if (wB > 0) {
-            this.body2Map.translation.addInPlace(correction.scale(wB / totalInverse));
+            this.body2Map.translation.addInPlace(correction.scale(wB));
         }
     }
 
