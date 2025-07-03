@@ -114,7 +114,7 @@ var Player = class extends Entity {
             const otherEntity = this.gameEngine.entitySystem.getEntityFromShape(other);
             if (otherEntity instanceof Slime) {
                 const correctNormal = contact.normal.scale(side);
-                otherEntity.getMainShape().applyForce(correctNormal.scale(contact.velocity.magnitude() * 0.3), contact.position);
+                otherEntity.getMainShape().applyForce(correctNormal.scale(contact.velocity.dot(correctNormal) * -0.3), contact.position);
                 var damage = 1;
                 otherEntity.health -= damage;
                 this.gameEngine.particleSystem.addParticle(new TextParticle({
