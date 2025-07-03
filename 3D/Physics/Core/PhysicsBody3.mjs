@@ -124,7 +124,7 @@ const PhysicsBody3 = class {
         return body;
     }
 
-    static fromJSON(json, world) {
+    static fromJSON(json) {
         var body = new this();
         body.mass = json.mass;
         body.inverseMass = json.inverseMass;

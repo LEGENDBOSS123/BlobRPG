@@ -54,7 +54,7 @@ var SlimeSpawner = class extends Entity {
         this.sphere = gameEngine.world.getByID(this.sphere);
     }
 
-    spawnSlime(slimeClass, gameEngine) {
+    spawnSlime(slimeClass) {
         var slime = new slimeClass({
             sphere: {
                 global: {
@@ -63,11 +63,12 @@ var SlimeSpawner = class extends Entity {
                         acceleration: new Vector3(0, -0.2, 0),
                     }
                 }
-            }
+            },
+            gameEngine: this.gameEngine
         });
-        slime.addToWorld(gameEngine.world);
+        slime.addToWorld(this.gameEngine.world);
         this.entitySystem.register(slime);
-        slime.setMeshAndAddToScene({}, gameEngine);
+        slime.setMeshAndAddToScene({}, this.gameEngine);
         return slime;
     }
     getMainShape() {

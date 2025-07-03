@@ -140,7 +140,7 @@ const CollisionDetector = class {
 
         for (var iter = 0; iter < this.velocityIterations; iter++) {
             for (const contact of this.contacts) {
-                if (contact.ignore || !contact.solve()) {
+                if (!contact.solve() || contact.ignore) {
                     continue;
                 }
                 const a = contact.body1.maxParent;
@@ -160,6 +160,9 @@ const CollisionDetector = class {
 
         for (var iter = 0; iter < this.penetrationIterations; iter++) {
             for (const contact of this.contacts) {
+                 if (contact.ignore) {
+                    continue;
+                }
                 contact.iteratePenetration();
             }
         }
@@ -188,9 +191,6 @@ const CollisionDetector = class {
                 contact.body2.dispatchEvent("collision", [contact]);
             }
         }
-
-
-
 
         this.contacts.length = 0;
     }

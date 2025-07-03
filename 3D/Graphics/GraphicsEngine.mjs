@@ -86,6 +86,7 @@ var GraphicsEngine = class extends GameEngineComponent{
 
         this.mousePosition = new Vector3(0, 0, 0);
         this.raycaster = new this.THREE.Raycaster();
+        this.raycaster.camera = this.camera;
 
         this.window.addEventListener("mousemove", function (event) {
             this.mousePosition.x = (event.clientX / this.screenWidth) * 2 - 1;

@@ -2,10 +2,12 @@ import HealthEntity from "./HealthEntity.mjs";
 import Quaternion from "../Physics/Math3D/Quaternion.mjs";
 import Sphere from "../Physics/Shapes/Sphere.mjs";
 import Vector3 from "../Physics/Math3D/Vector3.mjs";
+import TextParticle from "../Graphics/Particle/TextParticle.mjs";
 
 var Slime = class extends HealthEntity {
     constructor(options) {
         super(options);
+        this.gravity = options?.gravity ?? new Vector3(0, 0, 0);
         this.damage = options?.damage ?? 10;
         this.speed = options?.speed ?? 0.3;
         this.fireRate = options?.fireRate ?? 1;
@@ -14,37 +16,63 @@ var Slime = class extends HealthEntity {
         this.ammo = options?.ammo ?? this.maxAmmo;
         this.range = options?.range ?? 3;
         this.reloadTime = options?.reloadTime ?? 1;
-        this.sphere = new Sphere(options?.sphere);
-        this.sphere.radius = options?.radius ?? 1;
         this.maxJumpCooldown = options?.maxJumpCooldown ?? 50;
         this.jumpCooldown = options?.jumpCooldown ?? 0;
+
+        this.sphere = new Sphere(
+            {
+                global: {
+                    body: {
+                        position: options?.position ?? new Vector3(0, 0, 0),
+                        acceleration: this.gravity,
+                        angularDamping: 1
+                    }
+                }
+            }
+        );
+        this.sphere.radius = options?.radius ?? 1;
         this.sphere.setRestitution(1);
         this.sphere.setFriction(0);
         this.sphere.global.body.linearDamping = new Vector3(0.02, 0, 0.02)
         this.sphere.global.body.angularDamping = 1;
         this.sphere.collisionMask = 0;
         this.sphere.collisionMask = this.sphere.setBitMask(this.sphere.collisionMask, "S", true);
-        this.target = null;
         this.sphere.dimensionsChanged();
-        this.handleTargetHit = function (target) {
-            var world = this.sphere.world;
-            var targetEntity = this.entitySystem.getByID(target.followID);
+
+        this.targetID = null;
+
+        this.handleTargetHit = function (targetID) {
+            var targetEntity = this.gameEngine.entitySystem.getByID(targetID);
             var targetBody = targetEntity.getMainShape();
             if (!targetBody) {
-                this.target = null;
+                this.targetID = null;
                 return;
             }
             var e = targetEntity;
             var damage = Math.floor(Math.random() * 5) + 1
             e.health -= damage;
-            top.addParticle(targetBody.global.body.position, damage);
+            this.gameEngine.particleSystem.addParticle(new TextParticle({
+                position: targetBody.global.body.position.add(new Vector3(0, 3, 0)),
+                text: "-" + damage,
+                velocity: new Vector3(0, 0.003, 0),
+                duration: 1500,
+                size: 6,
+                fadeInSpeed: 0.1,
+                fadeOutSpeed: 0.1,
+                shrinkSpeed: 0.2,
+                growthSpeed: 0.2,
+                color: "red"
+            }));
         }.bind(this);
         this.spherePostCollision = function (contact) {
-            var targetShapeID = this.entitySystem.getByID(this.target?.followID)?.getMainShape()?.id;
+            if (this.targetID == null) {
+                return;
+            }
+            var targetShapeID = this.gameEngine.entitySystem.getByID(this.targetID)?.getMainShape()?.maxParent.id;
             if (contact.body1.maxParent == this.sphere) {
-                if (this.target) {
+                if (this.targetID != null) {
                     if (contact.body2.maxParent.id == targetShapeID) {
-                        this.handleTargetHit(this.target);
+                        this.handleTargetHit(this.targetID);
                     }
                 }
                 if (contact.normal.dot(new Vector3(0, 1, 0)) > 0.75) {
@@ -54,9 +82,9 @@ var Slime = class extends HealthEntity {
                 }
             }
             else {
-                if (this.target) {
+                if (this.targetID != null) {
                     if (contact.body1.maxParent.id == targetShapeID) {
-                        this.handleTargetHit(this.target);
+                        this.handleTargetHit(this.targetID);
                     }
                 }
                 if (contact.normal.dot(new Vector3(0, -1, 0)) > 0.75) {
@@ -72,6 +100,10 @@ var Slime = class extends HealthEntity {
         this.sphere.addEventListener("collision", this.spherePostCollision);
         this.sphere.addEventListener("delete", this.onDelete);
         this.updateShapeID(this.sphere);
+
+        this.getTargets = function () {
+            return [];
+        }
     }
 
     addToScene(gameEngine) {
@@ -84,7 +116,7 @@ var Slime = class extends HealthEntity {
     }
 
     setMeshAndAddToScene(options, gameEngine) {
-        gameEngine.graphicsEngine.load("slime.glb", function (gltf) {
+        gameEngine.graphicsEngine.load("slime.glb").then(function (gltf) {
             gltf.scene.scale.set(this.sphere.radius, this.sphere.radius, this.sphere.radius);
             gltf.scene.traverse(function (child) {
                 if (child.isMesh) {
@@ -98,26 +130,47 @@ var Slime = class extends HealthEntity {
         }.bind(this));
     }
 
-    findTarget(targets) {
-        if (targets.length == 0) {
-            return null;
-        }
+    findTarget(targets = []) {
         for (var i of targets) {
-            var target = this.entitySystem.getByID(i.followID);
+            var target = this.gameEngine.entitySystem.getByID(i);
             if (target.health < 0) {
                 continue;
             }
             return i;
         }
+        return null;
     }
 
-    update(targets) {
-        var target = this.findTarget(targets);
-        if (!target) {
+    update() {
+        if (this.getMainShape().mesh) {
+            this.updateHealthTexture(this.getMainShape().mesh);
+        }
+
+        if (this.targetID != null) {
+            var targetEntity = this.gameEngine.entitySystem.getByID(this.targetID);
+
+            var targetBody = targetEntity.getMainShape();
+            if (targetBody) {
+                var direction = targetBody.global.body.position.subtract(this.sphere.global.body.position);
+
+                direction.y = 0;
+                if (direction.magnitudeSquared() > 0.001) {
+                    this.sphere.global.body.rotation = Quaternion.lookAt(direction, new Vector3(0, 1, 0));
+                }
+            }
+
+        }
+    }
+
+    updateStep() {
+        var targetID = this.findTarget(this.getTargets());
+        if (targetID == null) {
             return;
         }
-        this.target = target;
-        var targetEntity = this.entitySystem.getByID(target.followID);
+
+        this.targetID = targetID;
+        var targetEntity = this.gameEngine.entitySystem.getByID(targetID);
+
         var targetBody = targetEntity.getMainShape();
         if (!targetBody) {
             return;
@@ -125,9 +178,6 @@ var Slime = class extends HealthEntity {
         var direction = targetBody.global.body.position.subtract(this.sphere.global.body.position);
 
         direction.y = 0;
-        if (direction.magnitudeSquared() > 0.001) {
-            this.sphere.global.body.rotation = Quaternion.lookAt(direction, new Vector3(0, 1, 0));
-        }
         direction.normalizeInPlace().scaleInPlace(this.speed);
         direction.y = this.jumpPower;
 

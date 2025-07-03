@@ -74,8 +74,8 @@ const Sphere = class extends Composite {
         return composite;
     }
 
-    static fromJSON(json, world) {
-        var sphere = super.fromJSON(json, world);
+    static fromJSON(json, gameEngine) {
+        var sphere = super.fromJSON(json, gameEngine);
         sphere.radius = json.radius;
         return sphere;
     }

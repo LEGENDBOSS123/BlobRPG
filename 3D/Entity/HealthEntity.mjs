@@ -1,4 +1,3 @@
-import * as THREE from "three";
 import Entity from "./Entity.mjs";
 
 var HealthEntity = class extends Entity {
@@ -9,7 +8,7 @@ var HealthEntity = class extends Entity {
         this.isHealthUnit = true;
     }
 
-    updateHealthTexture(model, graphicsEngine) {
+    updateHealthTexture(model) {
         if (!model?.mesh?.healthInfo) {
             return;
         }
@@ -46,14 +45,14 @@ var HealthEntity = class extends Entity {
         canv.height = 32;
         var ctx = canv.getContext("2d");
 
-        var texture = new THREE.CanvasTexture(canv);
-        texture.minFilter = THREE.NearestFilter;
-        texture.magFilter = THREE.NearestFilter;
+        var texture = new this.gameEngine.graphicsEngine.THREE.CanvasTexture(canv);
+        texture.minFilter = this.gameEngine.graphicsEngine.THREE.NearestFilter;
+        texture.magFilter = this.gameEngine.graphicsEngine.THREE.NearestFilter;
 
-        var material = new THREE.SpriteMaterial({
+        var material = new this.gameEngine.graphicsEngine.THREE.SpriteMaterial({
             map: texture
         });
-        var sprite = new THREE.Sprite(material);
+        var sprite = new this.gameEngine.graphicsEngine.THREE.Sprite(material);
         model.healthInfo = {
             canvas: canv,
             context: ctx,

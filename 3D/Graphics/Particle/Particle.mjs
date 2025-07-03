@@ -7,7 +7,7 @@ var Particle = class {
         this.velocity = options?.velocity ?? new Vector3();
         this.damping = options?.damping ?? 0;
         this.acceleration = options?.acceleration ?? new Vector3();
-        this.duration = options?.duration ?? 0;
+        this.duration = options?.duration ?? 1000;
         this.fadeOutSpeed = options?.fadeOutSpeed ?? 0;
         this.fadeInSpeed = options?.fadeInSpeed ?? 0;
         this.shrinkSpeed = options?.shrinkSpeed ?? 0;
@@ -40,7 +40,7 @@ var Particle = class {
     }
 
     updateCanvas(time) {
-        if(this.createdText){
+        if(this.createdCanvasTexture){
             return;
         }
         var canvas = this.canvas.canvas;
@@ -53,7 +53,7 @@ var Particle = class {
         ctx.fill();
         ctx.stroke();
         this.texture.needsUpdate = true;
-        this.createdText = true;
+        this.createdCanvasTexture = true;
     }
 
     setMeshAndAddToScene(options, gameEngine) {
@@ -116,7 +116,6 @@ var Particle = class {
         this.sprite.position.set(position.x, position.y, position.z);
         this.sprite.material.rotation = sway;
         this.sprite.scale.set(this.canvas.canvas.width / this.canvas.canvas.height * this.size * size, this.size * size, 1);
-        
     }
 }
 

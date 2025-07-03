@@ -5,7 +5,8 @@ import Entity from "./Entity.mjs";
 import Quaternion from "../Physics/Math3D/Quaternion.mjs";
 import Box from "../Physics/Shapes/Box.mjs";
 import DistanceConstraint from "../Physics/Collision/DistanceConstraint.mjs";
-
+import Slime from "./Slime.mjs";
+import TextParticle from "../Graphics/Particle/TextParticle.mjs";
 var Player = class extends Entity {
     constructor(options) {
         super(options);
@@ -75,7 +76,7 @@ var Player = class extends Entity {
 
         this.itemHeldBox = new Box({
             width: 0.75,
-            height: 5,
+            height: 8,
             depth: 0.75,
             global: {
                 body: {
@@ -88,7 +89,7 @@ var Player = class extends Entity {
                     mass: 0.0000001
                 }
             },
-            canCollideWithMask: 0
+            isSensor: true
         });
         this.itemHeldBox.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
 
@@ -96,9 +97,40 @@ var Player = class extends Entity {
             body1: this.composite,
             body2: this.itemHeldBox,
             anchor1: new Vector3(0, 2.5, 0),
-            anchor2: new Vector3(0, 2.5, 0),
+            anchor2: new Vector3(0, 4, 0),
             restLength: 2
         });
+
+        this.itemHeldPostCollision = function (contact) {
+            var other = null;
+            var side = 1;
+            if (contact.body1 == this.itemHeldBox) {
+                other = contact.body2.maxParent;
+                side = -1;
+            }
+            else {
+                other = contact.body1.maxParent;
+            }
+            const otherEntity = this.gameEngine.entitySystem.getEntityFromShape(other);
+            if (otherEntity instanceof Slime) {
+                const correctNormal = contact.normal.scale(side);
+                otherEntity.getMainShape().applyForce(correctNormal.scale(contact.velocity.magnitude() * 0.3), contact.position);
+                var damage = 1;
+                otherEntity.health -= damage;
+                this.gameEngine.particleSystem.addParticle(new TextParticle({
+                    position: otherEntity.getMainShape().global.body.position.add(new Vector3(0, 3, 0)),
+                    text: "-" + damage,
+                    velocity: new Vector3(0, 0.003, 0),
+                    duration: 1500,
+                    size: 6,
+                    fadeInSpeed: 0.1,
+                    fadeOutSpeed: 0.1,
+                    shrinkSpeed: 0.2,
+                    growthSpeed: 0.2,
+                    color: "red"
+                }));
+            }
+        }.bind(this);
 
         this.jumpPostCollision = function (contact) {
             if (contact.ignore) {
@@ -158,6 +190,8 @@ var Player = class extends Entity {
         this.spheres[0].addEventListener("preStep", this.preStepCallback);
 
         this.composite.addEventListener("postStep", this.postStepCallback);
+
+        this.itemHeldBox.addEventListener("collision", this.itemHeldPostCollision);
 
         this.updateShapeID(this.composite);
 

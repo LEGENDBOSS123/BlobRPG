@@ -326,18 +326,31 @@ var player = new Player({
     moveSpeed: 0.2,
     jumpSpeed: 0.4,
     gravity: new Vector3(0, gravity, 0),
-    position: new Vector3(0, 100, 0),
+    position: new Vector3(-2, 6, -0.15),
     mass: 1,
     gameEngine: gameEngine
 });
-
-
-
-
 player.setMeshAndAddToScene({}, gameEngine);
 gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
+
+
+for (var i = 0; i < 7; i++) {
+    var slime = new Slime({
+        gameEngine: gameEngine,
+        gravity: new Vector3(0, gravity, 0),
+        position: new Vector3(i, 2, 80),
+        radius: 3
+    })
+
+    slime.setMeshAndAddToScene({}, gameEngine);
+    gameEngine.entitySystem.register(slime);
+    slime.addToWorld(gameEngine.world);
+    slime.getTargets = function(){
+        return [player.id];
+    }
+}
 
 
 var toolTip = new Tooltip({
@@ -381,8 +394,8 @@ shopInventory.purchaseCallback = function (item, quantity) {
     var index = inventory.emptyIndex();
     var hotbarIndex = hotbar.emptyIndex();
     if ((index == -1 && hotbarIndex == -1) || player.health - item.price * quantity < 0) {
-        if(index == -1) {
-            this.gameEngine.toastManager.createToast({ duration: 1000, type: Toast.TYPES.ERROR, message: "Inventory and hotbar full"});
+        if (index == -1) {
+            this.gameEngine.toastManager.createToast({ duration: 1000, type: Toast.TYPES.ERROR, message: "Inventory and hotbar full" });
         }
         else {
             this.gameEngine.toastManager.createToast({ duration: 1000, type: Toast.TYPES.ERROR, message: "Cannot afford purchase" });
@@ -523,7 +536,7 @@ for (const obj of map.objects) {
     }
     if (obj.name.toLowerCase().includes("start")) {
         player.setStartPoint(obj.global.body.position);
-        player.respawn();
+        // player.respawn();
     }
     if (obj.name.toLowerCase().includes("start") || obj.name.toLowerCase().includes("checkpoint")) {
         obj.addEventListener("collision", function (contact) {

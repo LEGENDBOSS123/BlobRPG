@@ -33,7 +33,7 @@ const CollisionContact = class extends Constraint {
         this.solved = false;
     }
 
-    isValid(){
+    isValid() {
         return this.body1.id != -1 && this.body2.id != -1;
     }
 
@@ -45,16 +45,17 @@ const CollisionContact = class extends Constraint {
         if (penetration >= 0) {
             return;
         }
+        
         const wA = this.body1.maxParent.getEffectiveTotalInverseMass(this.normal);
         const wB = this.body2.maxParent.getEffectiveTotalInverseMass(this.normal);
         const totalInverse = wA + wB;
 
         const correction = this.normal.scale(penetration / totalInverse);
         if (wA > 0) {
-            this.body1Map.translation.subtractInPlace(correction.scale(wA));
+            this.body1Map.translation.subtractInPlace(correction);
         }
         if (wB > 0) {
-            this.body2Map.translation.addInPlace(correction.scale(wB));
+            this.body2Map.translation.addInPlace(correction);
         }
     }
 
@@ -65,6 +66,7 @@ const CollisionContact = class extends Constraint {
         this.velocity = this.body1.getVelocityAtPosition(this.pointA).subtractInPlace(this.body2.getVelocityAtPosition(this.pointB));
         var impactSpeed = this.velocity.dot(this.normal);
         if (impactSpeed > 0) {
+            this.impulse = new Vector3(0, 0, 0);
             return false;
         }
         var tangential = this.velocity.projectOntoPlane(this.normal);

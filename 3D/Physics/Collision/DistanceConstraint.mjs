@@ -222,7 +222,7 @@ const DistanceConstraint = class extends Constraint {
     }
 
     static fromJSON(json, gameEngine) {
-        var distanceConstraint = super.fromJSON(json, world);
+        var distanceConstraint = super.fromJSON(json, gameEngine);
         distanceConstraint.impulse = Vector3.fromJSON(json.impulse);
         distanceConstraint.body1 = json.body1;
         distanceConstraint.body2 = json.body2;

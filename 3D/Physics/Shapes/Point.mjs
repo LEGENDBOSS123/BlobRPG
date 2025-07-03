@@ -23,8 +23,8 @@ const Point = class extends Composite {
         return composite;
     }
 
-    static fromJSON(json, world) {
-        var point = new this(new Composite(json));
+    static fromJSON(json, gameEngine) {
+        var point = super.fromJSON(json, gameEngine);
         return box;
     }
 };

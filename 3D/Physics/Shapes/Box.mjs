@@ -135,8 +135,8 @@ const Box = class extends Composite {
         return composite;
     }
 
-    static fromJSON(json, world) {
-        var box = super.fromJSON(json, world);
+    static fromJSON(json, gameEngine) {
+        var box = super.fromJSON(json, gameEngine);
         box.width = json.width;
         box.height = json.height;
         box.depth = json.depth;

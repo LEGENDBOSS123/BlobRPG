@@ -225,8 +225,8 @@ const Polyhedron = class extends Composite {
         return poly;
     }
 
-    static fromJSON(json, world) {
-        var poly = super.fromJSON(json, world);
+    static fromJSON(json, gameEngine) {
+        var poly = super.fromJSON(json, gameEngine);
         // poly.localVertices = json.localVertices.map(function (v) { return Vector3.fromJSON(v) });
         // poly.globalVertices = json.globalVertices.map(function (v) { return Vector3.fromJSON(v) });
         // poly.faces = json.faces.map(function (f) { return [...f] });
