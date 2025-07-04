@@ -34,6 +34,10 @@ var Player = class extends Entity {
                 }
             }
         });
+        this.hotbar = options?.hotbar ?? Array(9).fill(null);
+        this.hotbarElement = options?.hotbarElement ?? null;
+        this.inventory = options?.hotbar ?? Array(9).fill(null);
+        this.inventoryElement = options?.hotbarElement ?? null;
 
         this.tiltable = options?.tiltable ?? true;
 
@@ -299,7 +303,31 @@ var Player = class extends Entity {
         this.keysVector = this.gameEngine.cameraControls.getDelta(this.gameEngine.graphicsEngine.camera).copy();
     }
 
+    useSelectedItem(){
+        if(!this.hotbarElement || !(this.hotbarElement.selectedSlot != null)){
+            return;
+        }
+        const itemSlot = this.hotbarElement.slots[0][this.hotbarElement.selectedSlot];
+        if(!itemSlot || !itemSlot.item){
+            return;
+        }
+
+        const inventoryItem = itemSlot.item;
+        const item = inventoryItem.item;
+
+        switch(item.name){
+            case "Apple":
+                this.health += item.heal;
+                itemSlot.removeNumber(1);
+                break;
+        }
+
+    }
+
     updateStep() {
+
+       
+
         var vel = this.composite.global.body.getVelocity();
         var velHorizontal = vel.copy();
         velHorizontal.y = 0;

@@ -3,7 +3,7 @@ import Item from "./Item.mjs";
 const Apple = class extends Item{
     constructor(options){
         super(options);
-        this.heal = options?.heal ?? 5;
+        this.heal = options?.heal ?? 25;
         this.maxStack = 32;
         this.stackable = true;
         this.description = "A healthy apple.";
@@ -35,7 +35,7 @@ const Apple = class extends Item{
 
     clone(){
         const cloned = super.clone();
-        cloned.damage = this.damage;
+        cloned.heal = this.heal;
         return cloned;
     }
 }

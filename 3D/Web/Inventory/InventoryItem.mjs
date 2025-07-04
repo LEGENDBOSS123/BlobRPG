@@ -110,7 +110,7 @@ const InventoryItem = class extends WebComponent {
             if (this.iconElement.style.display != "none") {
                 this.iconElement.style.display = 'none';
             }
-            if(this.iconElement.src) {
+            if (this.iconElement.src) {
                 this.iconElement.src = null;
             }
         }
@@ -173,6 +173,10 @@ const InventoryItem = class extends WebComponent {
         if (this.inspectModal) {
             this.inspectModal.destroy();
             this.inspectModal = null;
+        }
+        if (this.item) {
+            this.item.destroy();
+            this.item = null;
         }
         this.html.remove();
         this.html = null;

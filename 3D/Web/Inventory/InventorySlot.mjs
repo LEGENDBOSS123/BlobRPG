@@ -130,6 +130,17 @@ const InventorySlot = class extends WebComponent {
         this.update();
     }
 
+    removeNumber(x) {
+        this.item.item.quantity -= x;
+        this.item.update();
+
+        if (this.item.item.quantity <= 0) {
+            this.item.destroy();
+            this.item = null;
+            this.update();
+        }
+    }
+
     splitItem() {
         if (!this.item || this.item.item.quantity <= 1 || !this.item.item.actions.SPLIT) {
             return;

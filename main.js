@@ -335,7 +335,6 @@ gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
 
-
 for (var i = 0; i < 7; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
@@ -466,7 +465,14 @@ var hotbar = new Hotbar({
     resizable: false,
     draggable: false,
     gameEngine: gameEngine
+});
+player.hotbarElement = hotbar;
+player.inventoryElement = inventory;
+
+document.addEventListener("click", function(e){
+    player.useSelectedItem();
 })
+
 
 hotbar.createHTML({
     container: document.body,

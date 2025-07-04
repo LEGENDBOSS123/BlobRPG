@@ -8,6 +8,10 @@ const GameEngineComponent = class {
             gameEngine: this.gameEngine
         });
     }
+
+    destroy(){
+        this.gameEngine = null;
+    }
 }
 
 export default GameEngineComponent;

@@ -1,5 +1,4 @@
 import Inventory from "./Inventory.mjs";
-import WebComponent from "../WebComponent.mjs";
 
 
 const Hotbar = class extends Inventory {
