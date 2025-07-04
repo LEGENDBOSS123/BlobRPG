@@ -24,6 +24,8 @@ const DistanceConstraint = class extends Constraint {
         this.anchor1 = options?.anchor1 ?? new Vector3();
         this.anchor2 = options?.anchor2 ?? new Vector3();
 
+        this.bias = 0.2;
+
         this.lowerBound = options?.lowerBound ?? options?.restLength ?? 0;
         this.upperBound = options?.upperBound ?? options?.restLength ?? Infinity;
 
@@ -109,9 +111,16 @@ const DistanceConstraint = class extends Constraint {
             deltaLength = delta.magnitude();
         }
         var n = delta.scale(1 / deltaLength);
+        var error = 0;
         if (deltaLength < this.upperBound && deltaLength > this.lowerBound) {
             this.impulse = new Vector3();
             return;
+        }
+        if (deltaLength > this.upperBound) {
+            error = deltaLength - this.upperBound;
+        }
+        else if (deltaLength < this.lowerBound) {
+            error = deltaLength - this.lowerBound;
         }
         var velocity1 = this.body1.getVelocityAtPosition(this.point1);
         var velocity2 = this.body2.getVelocityAtPosition(this.point2);
@@ -147,7 +156,7 @@ const DistanceConstraint = class extends Constraint {
                 return false;
             }
         }
-        var lambda = relVel / this.denominator;
+        var lambda = (relVel + this.bias * error) / this.denominator;
         this.impulse = n.scale(lambda);
         this.solved = true;
         return true;
@@ -155,7 +164,7 @@ const DistanceConstraint = class extends Constraint {
 
     setMesh(options, gameEngine) {
         var geometry = new gameEngine.graphicsEngine.THREE.BufferGeometry().setFromPoints(this.getPoints());
-        var material = new gameEngine.graphicsEngine.THREE.LineBasicMaterial({ color: options?.color ?? 0xff0000});
+        var material = new gameEngine.graphicsEngine.THREE.LineBasicMaterial({ color: options?.color ?? 0xff0000 });
         material.side = gameEngine.graphicsEngine.THREE.DoubleSide;
         var line = new gameEngine.graphicsEngine.THREE.Line(geometry, material);
         line.frustumCulled = false;
@@ -244,7 +253,7 @@ const DistanceConstraint = class extends Constraint {
         this.body2 = gameEngine.world.getByID(this.body2);
     }
 
-    destroy(){
+    destroy() {
         super.destroy();
         this.body1 = null;
         this.body2 = null;

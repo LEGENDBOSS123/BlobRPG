@@ -13,9 +13,9 @@ var Particle = class {
         this.shrinkSpeed = options?.shrinkSpeed ?? 0;
         this.growthSpeed = options?.growthSpeed ?? 0;
         this.startTime = null;
-        this.size = options?.size ?? 10;
+        this.size = options?.size ?? 8;
         this.color = options?.color ?? "white";
-        this.swayStrength = options?.swayStrength ?? 0.2;
+        this.swayStrength = options?.swayStrength ?? 0;
         this.swaySpeed = options?.swaySpeed ?? 0.01;
         this.canvas = {
             ctx: null,

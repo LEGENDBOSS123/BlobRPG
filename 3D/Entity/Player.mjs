@@ -7,6 +7,7 @@ import Box from "../Physics/Shapes/Box.mjs";
 import DistanceConstraint from "../Physics/Collision/DistanceConstraint.mjs";
 import Slime from "./Slime.mjs";
 import TextParticle from "../Graphics/Particle/TextParticle.mjs";
+import Particle from "../Graphics/Particle/Particle.mjs";
 var Player = class extends Entity {
     constructor(options) {
         super(options);
@@ -113,22 +114,32 @@ var Player = class extends Entity {
             }
             const otherEntity = this.gameEngine.entitySystem.getEntityFromShape(other);
             if (otherEntity instanceof Slime) {
-                const correctNormal = contact.normal.scale(side);
-                otherEntity.getMainShape().applyForce(correctNormal.scale(contact.velocity.dot(correctNormal) * -0.3), contact.position);
-                var damage = 1;
+                var damage = 2;
                 otherEntity.health -= damage;
-                this.gameEngine.particleSystem.addParticle(new TextParticle({
-                    position: otherEntity.getMainShape().global.body.position.add(new Vector3(0, 3, 0)),
-                    text: "-" + damage,
-                    velocity: new Vector3(0, 0.003, 0),
-                    duration: 1500,
-                    size: 6,
-                    fadeInSpeed: 0.1,
-                    fadeOutSpeed: 0.1,
-                    shrinkSpeed: 0.2,
-                    growthSpeed: 0.2,
-                    color: "red"
-                }));
+                var scale = 1;
+                if (otherEntity.health <= 0) {
+                    scale = 2;
+                }
+                const correctNormal = contact.normal.scale(side);
+                otherEntity.getMainShape().applyForce(correctNormal.scale(contact.velocity.dot(correctNormal) * -0.3 * scale), contact.position);
+
+                for (var i = 0; i < 2; i++) {
+                    this.gameEngine.particleSystem.addParticle(new Particle({
+                        position: otherEntity.getMainShape().global.body.position.add(new Vector3(0, 3, 0)),
+                        velocity: new Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).scaleInPlace(0.01),
+                        duration: 500,
+                        size: Math.random() * 0.5 + 0.3,
+                        fadeInSpeed: 0.2,
+                        fadeOutSpeed: 0.2,
+                        shrinkSpeed: 0.5,
+                        growthSpeed: 0.3,
+                        color: "red",
+                        canvas: {
+                            width: 4,
+                            height: 4
+                        }
+                    }));
+                }
             }
         }.bind(this);
 

@@ -164,11 +164,12 @@ var Slime = class extends HealthEntity {
 
     updateStep() {
         var targetID = this.findTarget(this.getTargets());
-        if (targetID == null) {
+        this.targetID = targetID;
+        if (targetID == null || this.health < 0) {
             return;
         }
 
-        this.targetID = targetID;
+        
         var targetEntity = this.gameEngine.entitySystem.getByID(targetID);
 
         var targetBody = targetEntity.getMainShape();

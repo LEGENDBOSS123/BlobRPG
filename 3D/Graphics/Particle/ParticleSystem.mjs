@@ -2,7 +2,7 @@ var ParticleSystem = class {
     constructor(options){
         this.particles = new Set();
         this.gameEngine = options?.gameEngine ?? null;
-        this.maxParticles = options?.maxParticles ?? 64;
+        this.maxParticles = options?.maxParticles ?? 512;
     }
 
     addParticle(particle){
