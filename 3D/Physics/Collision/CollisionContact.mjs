@@ -28,6 +28,9 @@ const CollisionContact = class extends Constraint {
 
         this.material = options?.combinedMaterial;
 
+        this.slop = 0.01;
+        this.bias = 0.2;
+
         this.denominator = 0;
         this.denominatorFric = 0;
         this.solved = false;
@@ -50,7 +53,7 @@ const CollisionContact = class extends Constraint {
         const wB = this.body2.maxParent.getEffectiveTotalInverseMass(this.normal);
         const totalInverse = wA + wB;
 
-        const correction = this.normal.scale(penetration / totalInverse);
+        const correction = this.normal.scale(Math.min(penetration + this.slop, 0) / totalInverse * this.bias);
         if (wA > 0) {
             this.body1Map.translation.subtractInPlace(correction);
         }
@@ -171,7 +174,9 @@ const CollisionContact = class extends Constraint {
             velocity: this.velocity.toJSON(),
             solved: this.solved,
             impulse: this.impulse.toJSON(),
-            combinedMaterial: this.combinedMaterial.toJSON()
+            combinedMaterial: this.combinedMaterial.toJSON(),
+            slop: this.slop,
+            bias: this.bias
         }
     }
 
@@ -187,6 +192,9 @@ const CollisionContact = class extends Constraint {
 
         c.solved = json.solved;
         c.impulse = Vector3.fromJSON(json.impulse);
+
+        c.slop = json.slop;
+        c.bias = json.bias;
 
         c.combinedMaterial = Material.fromJSON(json.combinedMaterial);
         return c;

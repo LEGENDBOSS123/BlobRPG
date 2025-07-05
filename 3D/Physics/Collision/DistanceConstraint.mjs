@@ -24,6 +24,7 @@ const DistanceConstraint = class extends Constraint {
         this.anchor1 = options?.anchor1 ?? new Vector3();
         this.anchor2 = options?.anchor2 ?? new Vector3();
 
+        this.slop = 0.01;
         this.bias = 0.2;
 
         this.lowerBound = options?.lowerBound ?? options?.restLength ?? 0;
@@ -64,7 +65,7 @@ const DistanceConstraint = class extends Constraint {
         const wB = this.body2.maxParent.getEffectiveTotalInverseMass(normal);
         const totalInverse = wA + wB;
 
-        const correction = normal.scale(-error / totalInverse);
+        const correction = normal.scale(-(error - Math.sign(error) * this.slop) / totalInverse * this.bias);
         if (wA > 0) {
             this.body1Map.translation.subtractInPlace(correction.scale(wA));
         }
@@ -156,7 +157,7 @@ const DistanceConstraint = class extends Constraint {
                 return false;
             }
         }
-        var lambda = (relVel + this.bias * error) / this.denominator;
+        var lambda = (relVel + this.bias * Math.abs(error)) / this.denominator;
         this.impulse = n.scale(lambda);
         this.solved = true;
         return true;
@@ -242,6 +243,7 @@ const DistanceConstraint = class extends Constraint {
         distanceConstraint.lowerBound = json.upperBound;
         distanceConstraint.upperBound = json.upperBound;
         distanceConstraint.bias = json.bias;
+        distanceConstraint.slop = json.slop;
         distanceConstraint.denominator = json.denominator;
         distanceConstraint.solved = json.solved;
         return distanceConstraint;
