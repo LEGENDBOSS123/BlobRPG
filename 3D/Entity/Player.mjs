@@ -118,14 +118,11 @@ var Player = class extends Entity {
             }
             const otherEntity = this.gameEngine.entitySystem.getEntityFromShape(other);
             if (otherEntity instanceof Slime) {
-                var damage = 2;
+                var damage = 1;
                 otherEntity.health -= damage;
                 var scale = 1;
-                if (otherEntity.health <= 0) {
-                    scale = 2;
-                }
                 const correctNormal = contact.normal.scale(side);
-                otherEntity.getMainShape().applyForce(correctNormal.scale(contact.velocity.dot(correctNormal) * -0.3 * scale), contact.position);
+                otherEntity.getMainShape().applyForce(correctNormal.scale(contact.velocity.dot(correctNormal) * -0.2 * scale), contact.position);
 
                 for (var i = 0; i < 2; i++) {
                     this.gameEngine.particleSystem.addParticle(new Particle({
@@ -303,19 +300,34 @@ var Player = class extends Entity {
         this.keysVector = this.gameEngine.cameraControls.getDelta(this.gameEngine.graphicsEngine.camera).copy();
     }
 
-    useSelectedItem(){
-        if(!this.hotbarElement || !(this.hotbarElement.selectedSlot != null)){
-            return;
+    getSelectedItem() {
+        if (!this.hotbarElement || !(this.hotbarElement.selectedSlot != null)) {
+            return null;
         }
         const itemSlot = this.hotbarElement.slots[0][this.hotbarElement.selectedSlot];
-        if(!itemSlot || !itemSlot.item){
-            return;
+        if (!itemSlot || !itemSlot.item) {
+            return null;
         }
 
         const inventoryItem = itemSlot.item;
         const item = inventoryItem.item;
 
-        switch(item.name){
+        return item;
+    }
+
+    useSelectedItem() {
+        if (!this.hotbarElement || !(this.hotbarElement.selectedSlot != null)) {
+            return null;
+        }
+        const itemSlot = this.hotbarElement.slots[0][this.hotbarElement.selectedSlot];
+        if (!itemSlot || !itemSlot.item) {
+            return null;
+        }
+
+        const inventoryItem = itemSlot.item;
+        const item = inventoryItem.item;
+
+        switch (item.name) {
             case "Apple":
                 this.health += item.heal;
                 itemSlot.removeNumber(1);
@@ -326,7 +338,35 @@ var Player = class extends Entity {
 
     updateStep() {
 
-       
+        var selectedItem = this.getSelectedItem();
+        if(selectedItem){
+            if(selectedItem.name == "Sword"){
+                if(this.itemHeldBox.id == -1){
+                    this.gameEngine.world.addComposite(this.itemHeldBox);
+                    this.gameEngine.world.addConstraint(this.itemHeldConstraint);
+                    this.itemHeldBox.global.body.setPosition(this.composite.global.body.position.copy());
+                    this.itemHeldBox.mesh.mesh.visible = true;
+                    this.itemHeldConstraint.mesh.mesh.visible = true;
+                }
+            }
+            else{
+                if(this.itemHeldBox.id != -1){
+                    this.gameEngine.world.removeComposite(this.itemHeldBox);
+                    this.gameEngine.world.removeConstraint(this.itemHeldConstraint);
+                    this.itemHeldBox.mesh.mesh.visible = false;
+                    this.itemHeldConstraint.mesh.mesh.visible = false;
+                }
+            }
+        }
+        else{
+            if(this.itemHeldBox.id != -1){
+                this.gameEngine.world.removeComposite(this.itemHeldBox);
+                this.gameEngine.world.removeConstraint(this.itemHeldConstraint);
+                this.itemHeldBox.mesh.mesh.visible = false;
+                this.itemHeldConstraint.mesh.mesh.visible = false;
+            }
+        }
+
 
         var vel = this.composite.global.body.getVelocity();
         var velHorizontal = vel.copy();

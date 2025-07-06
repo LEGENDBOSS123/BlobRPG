@@ -346,7 +346,7 @@ for (var i = 0; i < 7; i++) {
     slime.setMeshAndAddToScene({}, gameEngine);
     gameEngine.entitySystem.register(slime);
     slime.addToWorld(gameEngine.world);
-    slime.getTargets = function(){
+    slime.getTargets = function () {
         return [player.id];
     }
 }
@@ -469,7 +469,7 @@ var hotbar = new Hotbar({
 player.hotbarElement = hotbar;
 player.inventoryElement = inventory;
 
-document.addEventListener("click", function(e){
+document.addEventListener("click", function (e) {
     player.useSelectedItem();
 })
 
@@ -594,25 +594,49 @@ gameEngine.timer.schedule(gameEngine.fpsStepper);
 gameEngine.toastManager.createToast({ duration: 1000, type: 0, message: "Map Loaded" })
 
 
-// var infoModal = new Modal({
-//     content: document.createElement('p'),
-//     resizable: false,
-//     fullscreenable: false,
-//     draggable: false,
-//     closeable: false
-// });
-// infoModal.createHTML({
-//     container: document.body,
-//     width: 400,
-//     height: 200,
-//     centered: true
-// });
-// infoModal.content.textContent = "Press [E] to open inventory, and [Escape] to open settings";
-// infoModal.content.style = `padding: 20px; text-align: center; font-size: 20px;`;
+var infoModal = new Modal({
+    content: document.createElement('p'),
+    resizable: false,
+    fullscreenable: false,
+    draggable: false,
+    closeable: true,
+    title: "Instructions"
+});
+infoModal.createHTML({
+    container: document.body,
+    width: 400,
+    height: 200,
+    centered: true
+});
+infoModal.content.innerHTML = "Press [E] to open inventory, and [Escape] to open settings<br>Go to the shop to buy a sword or an apple.<br>Make sure you avoid the slimes.<br>Good Luck!";
+infoModal.content.style = `padding: 20px; text-align: center; font-size: 20px;`;
 
-// setTimeout(function () {
-//     infoModal.close();
-// }, 2000);
+setTimeout(function () {
+    infoModal.close();
+}, 8000);
+var winInterv = setInterval(function () {
+    var done = true;
+    var first = true;
+    for (var i in gameEngine.entitySystem.all) {
+        if (first) {
+            first = false;
+            continue;
+        }
+
+        if (gameEngine.entitySystem.all[i].health > 0) {
+            done = false;
+        }
+    }
+    if (done || player.health <= 0) {
+        infoModal.content.innerHTML = "You Win!";
+        if (player.health <= 0) {
+            infoModal.content.innerHTML = "You Lose!";
+        }
+        infoModal.open();
+        clearInterval(winInterv);
+    }
+
+}, 100);
 
 function render() {
     stats.begin();
