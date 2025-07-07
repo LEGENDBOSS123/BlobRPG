@@ -5,6 +5,7 @@
 @import url('./Settings/settings.css');
 @import url('./Tooltip/tooltip.css');
 @import url('./ShopInventory/shop_inventory.css');
+@import url('./Counter/counter.css');
 
 html * {
     font-size: 1em;

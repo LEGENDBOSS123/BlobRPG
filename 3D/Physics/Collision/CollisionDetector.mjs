@@ -20,8 +20,8 @@ const CollisionDetector = class {
      * @param {Object} [options.world] - The world context in which collisions are detected.
      * @param {Array} [options.contacts] - An array to store detected collision contacts.
      * @param {number} [options.binarySearchDepth=4] - The depth for binary search operations.
-     * @param {number} [options.velocityIterations=4] - The number of iterations to perform in collision handling.
-     * @param {number} [options.penetrationIterations=4] - The number of iterations to perform in collision handling.
+     * @param {number} [options.velocityIterations=16] - The number of iterations to perform in collision handling.
+     * @param {number} [options.penetrationIterations=16] - The number of iterations to perform in collision handling.
      * @param {number} [options.concavePolyhedronBinarySearchDepth=1] - The depth for binary search specific to concave polyhedrons.
      */
     constructor(options) {
@@ -33,6 +33,7 @@ const CollisionDetector = class {
         this.velocityIterations = options?.velocityIterations ?? 16;
         this.penetrationIterations = options?.penetrationIterations ?? 16;
         this.concavePolyhedronBinarySearchDepth = options?.concavePolyhedronBinarySearchDepth ?? 1;
+        this.maxParentMap = new Map();
         this.initHandlers();
     }
 
@@ -55,7 +56,7 @@ const CollisionDetector = class {
         if (this.pairs.has(shape1.id + this.constructor.seperatorCharacter + shape2.id) || !(this.handlers[shape1.type]?.[shape2.type] || this.handlers[shape2.type]?.[shape1.type])) {
             return;
         }
-        
+
         return this.pairs.set(shape1.id + this.constructor.seperatorCharacter + shape2.id, [shape1, shape2]);
     }
 
@@ -111,27 +112,26 @@ const CollisionDetector = class {
     }
 
     resolveAllContacts() {
+        
         for (const constraint of this.world.constraints) {
             this.contacts.push(constraint);
         }
-        const maxParentMap = new Object(null);
-
         for (const contact of this.contacts) {
             contact.solved = false;
             contact.material = contact.body1.material.getCombined(contact.body2.material);
-            if (!maxParentMap[contact.body1.maxParent.id]) {
-                maxParentMap[contact.body1.maxParent.id] = { translation: new Vector3() };
+            if (!this.maxParentMap.has(contact.body1.maxParent.id)) {
+                this.maxParentMap.set(contact.body1.maxParent.id, { translation: new Vector3() });
             }
 
-            if (!maxParentMap[contact.body2.maxParent.id]) {
-                maxParentMap[contact.body2.maxParent.id] = { translation: new Vector3() };
+            if (!this.maxParentMap.has(contact.body2.maxParent.id)) {
+                this.maxParentMap.set(contact.body2.maxParent.id, { translation: new Vector3() });
             }
 
             if (contact.body1.isSensor || contact.body2.isSensor && contact.constructor.name == "COLLISIONCONTACT") {
                 contact.ignore = true;
             }
-            var body1Map = maxParentMap[contact.body1.maxParent.id];
-            var body2Map = maxParentMap[contact.body2.maxParent.id];
+            var body1Map = this.maxParentMap.get(contact.body1.maxParent.id);
+            var body2Map = this.maxParentMap.get(contact.body2.maxParent.id);
             contact.body1Map = body1Map;
             contact.body2Map = body2Map;
         }
@@ -160,39 +160,39 @@ const CollisionDetector = class {
 
         for (var iter = 0; iter < this.penetrationIterations; iter++) {
             for (const contact of this.contacts) {
-                 if (contact.ignore) {
+                if (contact.ignore) {
                     continue;
                 }
                 contact.iteratePenetration();
             }
         }
-        for (const id in maxParentMap) {
-            this.world.getByID(id).maxParent.translate(maxParentMap[id].translation);
+        for (const id of this.maxParentMap) {
+            this.world.getByID(id[0]).maxParent.translate(id[1].translation);
         }
 
         for (const contact of this.contacts) {
             if (contact.ignore) {
                 continue;
             }
-            contact.body1.contacts = [];
-            contact.body2.contacts = [];
+            contact.body1.contacts.length = 0;
+            contact.body2.contacts.length = 0;
         }
 
         for (const contact of this.contacts) {
-            if (contact.ignore) {
-                contact.body1.dispatchEvent("collision", [contact]);
-                contact.body2.dispatchEvent("collision", [contact]);
-                continue;
-            }
-            contact.body1.contacts.push(contact.body2.id);
-            contact.body2.contacts.push(contact.body1.id);
             if (contact.constructor.name == "COLLISIONCONTACT") {
                 contact.body1.dispatchEvent("collision", [contact]);
                 contact.body2.dispatchEvent("collision", [contact]);
             }
+            if (contact.ignore) {
+                continue;
+            }
+            contact.body1.contacts.push(contact.body2.id);
+            contact.body2.contacts.push(contact.body1.id);
+
         }
 
         this.contacts.length = 0;
+        this.maxParentMap.clear();
     }
 
     clampPointToAABB(v, aabb) {

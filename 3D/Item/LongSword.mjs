@@ -1,16 +1,16 @@
 import Item from "./Item.mjs";
 
-const Sword = class extends Item {
+const LongSword = class extends Item {
     constructor(options) {
         super(options);
-        this.damage = options?.damage ?? 1;
-        this.width = 0.75;
-        this.length = 5;
+        this.damage = options?.damage ?? 3;
+        this.width = 1.25;
+        this.length = 12;
         this.reloadTime = options?.cooldown ?? 0;
         this.maxReloadTime = options?.maxCooldown ?? 1;
         this.maxStack = 1;
         this.stackable = false;
-        this.description = "A sharp sword.";
+        this.description = "A bigger sword??";
     }
 
     getToolTipHTML() {
@@ -42,4 +42,4 @@ const Sword = class extends Item {
     }
 }
 
-export default Sword;
+export default LongSword;

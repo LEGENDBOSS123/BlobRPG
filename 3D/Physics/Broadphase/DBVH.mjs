@@ -29,9 +29,9 @@ const DBVH = class {
      * @param {Hitbox3} hitbox The hitbox to add.
      * @param {*} id The unique identifier for the hitbox.
      */
-    addHitbox(hitbox, id) {
+    addHitbox(hitbox, id, ignoreMargin = false) {
         if (this.nodes.has(id)) {
-            if (this.nodes.get(id).hitbox.contains(hitbox)) {
+            if (this.nodes.get(id).hitbox.contains(hitbox) && !ignoreMargin) {
                 return;
             }
             this.removeHitbox(id);

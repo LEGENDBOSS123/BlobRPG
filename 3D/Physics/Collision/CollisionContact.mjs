@@ -48,7 +48,7 @@ const CollisionContact = class extends Constraint {
         if (penetration >= 0) {
             return;
         }
-        
+
         const wA = this.body1.maxParent.getEffectiveTotalInverseMass(this.normal);
         const wB = this.body2.maxParent.getEffectiveTotalInverseMass(this.normal);
         const totalInverse = wA + wB;
@@ -78,14 +78,21 @@ const CollisionContact = class extends Constraint {
             var radius1 = this.pointA.subtract(globalBody1.position);
             var radius2 = this.pointB.subtract(globalBody2.position);
 
-            var rotationalEffects1 = this.normal.dot(globalBody1.inverseMomentOfInertia.multiplyVector3(radius1.cross(this.normal)).cross(radius1));
-            var rotationalEffects2 = this.normal.dot(globalBody2.inverseMomentOfInertia.multiplyVector3(radius2.cross(this.normal)).cross(radius2));
+            var cross_n1 = radius1.cross(this.normal);
+            var rotationalEffects1 = cross_n1.dot(globalBody1.inverseMomentOfInertia.multiplyVector3(cross_n1));
+
+            var cross_n2 = radius2.cross(this.normal);
+            var rotationalEffects2 = cross_n2.dot(globalBody2.inverseMomentOfInertia.multiplyVector3(cross_n2));
+
             rotationalEffects1 = Number.isFinite(rotationalEffects1) ? rotationalEffects1 : 0;
             rotationalEffects2 = Number.isFinite(rotationalEffects2) ? rotationalEffects2 : 0;
 
 
-            var rotationalEffects1Fric = tangentialNorm.dot(globalBody1.inverseMomentOfInertia.multiplyVector3(radius1.cross(tangentialNorm)).cross(radius1));
-            var rotationalEffects2Fric = tangentialNorm.dot(globalBody2.inverseMomentOfInertia.multiplyVector3(radius2.cross(tangentialNorm)).cross(radius2));
+            var cross_t1 = radius1.cross(tangentialNorm);
+            var rotationalEffects1Fric = cross_t1.dot(globalBody1.inverseMomentOfInertia.multiplyVector3(cross_t1));
+
+            var cross_t2 = radius2.cross(tangentialNorm);
+            var rotationalEffects2Fric = cross_t2.dot(globalBody2.inverseMomentOfInertia.multiplyVector3(cross_t2));
             rotationalEffects1Fric = Number.isFinite(rotationalEffects1Fric) ? rotationalEffects1Fric : 0;
             rotationalEffects2Fric = Number.isFinite(rotationalEffects2Fric) ? rotationalEffects2Fric : 0;
 

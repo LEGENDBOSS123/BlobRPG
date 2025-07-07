@@ -47,6 +47,8 @@ const Composite = class extends WorldObject {
         this.sleepCounter = options?.sleepCounter ?? 0;
         this.isSleepy = options?.isSleepy ?? false;
         this.contacts = [];
+
+        this.dimensionsJustChanged = false;
     }
 
 
@@ -150,9 +152,10 @@ const Composite = class extends WorldObject {
     }
 
     dimensionsChanged() {
+        this.dimensionsJustChanged = true;
         this.awaken();
         this.calculateLocalHitbox();
-        this.calculateGlobalHitbox(true);
+        this.calculateGlobalHitbox();
         this.calculateLocalMomentOfInertia();
     }
 
@@ -385,7 +388,8 @@ const Composite = class extends WorldObject {
         const projectedHitbox = this.global.hitbox.translate(this.global.body.getVelocity().scale(-1));
         this.global.expandedHitbox = Hitbox3.fromHitboxes([projectedHitbox, this.global.hitbox]);
         if (this.gameEngine.world?.spatialHash && this.getLocalFlag(this.constructor.FLAGS.OCCUPIES_SPACE)) {
-            this.gameEngine.world.spatialHash.addHitbox(this.global.expandedHitbox, this.id);
+            this.gameEngine.world.spatialHash.addHitbox(this.global.expandedHitbox, this.id, this.dimensionsJustChanged);
+            this.dimensionsJustChanged = false;
         }
         for (const child of this.children) {
             child.updateGlobalHitboxAll();
@@ -539,6 +543,7 @@ const Composite = class extends WorldObject {
         composite.sleeping = this.sleeping;
         composite.sleepThreshold = this.sleepThreshold;
         composite.sleepCounter = this.sleepCounter;
+        composite.dimensionsJustChanged = this.dimensionsJustChanged;
         return composite;
     }
 
@@ -562,6 +567,7 @@ const Composite = class extends WorldObject {
         composite.sleeping = json.sleeping;
         composite.sleepThreshold = json.sleepThreshold;
         composite.sleepCounter = json.sleepCounter;
+        composite.dimensionsJustChanged = json.dimensionsJustChanged;
         return composite;
     }
 

@@ -28,7 +28,6 @@ var HealthEntity = class extends Entity {
         ctx.fillRect(0, 0, healthCanvas.width, healthCanvas.height);
 
         ctx.fillStyle = "green";
-        
         ctx.fillRect(0, 0, healthCanvas.width * ratio, healthCanvas.height);
         model.healthInfo.health = this.health;
         model.healthInfo.maxHealth = this.maxHealth;

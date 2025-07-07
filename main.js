@@ -33,6 +33,10 @@ import Sword from "./3D/Item/Sword.mjs";
 import Apple from "./3D/Item/Apple.mjs";
 import ShopOffer from "./3D/Web/ShopInventory/ShopOffer.mjs";
 import Toast from "./3D/Web/Toast/Toast.mjs";
+import Counter from "./3D/Web/Counter/Counter.mjs";
+import LongSword from "./3D/Item/LongSword.mjs";
+
+
 var stats = new Stats();
 var stats2 = new Stats();
 
@@ -141,6 +145,21 @@ healthBar.createHTML({
 
 healthBar.html.style.top = "5px";
 healthBar.html.style.right = "15px";
+
+
+const cashCounter = new Counter({
+    gameEngine: gameEngine,
+    title: "CASH",
+    prefix: ":       $"
+});
+
+cashCounter.createHTML({
+    container: document.body,
+    height: 20
+})
+
+cashCounter.html.style.top = "50px";
+cashCounter.html.style.right = "25px";
 
 
 const settings = new Settings({
@@ -335,7 +354,7 @@ gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
 
-for (var i = 0; i < 7; i++) {
+for (var i = 0; i < 40; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
@@ -368,6 +387,13 @@ const sword = new Sword({
     iconPath: "./3D/Graphics/Assets/sword.png",
     type: "weapon"
 });
+
+const longSword = new LongSword({
+    gameEngine: gameEngine,
+    name: "Long Sword",
+    iconPath: "./3D/Graphics/Assets/sword.png",
+    type: "weapon"
+});
 const apple = new Apple({
     gameEngine: gameEngine,
     name: "Apple",
@@ -392,7 +418,7 @@ shopInventory.createHTML({
 shopInventory.purchaseCallback = function (item, quantity) {
     var index = inventory.emptyIndex();
     var hotbarIndex = hotbar.emptyIndex();
-    if ((index == -1 && hotbarIndex == -1) || player.health - item.price * quantity < 0) {
+    if ((index == -1 && hotbarIndex == -1) || player.cash - item.price * quantity < 0) {
         if (index == -1) {
             this.gameEngine.toastManager.createToast({ duration: 1000, type: Toast.TYPES.ERROR, message: "Inventory and hotbar full" });
         }
@@ -401,7 +427,7 @@ shopInventory.purchaseCallback = function (item, quantity) {
         }
         return 0;
     }
-    player.health -= item.price * quantity;
+    player.cash -= item.price * quantity;
     let emptySlot;
     if (hotbarIndex != -1) {
         emptySlot = hotbar.getSlot(hotbarIndex.x, hotbarIndex.y);
@@ -433,6 +459,12 @@ shopInventory.items = [
         item: apple.clone(),
         price: 10,
         quantity: Infinity
+    }),
+    new ShopOffer({
+        gameEngine: gameEngine,
+        item: longSword.clone(),
+        price: 150,
+        quantity: 1
     })
 ];
 
@@ -660,6 +692,8 @@ function render() {
     healthBar.value = player.health;
     healthBar.max = player.maxHealth;
     healthBar.update();
+    cashCounter.value = player.cash;
+    cashCounter.update();
     settings.update();
 
     gameEngine.updateEntities();

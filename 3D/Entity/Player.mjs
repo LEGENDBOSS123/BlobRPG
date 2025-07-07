@@ -34,6 +34,7 @@ var Player = class extends Entity {
                 }
             }
         });
+        this.cash = options?.cash ?? 100;
         this.hotbar = options?.hotbar ?? Array(9).fill(null);
         this.hotbarElement = options?.hotbarElement ?? null;
         this.inventory = options?.hotbar ?? Array(9).fill(null);
@@ -58,6 +59,8 @@ var Player = class extends Entity {
             this.spheres[i].collisionMask = this.spheres[i].setBitMask(0, "P", true);
 
         }
+
+        this.damage = 1;
 
 
         this.composite.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
@@ -118,8 +121,11 @@ var Player = class extends Entity {
             }
             const otherEntity = this.gameEngine.entitySystem.getEntityFromShape(other);
             if (otherEntity instanceof Slime) {
-                var damage = 1;
-                otherEntity.health -= damage;
+                var alreadyDead = otherEntity.health <= 0;
+                otherEntity.health -= this.damage;
+                if (otherEntity.health <= 0 && !alreadyDead) {
+                    this.cash += 150;
+                }
                 var scale = 1;
                 const correctNormal = contact.normal.scale(side);
                 otherEntity.getMainShape().applyForce(correctNormal.scale(contact.velocity.dot(correctNormal) * -0.2 * scale), contact.position);
@@ -339,9 +345,22 @@ var Player = class extends Entity {
     updateStep() {
 
         var selectedItem = this.getSelectedItem();
-        if(selectedItem){
-            if(selectedItem.name == "Sword"){
-                if(this.itemHeldBox.id == -1){
+        if (selectedItem) {
+            if (selectedItem.name == "Sword" || selectedItem.name == "Long Sword") {
+                this.itemHeldBox.height = selectedItem.length;
+                this.itemHeldBox.width = selectedItem.width;
+                this.itemHeldBox.depth = selectedItem.width;
+                this.damage = selectedItem.damage;
+                this.itemHeldBox.dimensionsChanged();
+                if (this.itemHeldBox.mesh) {
+                    const mesh = this.itemHeldBox.mesh.mesh;
+                    if (mesh.geometry.parameters.width != selectedItem.width || mesh.geometry.parameters.height != selectedItem.length || mesh.geometry.parameters.depth != selectedItem.width) {
+                        mesh.geometry = new gameEngine.graphicsEngine.THREE.BoxGeometry(selectedItem.width, selectedItem.length, selectedItem.width);
+                    }
+                }
+                this.itemHeldConstraint.anchor2 = new Vector3(0, selectedItem.length / 2, 0);
+                if (this.itemHeldBox.id == -1) {
+
                     this.gameEngine.world.addComposite(this.itemHeldBox);
                     this.gameEngine.world.addConstraint(this.itemHeldConstraint);
                     this.itemHeldBox.global.body.setPosition(this.composite.global.body.position.copy());
@@ -349,8 +368,8 @@ var Player = class extends Entity {
                     this.itemHeldConstraint.mesh.mesh.visible = true;
                 }
             }
-            else{
-                if(this.itemHeldBox.id != -1){
+            else {
+                if (this.itemHeldBox.id != -1) {
                     this.gameEngine.world.removeComposite(this.itemHeldBox);
                     this.gameEngine.world.removeConstraint(this.itemHeldConstraint);
                     this.itemHeldBox.mesh.mesh.visible = false;
@@ -358,8 +377,8 @@ var Player = class extends Entity {
                 }
             }
         }
-        else{
-            if(this.itemHeldBox.id != -1){
+        else {
+            if (this.itemHeldBox.id != -1) {
                 this.gameEngine.world.removeComposite(this.itemHeldBox);
                 this.gameEngine.world.removeConstraint(this.itemHeldConstraint);
                 this.itemHeldBox.mesh.mesh.visible = false;

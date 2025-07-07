@@ -19,7 +19,7 @@ const ProgressBar = class extends WebComponent {
     }
 
     get ratio() {
-        return this.value / this.max;
+        return Math.max(0, Math.min(1, this.value / this.max));
     }
 
     set ratio(value) {
@@ -56,20 +56,29 @@ const ProgressBar = class extends WebComponent {
         this.update();
     }
 
-    update(){
-        if(this.fillElement){
-            const percentage = this.ratio * 100;
+    update() {
+        const percentage = this.ratio * 100;
+        if (this.fillElement && this.fillElement.style.width != `${percentage}%`) {
             this.fillElement.style.width = `${percentage}%`;
         }
-        if(this.leftTextElement){
+        if (this.leftTextElement && this.leftTextElement.textContent != this.value) {
             this.leftTextElement.textContent = this.value;
         }
-        if(this.rightTextElement){
+        if (this.rightTextElement && this.rightTextElement.textContent != this.max) {
             this.rightTextElement.textContent = this.max;
         }
-        if(this.middleTextElement){
+        if (this.middleTextElement && this.middleTextElement.textContent != this.title) {
             this.middleTextElement.textContent = this.title;
         }
+    }
+
+    destroy(){
+        super.destroy();
+        this.parent = null;
+        this.fillElement = null;
+        this.leftTextElement = null;
+        this.rightTextElement = null;
+        this.middleTextElement = null;
     }
 }
 

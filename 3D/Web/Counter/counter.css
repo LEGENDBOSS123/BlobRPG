@@ -1,0 +1,40 @@
+.counter-container {
+    display: flex;
+    position: absolute;
+    background-color: var(--secondary-color);
+    font-size: 1.2rem;
+    padding: var(--gap-medium);
+    border-radius: var(--border-size-large);
+}
+
+.counter-container .title {
+    text-align: center;
+    white-space: pre;
+    font-weight: bold;
+    user-select: none;
+    pointer-events: none;
+}
+
+.counter-container .prefix {
+    text-align: center;
+    white-space: pre;
+    font-weight: bold;
+    user-select: none;
+    pointer-events: none;
+}
+
+.counter-container .value {
+    text-align: center;
+    white-space: pre;
+    font-weight: bold;
+    user-select: none;
+    pointer-events: none;
+}
+
+.counter-container .postfix {
+    text-align: center;
+    white-space: pre;
+    font-weight: bold;
+    user-select: none;
+    pointer-events: none;
+}
