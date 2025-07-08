@@ -477,7 +477,7 @@ shopInventory.items = [
     new ShopOffer({
         gameEngine: gameEngine,
         item: lightSaber.clone(),
-        price: 2500,
+        price: 1250,
         quantity: 1
     })
 ];
