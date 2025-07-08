@@ -31,6 +31,7 @@ const Item = class extends GameEngineComponent {
         const cloned = super.clone();
         cloned.id = this.id;
         cloned.name = this.name;
+        cloned.type = this.type;
         cloned.description = this.description;
         cloned.iconPath = this.iconPath;
         cloned.modelPath = this.modelPath;

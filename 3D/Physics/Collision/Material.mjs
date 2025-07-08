@@ -1,7 +1,7 @@
 
 const Material = class {
     constructor(options) {
-        this.restitution = options?.restitution ?? 0;
+        this.restitution = options?.restitution ?? 1;
         this.friction = options?.friction ?? 0;
     }
 

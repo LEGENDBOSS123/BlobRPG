@@ -4,6 +4,8 @@ import Triangle from "../Shapes/Triangle.mjs";
 import Composite from "../Shapes/Composite.mjs";
 import Sphere from "../Shapes/Sphere.mjs";
 import Polyhedron from "../Shapes/Polyhedron.mjs";
+import Terrain3 from "../Shapes/Terrain3.mjs";
+import Point from "../Shapes/Point.mjs";
 import Box from "../Shapes/Box.mjs";
 import ClassRegistry from "../Core/ClassRegistry.mjs";
 import DistanceConstraint from "./DistanceConstraint.mjs";
@@ -32,8 +34,8 @@ const CollisionDetector = class {
         this.binarySearchDepth = options?.binarySearchDepth ?? 4;
         this.velocityIterations = options?.velocityIterations ?? 16;
         this.penetrationIterations = options?.penetrationIterations ?? 16;
-        this.concavePolyhedronBinarySearchDepth = options?.concavePolyhedronBinarySearchDepth ?? 1;
-        this.maxParentMap = new Map();
+        this.concavePolyhedronBinarySearchDepth = options?.concavePolyhedronBinarySearchDepth ?? 0;
+        this.maxParents = new Set();
         this.initHandlers();
     }
 
@@ -119,24 +121,31 @@ const CollisionDetector = class {
         for (const contact of this.contacts) {
             contact.solved = false;
             contact.material = contact.body1.material.getCombined(contact.body2.material);
-            if (!this.maxParentMap.has(contact.body1.maxParent.id)) {
-                this.maxParentMap.set(contact.body1.maxParent.id, { translation: new Vector3() });
-            }
+            // if (!this.maxParentMap.has(contact.body1.maxParent.id)) {
+            //     this.maxParentMap.set(contact.body1.maxParent.id, { translation: 0;});
+            // }
 
-            if (!this.maxParentMap.has(contact.body2.maxParent.id)) {
-                this.maxParentMap.set(contact.body2.maxParent.id, { translation: new Vector3() });
-            }
+            // if (!this.maxParentMap.has(contact.body2.maxParent.id)) {
+            //     this.maxParentMap.set(contact.body2.maxParent.id, { translation: 0});
+            // }
 
             if (contact.body1.isSensor || contact.body2.isSensor && contact.constructor.name == "COLLISIONCONTACT") {
                 contact.ignore = true;
             }
-            var body1Map = this.maxParentMap.get(contact.body1.maxParent.id);
-            var body2Map = this.maxParentMap.get(contact.body2.maxParent.id);
-            contact.body1Map = body1Map;
-            contact.body2Map = body2Map;
+            contact.body1.maxParent.translation.reset();
+            contact.body2.maxParent.translation.reset();
+            contact.body1.distanceToMaxParent = contact.body1.maxParent.global.body.position.subtract(contact.body1.global.body.position);
+            
+            this.maxParents.add(contact.body1.maxParent);
+            this.maxParents.add(contact.body2.maxParent);
+            // var body1Map = this.maxParentMap.get(contact.body1.maxParent.id);
+            // var body2Map = this.maxParentMap.get(contact.body2.maxParent.id);
+            // contact.body1Map = body1Map;
+            // contact.body2Map = body2Map;
         }
 
-
+        var tmpVec1 = new Vector3();
+        var tmpVec2 = new Vector3();
 
         for (var iter = 0; iter < this.velocityIterations; iter++) {
             for (const contact of this.contacts) {
@@ -149,15 +158,22 @@ const CollisionDetector = class {
                 const b_body = b.global.body;
                 contact.applyForces();
 
-                const v1 = contact.body1_netForce.scale(a.getEffectiveTotalInverseMass(contact.normal)).multiply(new Vector3(1 - a_body.linearDamping.x, 1 - a_body.linearDamping.y, 1 - a_body.linearDamping.z));
-                const a1 = a_body.inverseMomentOfInertia.multiplyVector3(contact.body1_netTorque).scale(1 - a_body.angularDamping);
-                const v2 = contact.body2_netForce.scale(b.getEffectiveTotalInverseMass(contact.normal)).multiply(new Vector3(1 - b_body.linearDamping.x, 1 - b_body.linearDamping.y, 1 - b_body.linearDamping.z));
-                const a2 = b_body.inverseMomentOfInertia.multiplyVector3(contact.body2_netTorque).scale(1 - b_body.angularDamping);
+                tmpVec1.setXYZ(1 - a_body.linearDamping.x, 1 - a_body.linearDamping.y, 1 - a_body.linearDamping.z);
+
+                tmpVec2.setXYZ(1 - b_body.linearDamping.x, 1 - b_body.linearDamping.y, 1 - b_body.linearDamping.z);
+
+                const v1 = contact.body1_netForce.scale(a.getEffectiveTotalInverseMass(contact.normal)).multiplyInPlace(tmpVec1);
+                const a1 = a_body.inverseMomentOfInertia.multiplyVector3(contact.body1_netTorque).scaleInPlace(1 - a_body.angularDamping);
+                const v2 = contact.body2_netForce.scale(b.getEffectiveTotalInverseMass(contact.normal)).multiplyInPlace(tmpVec2);
+                const a2 = b_body.inverseMomentOfInertia.multiplyVector3(contact.body2_netTorque).scaleInPlace(1 - b_body.angularDamping);
+                if(isNaN(v1.x)){
+                    console.log(contact.normal);
+                    throw new Error("NaN");
+                }
                 a.addVelocityAndAngularVelocity(v1, a1);
                 b.addVelocityAndAngularVelocity(v2, a2);
             }
         }
-
         for (var iter = 0; iter < this.penetrationIterations; iter++) {
             for (const contact of this.contacts) {
                 if (contact.ignore) {
@@ -166,8 +182,8 @@ const CollisionDetector = class {
                 contact.iteratePenetration();
             }
         }
-        for (const id of this.maxParentMap) {
-            this.world.getByID(id[0]).maxParent.translate(id[1].translation);
+        for (const mp of this.maxParents) {
+            mp.translate(mp.translation);
         }
 
         for (const contact of this.contacts) {
@@ -192,7 +208,7 @@ const CollisionDetector = class {
         }
 
         this.contacts.length = 0;
-        this.maxParentMap.clear();
+        this.maxParents.clear();
     }
 
     clampPointToAABB(v, aabb) {
@@ -447,7 +463,7 @@ const CollisionDetector = class {
         contact.pointB = poly.translateLocalToWorld(closestPoint);
         contact.normal = spherePos.subtract(closestPoint2).normalizeInPlace();
         if (contact.normal.magnitudeSquared() == 0) {
-            contact.normal = closestNormal;
+            contact.normal = new Vector3(1, 0, 0);
         }
         if (isInside) {
             contact.normal.scaleInPlace(-1);
@@ -567,6 +583,9 @@ const CollisionDetector = class {
 
         contact.pointB = box.translateLocalToWorld(closestPoint);
         contact.normal = spherePos.subtract(contact.pointB).normalizeInPlace();
+        if(contact.normal.magnitudeSquared() == 0) {
+            contact.normal = new Vector3(1, 0, 0);
+        }
 
         if (inside) {
             contact.normal.scaleInPlace(-1);

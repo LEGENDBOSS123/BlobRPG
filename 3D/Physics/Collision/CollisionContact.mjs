@@ -18,9 +18,6 @@ const CollisionContact = class extends Constraint {
         this.pointB = options?.pointB;
         this.velocity = options?.velocity;
 
-        this.body1Map = options?.body1Map;
-        this.body2Map = options?.body2Map;
-
         this.body1_netForce = new Vector3();
         this.body2_netForce = new Vector3();
         this.body1_netTorque = new Vector3();
@@ -41,8 +38,8 @@ const CollisionContact = class extends Constraint {
     }
 
     iteratePenetration() {
-        const pointA = this.pointA.add(this.body1Map.translation);
-        const pointB = this.pointB.add(this.body2Map.translation);
+        const pointA = this.pointA.add(this.body1.maxParent.translation);
+        const pointB = this.pointB.add(this.body1.maxParent.translation);
         const delta = pointA.subtract(pointB);
         const penetration = delta.dot(this.normal);
         if (penetration >= 0) {
@@ -55,10 +52,10 @@ const CollisionContact = class extends Constraint {
 
         const correction = this.normal.scale(Math.min(penetration + this.slop, 0) / totalInverse * this.bias);
         if (wA > 0) {
-            this.body1Map.translation.subtractInPlace(correction);
+            this.body1.maxParent.translation.subtractInPlace(correction);
         }
         if (wB > 0) {
-            this.body2Map.translation.addInPlace(correction);
+            this.body2.maxParent.translation.addInPlace(correction);
         }
     }
 

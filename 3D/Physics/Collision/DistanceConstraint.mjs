@@ -41,8 +41,8 @@ const DistanceConstraint = class extends Constraint {
     }
 
     iteratePenetration() {
-        this.point1 = this.body1.global.body.position.add(this.body1.global.body.rotation.multiplyVector3(this.anchor1)).add(this.body1Map.translation);
-        this.point2 = this.body2.global.body.position.add(this.body2.global.body.rotation.multiplyVector3(this.anchor2)).add(this.body2Map.translation);
+        this.point1 = this.body1.global.body.position.add(this.body1.global.body.rotation.multiplyVector3(this.anchor1)).add(this.body1.maxParent.translation);
+        this.point2 = this.body2.global.body.position.add(this.body2.global.body.rotation.multiplyVector3(this.anchor2)).add(this.body2.maxParent.translation);
         var delta = this.point2.subtract(this.point1);
         var deltaLength = delta.magnitude();
         if (deltaLength == 0) {
@@ -67,10 +67,10 @@ const DistanceConstraint = class extends Constraint {
 
         const correction = normal.scale(-(error - Math.sign(error) * this.slop) / totalInverse * this.bias);
         if (wA > 0) {
-            this.body1Map.translation.subtractInPlace(correction.scale(wA));
+            this.body1.maxParent.translation.subtractInPlace(correction.scale(wA));
         }
         if (wB > 0) {
-            this.body2Map.translation.addInPlace(correction.scale(wB));
+            this.body2.maxParent.translation.addInPlace(correction.scale(wB));
         }
     }
 

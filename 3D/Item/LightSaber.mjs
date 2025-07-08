@@ -1,16 +1,16 @@
 import Item from "./Item.mjs";
 
-const LongSword = class extends Item {
+const LightSaber = class extends Item {
     constructor(options) {
         super(options);
-        this.damage = options?.damage ?? 40;
-        this.width = 1.25;
-        this.length = 12;
+        this.damage = options?.damage ?? 10;
+        this.width = 0.5;
+        this.length = 30;
         this.reloadTime = options?.cooldown ?? 0;
         this.maxReloadTime = options?.maxCooldown ?? 1;
         this.maxStack = 1;
         this.stackable = false;
-        this.description = "A bigger sword??";
+        this.description = "Thats a long lightsaber!";
     }
 
     getToolTipHTML() {
@@ -42,4 +42,4 @@ const LongSword = class extends Item {
     }
 }
 
-export default LongSword;
+export default LightSaber;

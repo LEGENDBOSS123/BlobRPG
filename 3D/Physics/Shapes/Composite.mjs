@@ -48,6 +48,9 @@ const Composite = class extends WorldObject {
         this.isSleepy = options?.isSleepy ?? false;
         this.contacts = [];
 
+        this.translation = new Vector3();
+        this.distanceToMaxParent = new Vector3();
+
         this.dimensionsJustChanged = false;
     }
 
@@ -337,8 +340,8 @@ const Composite = class extends WorldObject {
 
 
     addVelocityAndAngularVelocity(velocity, angularVelocity) {
-        this.global.body.setAngularVelocity(this.global.body.getAngularVelocity().add(angularVelocity));
-        this.global.body.setVelocity(this.global.body.getVelocity().add(velocity).addInPlace(angularVelocity.cross(this.global.body.position.subtract(this.maxParent.global.body.position))));
+        this.global.body.angularVelocity.addInPlace(angularVelocity);
+        this.global.body.setVelocity(this.global.body.getVelocity().addInPlace(velocity).addInPlace(this.distanceToMaxParent.cross(angularVelocity)));
         for (const child of this.children) {
             child.addVelocityAndAngularVelocity(velocity, angularVelocity);
         }
@@ -544,6 +547,8 @@ const Composite = class extends WorldObject {
         composite.sleepThreshold = this.sleepThreshold;
         composite.sleepCounter = this.sleepCounter;
         composite.dimensionsJustChanged = this.dimensionsJustChanged;
+        composite.translation = this.translation.toJSON();
+        composite.distanceToMaxParent = this.distanceToMaxParent.toJSON();
         return composite;
     }
 
@@ -568,6 +573,8 @@ const Composite = class extends WorldObject {
         composite.sleepThreshold = json.sleepThreshold;
         composite.sleepCounter = json.sleepCounter;
         composite.dimensionsJustChanged = json.dimensionsJustChanged;
+        composite.translation = Vector3.fromJSON(json.translation);
+        composite.distanceToMaxParent = Vector3.fromJSON(json.distanceToMaxParent);
         return composite;
     }
 

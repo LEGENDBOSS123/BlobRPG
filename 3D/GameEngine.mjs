@@ -109,6 +109,7 @@ const GameEngine = class {
                             obj.mesh = this.graphicsEngine.meshLinker.createMeshData(child);
                             obj.mesh.mesh.isPhysicsObject = true;
                             obj.setLocalFlag(Composite.FLAGS.STATIC, true);
+                            obj.setRestitution(0);
                             map.objects.push(obj);
                         }
                     }

@@ -224,6 +224,13 @@ const Vector3 = class {
         return this;
     }
 
+    setXYZ(x, y, z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        return this;
+    }
+
     map(f) {
         return new this.constructor(f(this.x), f(this.y), f(this.z));
     }

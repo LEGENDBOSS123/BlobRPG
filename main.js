@@ -35,6 +35,7 @@ import ShopOffer from "./3D/Web/ShopInventory/ShopOffer.mjs";
 import Toast from "./3D/Web/Toast/Toast.mjs";
 import Counter from "./3D/Web/Counter/Counter.mjs";
 import LongSword from "./3D/Item/LongSword.mjs";
+import LightSaber from "./3D/Item/LightSaber.mjs";
 
 
 var stats = new Stats();
@@ -354,11 +355,11 @@ gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
 
-for (var i = 0; i < 40; i++) {
+for (var i = 0; i < 200; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(i, 2, 80),
+        position: new Vector3(i, 2, 80 + Math.random()*5),
         radius: 3
     })
 
@@ -388,9 +389,16 @@ const sword = new Sword({
     type: "weapon"
 });
 
+
 const longSword = new LongSword({
     gameEngine: gameEngine,
     name: "Long Sword",
+    iconPath: "./3D/Graphics/Assets/sword.png",
+    type: "weapon"
+});
+const lightSaber = new LightSaber({
+    gameEngine: gameEngine,
+    name: "Light Saber",
     iconPath: "./3D/Graphics/Assets/sword.png",
     type: "weapon"
 });
@@ -464,6 +472,12 @@ shopInventory.items = [
         gameEngine: gameEngine,
         item: longSword.clone(),
         price: 150,
+        quantity: 1
+    }),
+    new ShopOffer({
+        gameEngine: gameEngine,
+        item: lightSaber.clone(),
+        price: 2500,
         quantity: 1
     })
 ];
@@ -574,7 +588,7 @@ for (const obj of map.objects) {
     }
     if (obj.name.toLowerCase().includes("start")) {
         player.setStartPoint(obj.global.body.position);
-        // player.respawn();
+        player.respawn();
     }
     if (obj.name.toLowerCase().includes("start") || obj.name.toLowerCase().includes("checkpoint")) {
         obj.addEventListener("collision", function (contact) {

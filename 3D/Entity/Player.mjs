@@ -34,6 +34,10 @@ var Player = class extends Entity {
                 }
             }
         });
+
+        this.lastDamageTime = 0;
+        this.invincibilityFramesDuration = 100;
+
         this.cash = options?.cash ?? 100;
         this.hotbar = options?.hotbar ?? Array(9).fill(null);
         this.hotbarElement = options?.hotbarElement ?? null;
@@ -122,31 +126,13 @@ var Player = class extends Entity {
             const otherEntity = this.gameEngine.entitySystem.getEntityFromShape(other);
             if (otherEntity instanceof Slime) {
                 var alreadyDead = otherEntity.health <= 0;
-                otherEntity.health -= this.damage;
+                otherEntity.takeDamage(this.damage);
                 if (otherEntity.health <= 0 && !alreadyDead) {
                     this.cash += 150;
                 }
                 var scale = 1;
                 const correctNormal = contact.normal.scale(side);
                 otherEntity.getMainShape().applyForce(correctNormal.scale(contact.velocity.dot(correctNormal) * -0.2 * scale), contact.position);
-
-                for (var i = 0; i < 2; i++) {
-                    this.gameEngine.particleSystem.addParticle(new Particle({
-                        position: otherEntity.getMainShape().global.body.position.add(new Vector3(0, 3, 0)),
-                        velocity: new Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).scaleInPlace(0.01),
-                        duration: 500,
-                        size: Math.random() * 0.5 + 0.3,
-                        fadeInSpeed: 0.2,
-                        fadeOutSpeed: 0.2,
-                        shrinkSpeed: 0.5,
-                        growthSpeed: 0.3,
-                        color: "red",
-                        canvas: {
-                            width: 4,
-                            height: 4
-                        }
-                    }));
-                }
             }
         }.bind(this);
 
@@ -216,6 +202,33 @@ var Player = class extends Entity {
         this.keysHeld = {};
         this.justToggled = {};
         this.keysVector = new Vector3();
+    }
+
+    takeDamage(damage) {
+        const time = this.gameEngine.timer.getTime();
+        if (time - this.lastDamageTime < this.invincibilityFramesDuration) {
+            return;
+        }
+        this.lastDamageTime = time;
+        if(damage > this.health) {
+            damage = this.health;
+        }
+        this.health -= damage;
+        this.gameEngine.particleSystem.addParticle(new TextParticle({
+            position: this.getMainShape().global.body.position.add(new Vector3(0, 3, 0)),
+            text: "-" + damage,
+            velocity: new Vector3(0, 0.003, 0),
+            duration: 1500,
+            size: 6,
+            fadeInSpeed: 0.1,
+            fadeOutSpeed: 0.1,
+            shrinkSpeed: 0.2,
+            growthSpeed: 0.2,
+            color: "red"
+        }));
+        if (this.health <= 0) {
+            this.respawn();
+        }
     }
 
     setStartPoint(v, override = false) {
@@ -346,7 +359,7 @@ var Player = class extends Entity {
 
         var selectedItem = this.getSelectedItem();
         if (selectedItem) {
-            if (selectedItem.name == "Sword" || selectedItem.name == "Long Sword") {
+            if (selectedItem.type == "weapon") {
                 this.itemHeldBox.height = selectedItem.length;
                 this.itemHeldBox.width = selectedItem.width;
                 this.itemHeldBox.depth = selectedItem.width;
