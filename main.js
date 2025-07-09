@@ -348,18 +348,18 @@ var player = new Player({
     gravity: new Vector3(0, gravity, 0),
     position: new Vector3(-2, 6, -0.15),
     mass: 1,
-    gameEngine: gameEngine
+    gameEngine: gameEngine,
 });
 player.setMeshAndAddToScene({}, gameEngine);
 gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
 
-for (var i = 0; i < 200; i++) {
+for (var i = 0; i < 400; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(i, 2, 80 + Math.random()*5),
+        position: new Vector3(i*0.1, 20, 80 + Math.random()*5),
         radius: 3
     })
 
@@ -573,16 +573,10 @@ for (const obj of map.objects) {
             if (!player) {
                 return;
             }
-            player.health -= 1;
+            player.takeDamage(player.health)
             if (performance.now() - damageTimeStamp > 100) {
                 gameEngine.soundManager.play("damage");
                 damageTimeStamp = performance.now();
-            }
-
-            player.composite.awaken();
-            if (player.health <= 0) {
-                player.respawn();
-                player.health = player.maxHealth;
             }
         });
     }

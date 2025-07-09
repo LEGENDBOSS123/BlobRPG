@@ -39,7 +39,7 @@ const CollisionContact = class extends Constraint {
 
     iteratePenetration() {
         const pointA = this.pointA.add(this.body1.maxParent.translation);
-        const pointB = this.pointB.add(this.body1.maxParent.translation);
+        const pointB = this.pointB.add(this.body2.maxParent.translation);
         const delta = pointA.subtract(pointB);
         const penetration = delta.dot(this.normal);
         if (penetration >= 0) {

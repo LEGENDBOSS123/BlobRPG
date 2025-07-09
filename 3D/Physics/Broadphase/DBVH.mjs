@@ -186,7 +186,7 @@ const DBVH = class {
 
             if (node.isLeaf()) {
                 if (node.id !== id) {
-                    func(node.id);
+                    func(id, node.id);
                 }
             } else {
                 stack.push(...node.children);

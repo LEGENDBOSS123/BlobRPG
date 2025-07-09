@@ -24,7 +24,7 @@ const CollisionDetector = class {
      * @param {number} [options.binarySearchDepth=4] - The depth for binary search operations.
      * @param {number} [options.velocityIterations=16] - The number of iterations to perform in collision handling.
      * @param {number} [options.penetrationIterations=16] - The number of iterations to perform in collision handling.
-     * @param {number} [options.concavePolyhedronBinarySearchDepth=1] - The depth for binary search specific to concave polyhedrons.
+     * @param {number} [options.concavePolyhedronBinarySearchDepth=0] - The depth for binary search specific to concave polyhedrons.
      */
     constructor(options) {
         this.pairs = options?.pairs ?? new Map();
@@ -36,6 +36,9 @@ const CollisionDetector = class {
         this.penetrationIterations = options?.penetrationIterations ?? 16;
         this.concavePolyhedronBinarySearchDepth = options?.concavePolyhedronBinarySearchDepth ?? 0;
         this.maxParents = new Set();
+        this.handleFunc = function(x, y){
+            this.addPair(this.world.getByID(x), this.world.getByID(y));
+        }.bind(this);
         this.initHandlers();
     }
 
@@ -84,11 +87,7 @@ const CollisionDetector = class {
     }
 
     handle(shape) {
-        const func = function (x) {
-            this.addPair(shape, this.world.getByID(x));
-            return false;
-        }.bind(this);
-        this.world.spatialHash.query(shape.id, func);
+        this.world.spatialHash.query(shape.id, this.handleFunc);
     }
 
     handleAll(shapes) {
@@ -114,7 +113,7 @@ const CollisionDetector = class {
     }
 
     resolveAllContacts() {
-        
+
         for (const constraint of this.world.constraints) {
             this.contacts.push(constraint);
         }
@@ -135,7 +134,8 @@ const CollisionDetector = class {
             contact.body1.maxParent.translation.reset();
             contact.body2.maxParent.translation.reset();
             contact.body1.distanceToMaxParent = contact.body1.maxParent.global.body.position.subtract(contact.body1.global.body.position);
-            
+            contact.body2.distanceToMaxParent = contact.body2.maxParent.global.body.position.subtract(contact.body2.global.body.position);
+
             this.maxParents.add(contact.body1.maxParent);
             this.maxParents.add(contact.body2.maxParent);
             // var body1Map = this.maxParentMap.get(contact.body1.maxParent.id);
@@ -166,7 +166,7 @@ const CollisionDetector = class {
                 const a1 = a_body.inverseMomentOfInertia.multiplyVector3(contact.body1_netTorque).scaleInPlace(1 - a_body.angularDamping);
                 const v2 = contact.body2_netForce.scale(b.getEffectiveTotalInverseMass(contact.normal)).multiplyInPlace(tmpVec2);
                 const a2 = b_body.inverseMomentOfInertia.multiplyVector3(contact.body2_netTorque).scaleInPlace(1 - b_body.angularDamping);
-                if(isNaN(v1.x)){
+                if (isNaN(v1.x)) {
                     console.log(contact.normal);
                     throw new Error("NaN");
                 }
@@ -583,7 +583,7 @@ const CollisionDetector = class {
 
         contact.pointB = box.translateLocalToWorld(closestPoint);
         contact.normal = spherePos.subtract(contact.pointB).normalizeInPlace();
-        if(contact.normal.magnitudeSquared() == 0) {
+        if (contact.normal.magnitudeSquared() == 0) {
             contact.normal = new Vector3(1, 0, 0);
         }
 

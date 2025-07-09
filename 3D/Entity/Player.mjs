@@ -227,6 +227,7 @@ var Player = class extends Entity {
             color: "red"
         }));
         if (this.health <= 0) {
+            this.health = this.maxHealth;
             this.respawn();
         }
     }
