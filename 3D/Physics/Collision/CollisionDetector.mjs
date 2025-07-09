@@ -120,14 +120,7 @@ const CollisionDetector = class {
         for (const contact of this.contacts) {
             contact.solved = false;
             contact.material = contact.body1.material.getCombined(contact.body2.material);
-            // if (!this.maxParentMap.has(contact.body1.maxParent.id)) {
-            //     this.maxParentMap.set(contact.body1.maxParent.id, { translation: 0;});
-            // }
-
-            // if (!this.maxParentMap.has(contact.body2.maxParent.id)) {
-            //     this.maxParentMap.set(contact.body2.maxParent.id, { translation: 0});
-            // }
-
+            
             if (contact.body1.isSensor || contact.body2.isSensor && contact.constructor.name == "COLLISIONCONTACT") {
                 contact.ignore = true;
             }
@@ -138,10 +131,6 @@ const CollisionDetector = class {
 
             this.maxParents.add(contact.body1.maxParent);
             this.maxParents.add(contact.body2.maxParent);
-            // var body1Map = this.maxParentMap.get(contact.body1.maxParent.id);
-            // var body2Map = this.maxParentMap.get(contact.body2.maxParent.id);
-            // contact.body1Map = body1Map;
-            // contact.body2Map = body2Map;
         }
 
         var tmpVec1 = new Vector3();
@@ -166,10 +155,7 @@ const CollisionDetector = class {
                 const a1 = a_body.inverseMomentOfInertia.multiplyVector3(contact.body1_netTorque).scaleInPlace(1 - a_body.angularDamping);
                 const v2 = contact.body2_netForce.scale(b.getEffectiveTotalInverseMass(contact.normal)).multiplyInPlace(tmpVec2);
                 const a2 = b_body.inverseMomentOfInertia.multiplyVector3(contact.body2_netTorque).scaleInPlace(1 - b_body.angularDamping);
-                if (isNaN(v1.x)) {
-                    console.log(contact.normal);
-                    throw new Error("NaN");
-                }
+                
                 a.addVelocityAndAngularVelocity(v1, a1);
                 b.addVelocityAndAngularVelocity(v2, a2);
             }
