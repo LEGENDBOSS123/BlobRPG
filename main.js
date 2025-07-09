@@ -355,7 +355,7 @@ gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
 
-for (var i = 0; i < 400; i++) {
+for (var i = 0; i < 150; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
