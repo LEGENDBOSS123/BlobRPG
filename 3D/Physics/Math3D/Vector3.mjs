@@ -21,7 +21,7 @@ const Vector3 = class {
         return this.subtract(this.projectOnto(v));
     }
 
-    abs(){
+    abs() {
         return new this.constructor(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z));
     }
 
@@ -51,6 +51,10 @@ const Vector3 = class {
 
     divide(v) {
         return new this.constructor(this.x / v.x, this.y / v.y, this.z / v.z);
+    }
+
+    isZero() {
+        return this.x == 0 && this.y == 0 && this.z == 0;
     }
 
     addInPlace(v) {

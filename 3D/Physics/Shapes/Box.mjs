@@ -13,8 +13,24 @@ const Box = class extends Composite {
         this.width = options?.width ?? 1;
         this.height = options?.height ?? 1;
         this.depth = options?.depth ?? 1;
+        this.vertices = [];
         this.setLocalFlag(this.constructor.FLAGS.OCCUPIES_SPACE, true);
         this.dimensionsChanged();
+    }
+
+
+    getVerticesLength(){
+        return 8;
+    }
+
+    supportFunction(direction) {
+        const localDirection = this.global.body.rotation.conjugate().multiplyVector3(direction);
+        let supportVertex = new Vector3(
+            localDirection.x > 0 ? this.width / 2 : -this.width / 2,
+            localDirection.y > 0 ? this.height / 2 : -this.height / 2,
+            localDirection.z > 0 ? this.depth / 2 : -this.depth / 2
+        );
+        return this.translateLocalToWorld(supportVertex);
     }
 
     calculateLocalMomentOfInertia() {
@@ -33,7 +49,7 @@ const Box = class extends Composite {
     }
 
     calculateGlobalHitbox(forced = false) {
-        if(this.sleeping && !forced){
+        if (this.sleeping && !forced) {
             return;
         }
         var localHitbox = this.local.hitbox;
@@ -100,6 +116,7 @@ const Box = class extends Composite {
         return vertices;
     }
 
+
     setMesh(options, gameEngine) {
         var geometry = options?.geometry ?? new gameEngine.graphicsEngine.THREE.BoxGeometry(this.width, this.height, this.depth);
         this.mesh = gameEngine.graphicsEngine.meshLinker.createMeshData(new gameEngine.graphicsEngine.THREE.Mesh(geometry, options?.material ?? new gameEngine.graphicsEngine.THREE.MeshPhongMaterial({ color: 0x00ff00, wireframe: false })));
@@ -116,7 +133,7 @@ const Box = class extends Composite {
         this.width = Math.abs(scale.x) * 2 * cubeSize[0];
         this.height = Math.abs(scale.y) * 2 * cubeSize[1];
         this.depth = Math.abs(scale.z) * 2 * cubeSize[2];
-        
+
         var pos = Vector3.from(mesh.getWorldPosition(new gameEngine.graphicsEngine.THREE.Vector3()));
         var quat = Quaternion.from(mesh.getWorldQuaternion(new gameEngine.graphicsEngine.THREE.Quaternion()));
         this.global.body.rotation = quat;

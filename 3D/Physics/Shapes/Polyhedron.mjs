@@ -33,6 +33,10 @@ const Polyhedron = class extends Composite {
         this.dimensionsChanged();
     }
 
+    getVerticesLength(){
+        return this.localVertices.length;
+    }
+
     dimensionsChanged() {
         this.normals = Polyhedron.determineNormals(this.faces, this.localVertices);
         this.isConvex = this.constructor.determineConcavity(this.faces, this.localVertices, this.normals);

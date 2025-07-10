@@ -38,7 +38,7 @@ const Composite = class extends WorldObject {
 
         this.local = {};
         this.local.body = new PhysicsBody3(options?.local?.body);
-        this.local.flags = options?.local?.flags ?? 0;
+        this.local.flags = options?.local?.flags ?? this.constructor.FLAGS.CENTER_OF_MASS;
         this.setLocalFlag(this.constructor.FLAGS.OCCUPIES_SPACE, false);
         this.isSensor = options?.isSensor ?? false;
         this.local.hitbox = Hitbox3.from(options?.local?.hitbox);

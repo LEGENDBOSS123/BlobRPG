@@ -36,6 +36,8 @@ import Toast from "./3D/Web/Toast/Toast.mjs";
 import Counter from "./3D/Web/Counter/Counter.mjs";
 import LongSword from "./3D/Item/LongSword.mjs";
 import LightSaber from "./3D/Item/LightSaber.mjs";
+import Box from "./3D/Physics/Shapes/Box.mjs";
+import Composite from "./3D/Physics/Shapes/Composite.mjs";
 
 
 var stats = new Stats();
@@ -354,12 +356,37 @@ player.setMeshAndAddToScene({}, gameEngine);
 gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
+for (var i = 0; i < 200; i++) {
+    const box = new Box({
+        width: 5,
+        height: 3,
+        depth: 5,
+        global: {
+            body: {
+                position: new Vector3(10 + 4, 16 + i  *5  , 4),
+                acceleration: new Vector3(0, gravity, 0),
+            }
+        },
+        local: {
+            body: {
+                mass: 1
+            }
+        },
+    });
+    box.setFriction(1);
+    box.setRestitution(0);
+    box.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
 
-for (var i = 0; i < 150; i++) {
+    box.setMeshAndAddToScene({}, gameEngine);
+    gameEngine.world.addComposite(box);
+}
+
+
+for (var i = 0; i < 0; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(i*0.1, 20, 80 + Math.random()*5),
+        position: new Vector3(i * 0.1, 20, 80 + Math.random() * 5),
         radius: 3
     })
 
@@ -634,49 +661,49 @@ gameEngine.timer.schedule(gameEngine.fpsStepper);
 gameEngine.toastManager.createToast({ duration: 1000, type: 0, message: "Map Loaded" })
 
 
-var infoModal = new Modal({
-    content: document.createElement('p'),
-    resizable: false,
-    fullscreenable: false,
-    draggable: false,
-    closeable: true,
-    title: "Instructions"
-});
-infoModal.createHTML({
-    container: document.body,
-    width: 400,
-    height: 200,
-    centered: true
-});
-infoModal.content.innerHTML = "Press [E] to open inventory, and [Escape] to open settings<br>Go to the shop to buy a sword or an apple.<br>Make sure you avoid the slimes.<br>Good Luck!";
-infoModal.content.style = `padding: 20px; text-align: center; font-size: 20px;`;
+// var infoModal = new Modal({
+//     content: document.createElement('p'),
+//     resizable: false,
+//     fullscreenable: false,
+//     draggable: false,
+//     closeable: true,
+//     title: "Instructions"
+// });
+// infoModal.createHTML({
+//     container: document.body,
+//     width: 400,
+//     height: 200,
+//     centered: true
+// });
+// infoModal.content.innerHTML = "Press [E] to open inventory, and [Escape] to open settings<br>Go to the shop to buy a sword or an apple.<br>Make sure you avoid the slimes.<br>Good Luck!";
+// infoModal.content.style = `padding: 20px; text-align: center; font-size: 20px;`;
 
-setTimeout(function () {
-    infoModal.close();
-}, 8000);
-var winInterv = setInterval(function () {
-    var done = true;
-    var first = true;
-    for (var i in gameEngine.entitySystem.all) {
-        if (first) {
-            first = false;
-            continue;
-        }
+// setTimeout(function () {
+//     infoModal.close();
+// }, 8000);
+// var winInterv = setInterval(function () {
+//     var done = true;
+//     var first = true;
+//     for (var i in gameEngine.entitySystem.all) {
+//         if (first) {
+//             first = false;
+//             continue;
+//         }
 
-        if (gameEngine.entitySystem.all[i].health > 0) {
-            done = false;
-        }
-    }
-    if (done || player.health <= 0) {
-        infoModal.content.innerHTML = "You Win!";
-        if (player.health <= 0) {
-            infoModal.content.innerHTML = "You Lose!";
-        }
-        infoModal.open();
-        clearInterval(winInterv);
-    }
+//         if (gameEngine.entitySystem.all[i].health > 0) {
+//             done = false;
+//         }
+//     }
+//     if (done || player.health <= 0) {
+//         infoModal.content.innerHTML = "You Win!";
+//         if (player.health <= 0) {
+//             infoModal.content.innerHTML = "You Lose!";
+//         }
+//         infoModal.open();
+//         clearInterval(winInterv);
+//     }
 
-}, 100);
+// }, 100);
 
 function render() {
     stats.begin();

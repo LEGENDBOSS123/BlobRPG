@@ -19,7 +19,7 @@ var Player = class extends Entity {
         this.moveStrength = options?.moveStrength ?? 1;
         this.airMoveStrength = options?.airMoveStrength ?? 0.1;
         this.jumpSpeed = options?.jumpSpeed ?? 1;
-        this.size = options?.radius ?? 1;
+        this.radius = options?.radius ?? 1;
         this.composite = new Composite({
             global: {
                 body: {
@@ -101,8 +101,9 @@ var Player = class extends Entity {
                     mass: 0.0000001
                 }
             },
-            isSensor: true
+            // isSensor: true
         });
+        this.itemHeldBox.setFriction(1);
         this.itemHeldBox.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
 
         this.itemHeldConstraint = new DistanceConstraint({
@@ -110,7 +111,7 @@ var Player = class extends Entity {
             body2: this.itemHeldBox,
             anchor1: new Vector3(0, 2.5, 0),
             anchor2: new Vector3(0, 4, 0),
-            restLength: 2
+            restLength: 4
         });
 
         this.itemHeldPostCollision = function (contact) {
@@ -137,7 +138,7 @@ var Player = class extends Entity {
         }.bind(this);
 
         this.jumpPostCollision = function (contact) {
-            if (contact.ignore) {
+            if (contact.ignore || !contact.solved) {
                 return;
             }
             if (contact.body1.maxParent == this.composite) {
@@ -145,6 +146,7 @@ var Player = class extends Entity {
                     this.canJump = true;
                     if (contact.body2.isImmovable()) {
                         this.touchingGround = true;
+                        
                         this.groundVelocity = contact.velocity;
                     }
                 }
@@ -433,6 +435,7 @@ var Player = class extends Entity {
             velDelta.y = this.jumpSpeed;
             this.canJump = false;
         }
+        
         this.composite.global.body.previousPosition.subtractInPlace(velDelta);
     }
 

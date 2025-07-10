@@ -26,7 +26,7 @@ const CollisionContact = class extends Constraint {
         this.material = options?.combinedMaterial;
 
         this.slop = 0.01;
-        this.bias = 0.2;
+        this.bias = 0.4;
 
         this.denominator = 0;
         this.denominatorFric = 0;
@@ -52,10 +52,10 @@ const CollisionContact = class extends Constraint {
 
         const correction = this.normal.scale(Math.min(penetration + this.slop, 0) / totalInverse * this.bias);
         if (wA > 0) {
-            this.body1.maxParent.translation.subtractInPlace(correction);
+            this.body1.maxParent.translation.subtractInPlace(correction.scale(wA));
         }
         if (wB > 0) {
-            this.body2.maxParent.translation.addInPlace(correction);
+            this.body2.maxParent.translation.addInPlace(correction.scale(wB));
         }
     }
 

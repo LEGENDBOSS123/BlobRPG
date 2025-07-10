@@ -108,15 +108,4 @@ class Timer {
 }
 
 
-// var a = new Timer();
-
-// var interv = new Timer.Interval(500, function(){console.log(performance.now())});
-// a.schedule(interv);
-// var anim = function(){
-//     a.step();
-//     requestAnimationFrame(anim);
-// }
-
-// anim();
-
 export default Timer;
