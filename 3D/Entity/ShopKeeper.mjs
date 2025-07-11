@@ -41,7 +41,6 @@ var ShopKeeper = class extends Entity {
             this.composite.addToScene(gameEngine);
             this.playAnimation(this.composite, "IdleAnimation");
             const actions = this.composite.mesh.animations.actions;
-            console.log(actions)
             actions["WaveAnimation"].setLoop(gameEngine.graphicsEngine.THREE.LoopOnce, 1);
             actions["WaveAnimation"].clampWhenFinished = true;
             actions["WaveAnimation"].getMixer().addEventListener('finished', (event) => {
