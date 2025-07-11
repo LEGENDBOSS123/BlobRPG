@@ -98,13 +98,16 @@ const GameEngine = class {
                     if (!invalidShape) {
                         if (chosen) {
                             var obj = new shape({
-                                name: child.name
-                            }).fromMesh(child, this);
+                                name: child.name,
+                                gameEngine: this,
+                            })
+                            obj.fromMesh(child, this);
                             map.entities.push(obj);
                         }
                         else {
                             var obj = new shape({
-                                name: child.name
+                                name: child.name,
+                                gameEngine: this,
                             }).fromMesh(child, this);
                             obj.mesh = this.graphicsEngine.meshLinker.createMeshData(child);
                             obj.mesh.mesh.isPhysicsObject = true;

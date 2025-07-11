@@ -7,7 +7,7 @@ import Vector3 from "../Physics/Math3D/Vector3.mjs";
 import ModelPool from "./ModelPool.mjs";
 import GameEngineComponent from "../GameEngineComponent.mjs";
 
-var GraphicsEngine = class extends GameEngineComponent{
+var GraphicsEngine = class extends GameEngineComponent {
     constructor(options) {
         super(options);
         this.THREE = THREE;
@@ -95,8 +95,8 @@ var GraphicsEngine = class extends GameEngineComponent{
 
     }
 
-    parseRaycastResult(raycast){
-        if(!raycast){
+    parseRaycastResult(raycast) {
+        if (!raycast) {
             return raycast;
         }
         raycast.normal = raycast.normal.clone().applyMatrix3(new this.THREE.Matrix3().getNormalMatrix(raycast.object.matrixWorld)).normalize();
@@ -104,11 +104,11 @@ var GraphicsEngine = class extends GameEngineComponent{
     }
 
     raycastFirst(options) {
-        if(options?.direction && options?.origin){
+        if (options?.direction && options?.origin) {
             this.raycaster.ray.origin.set(...options.origin);
             this.raycaster.ray.direction.set(...options.direction);
         }
-        else{
+        else {
             this.raycaster.setFromCamera(this.mousePosition, this.camera);
         }
         this.raycaster.far = options?.far;
@@ -119,7 +119,7 @@ var GraphicsEngine = class extends GameEngineComponent{
             if (i.face == null && !i.normal) {
                 continue;
             }
-            if(onlyPhysicsObjects && !i.object?.isPhysicsObject){
+            if (onlyPhysicsObjects && !i.object?.isPhysicsObject) {
                 continue;
             }
             return this.parseRaycastResult(i);
@@ -166,9 +166,9 @@ var GraphicsEngine = class extends GameEngineComponent{
 
     createAnimations(model, animations) {
         const mixer = new this.THREE.AnimationMixer(model);
-        const actions = [];
+        const actions = {};
         for (const animation of animations) {
-            actions.push(mixer.clipAction(animation));
+            actions[animation.name] = mixer.clipAction(animation);
         }
         this.mixers.push(mixer);
         return {
@@ -176,6 +176,36 @@ var GraphicsEngine = class extends GameEngineComponent{
             actions: actions
         }
     }
+
+    disposeMesh(mesh) {
+        if (!mesh) {
+            return;
+        }
+        mesh.traverse((child) => {
+            if (child.isMesh) {
+                if (child.geometry) {
+                    child.geometry.dispose();
+                }
+
+                if (child.material) {
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach((mat) => mat.dispose());
+                    } else {
+                        child.material.dispose();
+                    }
+                }
+
+                if (child.material?.map) {
+                    child.material.map.dispose();
+                }
+            }
+        });
+
+        if (mesh.parent) {
+            mesh.parent.remove(mesh);
+        }
+    }
+
 
     setBackgroundImage(url, setBackground = true, setEnvironment = false) {
         this.textureLoader.load(url).then(function (texture, extension) {
@@ -258,11 +288,11 @@ var GraphicsEngine = class extends GameEngineComponent{
         this.n8aoPass.enabled = false;
     }
 
-    enableBloom(){
+    enableBloom() {
         this.bloomPass.enabled = true;
     }
 
-    disableBloom(){
+    disableBloom() {
         this.bloomPass.enabled = false;
     }
 

@@ -547,7 +547,7 @@ const CollisionDetector = class {
 
                 let normal = localA.subtract(localB).normalizeInPlace();
                 const contacts = [
-                    // [localA, localB],
+                    [localA, localB],
                     [faces[closestFace][0].a, faces[closestFace][0].b],
                     [faces[closestFace][1].a, faces[closestFace][1].b],
                     [faces[closestFace][2].a, faces[closestFace][2].b]

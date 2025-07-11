@@ -7,7 +7,9 @@ var EntitySystem = class extends GameEngineComponent{
         this.maxID = options?.maxID ?? 0;
         this.all = options?.all ?? {};
         this.shapeLookup = options?.shapeLookup ?? {};
+       
     }
+
 
     getByID(id) {
         return this.all[id];

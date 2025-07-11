@@ -483,6 +483,7 @@ var Player = class extends Entity {
     }
 
     updateReferences() {
+        super.updateReferences(gameEngine);
         this.composite = this.gameEngine.world.getByID(this.composite);
         this.sphere = this.spheres.map(function (sphere) {
             return this.gameEngine.world.getByID(sphere);

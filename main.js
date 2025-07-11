@@ -38,6 +38,7 @@ import LongSword from "./3D/Item/LongSword.mjs";
 import LightSaber from "./3D/Item/LightSaber.mjs";
 import Box from "./3D/Physics/Shapes/Box.mjs";
 import Composite from "./3D/Physics/Shapes/Composite.mjs";
+import ShopKeeper from "./3D/Entity/ShopKeeper.mjs";
 
 
 var stats = new Stats();
@@ -356,14 +357,14 @@ player.setMeshAndAddToScene({}, gameEngine);
 gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
-for (var i = 0; i < 3; i++) {
+for (var i = 0; i < 0; i++) {
     const box = new Box({
         width: 5 + Math.random() * 5,
         height: 3 + Math.random() * 3,
         depth: 5 + Math.random() * 5,
         global: {
             body: {
-                position: new Vector3(10 + 4, 16 + i  *3  , 4),
+                position: new Vector3(10 + 4, 16 + i * 3, 4),
                 acceleration: new Vector3(0, gravity, 0),
             }
         },
@@ -583,7 +584,9 @@ document.addEventListener("keydown", function (e) {
 // }
 
 
-var map = await gameEngine.loadMap("lawn.glb", {});
+var map = await gameEngine.loadMap("lawn.glb", {
+    "ShopKeeper": ShopKeeper
+});
 var damageTimeStamp = 0;
 for (const obj of map.objects) {
     gameEngine.world.addComposite(obj);

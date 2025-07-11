@@ -9,6 +9,23 @@ var Entity = class extends GameEngineComponent {
         this.oldShape = options?.oldShape ?? null;
         this.isEntity = true;
         this.name = options?.name ?? "";
+        this.currentAnimation = null;
+    }
+
+
+    playAnimation(shape, name, crossFadeDuration = 0, warp = false) {
+        if (!shape.mesh || !shape.mesh.animations) {
+            return;
+        }
+        let action = shape.mesh.animations.actions[name];
+        if (!action || this.currentAnimation === action) {
+            return;
+        }
+        action.reset().play();
+        if (this.currentAnimation) {
+            this.currentAnimation.crossFadeTo(action, crossFadeDuration, warp);
+        }
+        this.currentAnimation = action;
     }
 
     updateShapeID(shape = this.oldShape) {
@@ -24,7 +41,7 @@ var Entity = class extends GameEngineComponent {
         if (this.entitySystem.shapeLookup[this.oldShape.maxParent.id] && this.oldShape.maxParent.id == shape.maxParent.id) {
             return;
         }
-        if(this.entitySystem.shapeLookup[this.oldShape.maxParent.id]){
+        if (this.entitySystem.shapeLookup[this.oldShape.maxParent.id]) {
             delete this.entitySystem.shapeLookup[this.oldShape.maxParent.id];
         }
         this.entitySystem.shapeLookup[shape.maxParent.id] = this;
@@ -44,7 +61,7 @@ var Entity = class extends GameEngineComponent {
     }
 
     update(gameEngine) {
-        
+
     }
 }
 
