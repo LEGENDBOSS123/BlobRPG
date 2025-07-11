@@ -157,6 +157,9 @@ const Modal = class extends WebComponent {
     }
 
     open() {
+        if(this.isVisible()) {
+            return;
+        }
         this.parent.appendChild(this.html);
     }
 
