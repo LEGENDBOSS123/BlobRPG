@@ -353,6 +353,9 @@ const CollisionDetector = class {
 
 
     gjk(shape1, shape2, t1, t2) {
+
+        const GJK_MAX_ITERATIONS = 128;
+
         let dir = shape1.global.body.position.add(t1).subtract(shape2.global.body.position.add(t2));
         if (dir.isZero()) {
             dir = new Vector3(1, 0, 0);
@@ -364,9 +367,7 @@ const CollisionDetector = class {
 
         dir = simplex[0].p.scale(-1);
 
-        let max = shape2.getVerticesLength() * shape1.getVerticesLength();
-
-        for (var i = 0; i < max; i++) {
+        for (var i = 0; i < GJK_MAX_ITERATIONS; i++) {
             a = this.getMinkowskiSupport(shape1, shape2, t1, t2, dir);
             if (a.p.dot(dir) < 0) {
                 return false;
@@ -515,27 +516,27 @@ const CollisionDetector = class {
             }
 
             let direction = faces[closestFace][3].p;
-            if(direction.isZero()) {
-                direction.setXYZ(1, 0, 0);
+            if (direction.isZero()) {
+                // direction.setXYZ(1, 0, 0);
             }
             let p = this.getMinkowskiSupport(shape1, shape2, t1, t2, direction);
 
 
 
             if (p.p.dot(direction) - minDistance < 0.0001) {
-                if(p.p.isZero()){
-                    p.p.setXYZ(0.0001, 0, 0);
+                if (p.p.isZero()) {
+                    // p.p.setXYZ(1, 0, 0);
                 }
-                if(faces[closestFace][3].p.isZero()){
-                    faces[closestFace][3].p.setXYZ(0.0001, 0, 0);
+                if (faces[closestFace][3].p.isZero()) {
+                    // faces[closestFace][3].p.setXYZ(0.0001, 0, 0);
                 }
 
                 let closestPlane = {
                     normal: faces[closestFace][1].p.subtract(faces[closestFace][0].p).cross(faces[closestFace][2].p.subtract(faces[closestFace][0].p)).normalize(),
                     distance: null
                 };
-                if(closestPlane.normal.isZero()) {
-                    closestPlane.normal.setXYZ(1, 0, 0);
+                if (closestPlane.normal.isZero()) {
+                    // closestPlane.normal.setXYZ(1, 0, 0);
                 }
                 closestPlane.distance = -closestPlane.normal.dot(faces[closestFace][0].p);
 
@@ -544,22 +545,17 @@ const CollisionDetector = class {
                 let localA = faces[closestFace][0].a.scale(bary[0]).addInPlace(faces[closestFace][1].a.scale(bary[1])).addInPlace(faces[closestFace][2].a.scale(bary[2]));
                 let localB = faces[closestFace][0].b.scale(bary[0]).addInPlace(faces[closestFace][1].b.scale(bary[1])).addInPlace(faces[closestFace][2].b.scale(bary[2]));
 
-                
-
-                // let penetration = (localA.subtract(localB)).magnitude();
                 let normal = localA.subtract(localB).normalizeInPlace();
-
-
-                const contact = new CollisionContact();
-                contact.pointA = localA
-                contact.pointB = localB
-                contact.normal = normal.scale(-1);
-                
-                contact.body1 = shape1;
-                contact.body2 = shape2;
-                this.addContact(contact);
-                // console.log(contact, localA, localB, bary, projectionPoint);
-                return;
+                const contacts = [
+                    // [localA, localB],
+                    [faces[closestFace][0].a, faces[closestFace][0].b],
+                    [faces[closestFace][1].a, faces[closestFace][1].b],
+                    [faces[closestFace][2].a, faces[closestFace][2].b]
+                ];
+                return {
+                    contacts: contacts,
+                    normal: normal
+                };
             }
 
             let looseEdges = [];
@@ -601,52 +597,147 @@ const CollisionDetector = class {
                         p: looseEdges[j][0].p.subtract(looseEdges[j][1].p).cross(looseEdges[j][0].p.subtract(p.p)).normalizeInPlace()
                     }
                 ]);
-                
 
-                if (faces[faces.length - 1][3].p.dot(faces[faces.length - 1][0].p) < -0.000001) {
+
+                if (faces[faces.length - 1][3].p.dot(faces[faces.length - 1][0].p) < -0.0001) {
                     let temp = faces[faces.length - 1][0];
                     faces[faces.length - 1][0] = faces[faces.length - 1][1];
                     faces[faces.length - 1][1] = temp;
                     faces[faces.length - 1][3].p.scaleInPlace(-1);
                 }
-                
+
             }
         }
-        let direction = faces[closestFace][3].p;
-        let p = this.getMinkowskiSupport(shape1, shape2, t1, t2, direction);
-
-        let closestPlane = {
-            normal: faces[closestFace][1].p.subtract(faces[closestFace][0].p).cross(faces[closestFace][2].p.subtract(faces[closestFace][0].p)).normalize(),
-            distance: null
-        };
-        closestPlane.distance = -closestPlane.normal.dot(faces[closestFace][0].p);
-
-        let projectionPoint = closestPlane.normal.scale(-closestPlane.distance);
-        let bary = this.barycenter(faces[closestFace][0].p, faces[closestFace][1].p, faces[closestFace][2].p, projectionPoint);
-
-        let localA = faces[closestFace][0].a.scale(bary[0]).addInPlace(faces[closestFace][1].a.scale(bary[1])).addInPlace(faces[closestFace][2].a.scale(bary[2]));
-        let localB = faces[closestFace][0].b.scale(bary[0]).addInPlace(faces[closestFace][1].b.scale(bary[1])).addInPlace(faces[closestFace][2].b.scale(bary[2]));
-
-
-
-        // let penetration = (localA.subtract(localB)).magnitude();
-        let normal = localA.subtract(localB).normalizeInPlace();
-
-
-        const contact = new CollisionContact();
-        contact.pointA = localA
-        contact.pointB = localB
-        contact.normal = normal.scale(-1);
-        if (contact.normal.isZero()) {
-            contact.normal = new Vector3(1, 0, 0);
-        }
-        contact.body1 = shape1;
-        contact.body2 = shape2;
-        this.addContact(contact);
-
-        return;
+        
+        return null;
     }
 
+
+    // epa(simplex, shape1, shape2, t1, t2) {
+    //     let points = [...simplex];
+    //     const A = points[3];
+    //     const B = points[2];
+    //     const C = points[1];
+    //     const D = points[0];
+
+    //     let faces = [];
+    //     faces.push([3, 2, 1, { p: B.p.subtract(A.p).cross(C.p.subtract(A.p)).normalizeInPlace() }]);
+    //     faces.push([3, 1, 0, { p: C.p.subtract(A.p).cross(D.p.subtract(A.p)).normalizeInPlace() }]);
+    //     faces.push([3, 0, 2, { p: D.p.subtract(A.p).cross(B.p.subtract(A.p)).normalizeInPlace() }]);
+    //     faces.push([2, 0, 1, { p: D.p.subtract(B.p).cross(C.p.subtract(B.p)).normalizeInPlace() }]);
+    //     const center = A.p.add(B.p).addInPlace(C.p).addInPlace(D.p).scaleInPlace(0.25);
+    //     for (const face of faces) {
+    //         const v1_minkowski = points[face[0]].p;
+    //         if (face[3].p.dot(v1_minkowski.subtract(center)) < 0) {
+    //             face[3].p.scaleInPlace(-1);
+    //             const temp = face[0];
+    //             face[0] = face[1];
+    //             face[1] = temp;
+    //         }
+    //     }
+    //     const MAX_ITERATIONS = 64; // Safety limit
+    //     const TOLERANCE = 0.001; // Small value to check for termination
+
+    //     for (let i = 0; i < MAX_ITERATIONS; i++) {
+    //         const closestFaceData = this.findClosestFace(points, faces);
+    //         const face = closestFaceData.face;
+    //         const normal = closestFaceData.normal;
+    //         const distance = closestFaceData.distance;
+    //         const newSupport = this.getMinkowskiSupport(shape1, shape2, t1, t2, normal);
+    //         if (newSupport.p.dot(normal) - distance < TOLERANCE) {
+    //             const contacts = [];
+    //             for (let i = 0; i < 3; i++) {
+    //                 contacts.push([
+    //                     points[face[i]].a, points[face[i]].b
+    //                 ]);
+    //             }
+    //             return {
+    //                 normal: normal,
+    //                 contacts: contacts,
+    //             }
+    //         }
+    //         const visibleFaces = [];
+    //         const horizonEdges = new Map();
+    //         for (let j = 0; j < faces.length; j++) {
+    //             const currentFace = faces[j];
+    //             const v1 = points[currentFace[0]].p;
+    //             if (newSupport.p.subtract(v1).dot(currentFace[3].p) > 0) {
+    //                 visibleFaces.push(j);
+    //                 for (let k = 0; k < 3; k++) {
+    //                     let currentEdge = [currentFace[k], currentFace[(k + 1) % 3]];
+    //                     // let found = false;
+    //                     // for (let l = 0; l < horizonEdges.length; l++) {
+    //                     //     if (horizonEdges[l][1].p.equals(currentEdge[0].p) && horizonEdges[l][0].p.equals(currentEdge[1].p)
+    //                     //         || horizonEdges[l][0].p.equals(currentEdge[0].p) && horizonEdges[l][1].p.equals(currentEdge[1].p)) {
+    //                     //         found = true;
+    //                     //         horizonEdges[l] = horizonEdges[horizonEdges.length - 1];
+    //                     //         horizonEdges.length--;
+    //                     //         break;
+    //                     //     }
+    //                     // }
+    //                     var hash = currentEdge[0] < currentEdge[1] ? currentEdge[0] + "_" + currentEdge[1] : currentEdge[1] + "_" + currentEdge[0];
+    //                     if (horizonEdges.has(hash)) {
+    //                         horizonEdges.delete(hash);
+    //                     }
+    //                     else {
+    //                         horizonEdges.set(currentEdge.toString(), currentEdge);
+    //                     }
+    //                 }
+    //                 // faces[j] = faces[faces.length - 1];
+    //                 // faces.length--;
+    //             }
+    //         }
+
+    //         for (let j = visibleFaces.length - 1; j >= 0; j--) {
+    //             faces.splice(visibleFaces[j], 1);
+    //         }
+
+    //         points.push(newSupport);
+
+    //         for (const [_, edge] of horizonEdges) {
+    //             faces.push([points.length - 1, edge[0], edge[1], {
+    //                 p: points[edge[1]].p.subtract(newSupport.p).cross(points[edge[0]].p.subtract(newSupport.p)).normalizeInPlace()
+    //             }]);
+    //             const lastFace = faces[faces.length - 1];
+    //             if (points[lastFace[0]].p.dot(lastFace[3].p) < 0) {
+    //                 lastFace[3].p.scaleInPlace(-1);
+    //                 const temp = lastFace[0];
+    //                 lastFace[0] = lastFace[1];
+    //                 lastFace[1] = temp;
+    //             }
+    //         }
+    //     }
+    //     return null;
+    // }
+
+    findClosestFace(points, faces) {
+        let minDistance = Infinity;
+        let closestFace = null;
+        let closestNormal = null;
+        for (let i = 0; i < faces.length; i++) {
+            const face = faces[i];
+            let v1 = points[face[0]].p;
+            let normal = face[3].p;
+            if (normal.dot(v1) > 0) {
+                normal.scaleInPlace(-1);
+                let temp = face[0];
+                face[0] = face[1];
+                face[1] = temp;
+                v1 = points[face[0]].p;
+            }
+            const distance = Math.abs(v1.dot(normal));
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestFace = face;
+                closestNormal = normal;
+            }
+        }
+        return {
+            face: closestFace,
+            normal: closestNormal,
+            distance: minDistance
+        };
+    }
 
     getMinkowskiSupport(shape1, shape2, t1, t2, direction) {
         const pA = shape1.supportFunction(direction.scale(-1)).addInPlace(t1);
@@ -735,7 +826,23 @@ const CollisionDetector = class {
         if (!simplex) {
             return false;
         }
-        this.epa(simplex, box1, box2, t1, t2);
+        // console.log("FR");
+        const contacts = this.epa(simplex, box1, box2, t1, t2);
+        if (!contacts) {
+            return false;
+        }
+        for (const contact of contacts.contacts) {
+            const c = new CollisionContact();
+            c.pointA = contact[0].copy();
+            c.pointB = contact[1].copy();
+            c.normal = contacts.normal.scale(-1);
+            if (c.normal.isZero()) {
+                c.normal = new Vector3(1, 0, 0);
+            }
+            c.body1 = box1;
+            c.body2 = box2;
+            this.addContact(c);
+        }
         return true;
     }
 

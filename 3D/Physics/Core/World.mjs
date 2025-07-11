@@ -142,7 +142,7 @@ const World = class {
         for (const comp of this.composites) {
             comp.dispatchEvent("postStep");
         }
-        
+
         for (const comp of this.composites) {
             if (comp.toBeRemoved) {
                 this.removeComposite(comp);

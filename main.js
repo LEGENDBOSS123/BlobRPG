@@ -356,14 +356,14 @@ player.setMeshAndAddToScene({}, gameEngine);
 gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
-for (var i = 0; i < 200; i++) {
+for (var i = 0; i < 3; i++) {
     const box = new Box({
-        width: 5,
-        height: 3,
-        depth: 5,
+        width: 5 + Math.random() * 5,
+        height: 3 + Math.random() * 3,
+        depth: 5 + Math.random() * 5,
         global: {
             body: {
-                position: new Vector3(10 + 4, 16 + i  *5  , 4),
+                position: new Vector3(10 + 4, 16 + i  *3  , 4),
                 acceleration: new Vector3(0, gravity, 0),
             }
         },
@@ -373,7 +373,7 @@ for (var i = 0; i < 200; i++) {
             }
         },
     });
-    box.setFriction(1);
+    box.setFriction(0.5);
     box.setRestitution(0);
     box.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
 
