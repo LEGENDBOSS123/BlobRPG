@@ -387,7 +387,7 @@ for (var i = 0; i < 200; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(i * 0.1, 20 + i * 7, 80 + Math.random() * 5),
+        position: new Vector3(150 + i * 0.1, 20 + i * 2, 80 + Math.random() * 5),
         radius: 3
     })
 
