@@ -101,7 +101,7 @@ var Player = class extends Entity {
                     mass: 0.0000001
                 }
             },
-            // isSensor: true
+            isSensor: true
         });
         this.itemHeldBox.setFriction(1);
         this.itemHeldBox.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);

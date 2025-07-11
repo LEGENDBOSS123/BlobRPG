@@ -87,7 +87,7 @@ const CollisionDetector = class {
         this.handlers[ClassRegistry.getTypeFromName("TERRAIN3")] = {};
         this.handlers[ClassRegistry.getTypeFromName("TERRAIN3")][ClassRegistry.getTypeFromName("POINT")] = this.handleTerrainPoint;
         this.handlers[ClassRegistry.getTypeFromName("BOX")] = {};
-        this.handlers[ClassRegistry.getTypeFromName("BOX")][ClassRegistry.getTypeFromName("BOX")] = this.handleBoxBox;
+        // this.handlers[ClassRegistry.getTypeFromName("BOX")][ClassRegistry.getTypeFromName("BOX")] = this.handleBoxBox;
         top.ClassRegistry = ClassRegistry;
     }
 
