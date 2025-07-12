@@ -386,14 +386,25 @@ const Composite = class extends WorldObject {
         }
     }
 
+    cannotCollideWithAnything() {
+        return this.canCollideWithMask == 0 || this.collisionMask == 0;
+    }
+
     updateGlobalHitboxAll() {
         this.calculateGlobalHitbox();
         const projectedHitbox = this.global.hitbox.translate(this.global.body.getVelocity().scale(-1));
         this.global.expandedHitbox = Hitbox3.fromHitboxes([projectedHitbox, this.global.hitbox]);
         if (this.gameEngine.world?.spatialHash && this.getLocalFlag(this.constructor.FLAGS.OCCUPIES_SPACE)) {
-            this.gameEngine.world.spatialHash.addHitbox(this.global.expandedHitbox, this.id, this.dimensionsJustChanged);
-            this.dimensionsJustChanged = false;
+            if (!this.cannotCollideWithAnything()) {
+                this.gameEngine.world.spatialHash.addHitbox(this.global.expandedHitbox, this.id, this.dimensionsJustChanged);
+                this.dimensionsJustChanged = false;
+            }
+            else {
+                this.gameEngine.world.spatialHash.removeHitbox(this.id);
+            }
+
         }
+
         for (const child of this.children) {
             child.updateGlobalHitboxAll();
         }
@@ -518,6 +529,21 @@ const Composite = class extends WorldObject {
 
     lerpMesh(last, lerp, previousWorld) {
         if (!this.mesh) {
+            return;
+        }
+        if (this.mesh.instancedMeshInfo) {
+            const index = this.mesh.instancedMeshInfo.getIndex(this.gameEngine);
+            this.mesh.instancedIndex = index;
+            const instancedMesh = this.mesh.instancedMeshInfo.instancedMesh;
+            const dummy = this.mesh.instancedMeshInfo.dummy;
+
+            dummy.position.set(...this.global.body.position.lerp(last.global.body.position, 1 - lerp));
+            const quat = this.global.body.rotation.slerp(last.global.body.rotation, 1 - lerp);
+            dummy.quaternion.set(...[quat.x, quat.y, quat.z, quat.w]);
+            dummy.scale.set(1, 1, 1);
+            dummy.updateMatrix();
+
+            instancedMesh.setMatrixAt(index, dummy.matrix);
             return;
         }
         this.mesh.mesh.position.set(...this.global.body.position.lerp(last.global.body.position, 1 - lerp));

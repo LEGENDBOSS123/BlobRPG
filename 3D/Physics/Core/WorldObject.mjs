@@ -59,6 +59,9 @@ const WorldObject = class {
             return null;
         }
         if (this.mesh.isMeshLink) {
+            if(this.mesh.instancedMeshInfo){
+                return  gameEngine.graphicsEngine.scene.add(this.mesh.instancedMeshInfo.instancedMesh);
+            }
             gameEngine.graphicsEngine.scene.add(this.mesh.mesh);
             return;
         }

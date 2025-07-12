@@ -151,6 +151,7 @@ var GraphicsEngine = class extends GameEngineComponent {
             this.startTime = performance.now();
         }
         this.meshLinker.update(previousWorld, world, lerpAmount);
+        this.modelPool.updateCounts();
     }
     render() {
         for (const mixer of this.mixers) {

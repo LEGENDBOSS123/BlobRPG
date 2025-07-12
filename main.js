@@ -735,9 +735,10 @@ function render() {
     settings.update();
 
     gameEngine.updateEntities();
+    
+    gameEngine.particleSystem.update();
     gameEngine.updateGraphicsEngine();
     gameEngine.updateGameCamera(Vector3.from(player.getMainShape()?.mesh?.mesh?.position ?? player.getMainShape().global.body.position.copy()));
-    gameEngine.particleSystem.update();
     gameEngine.graphicsEngine.render();
     gameEngine.timer.step();
     requestAnimationFrame(render);

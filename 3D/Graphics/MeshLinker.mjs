@@ -9,7 +9,9 @@ var MeshLinker = class {
             mesh: mesh,
             animations: animations,
             id: null,
-            isMeshLink: true
+            isMeshLink: true,
+            instancedMeshInfo: null,
+            instancedIndex: 0
         }
     }
     addMesh(id, mesh) {
