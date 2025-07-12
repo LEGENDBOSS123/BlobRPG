@@ -118,8 +118,7 @@ const ModelPool = class extends GameEngineComponent {
             return mesh;
         }
         var gltf = await this.gameEngine.graphicsEngine.load(url);
-        const model = this.mergeMeshes(gltf.scene)//.getObjectByProperty('type', 'Mesh');
-        console.log(model);
+        const model = this.mergeMeshes(gltf.scene)
         if (!model) {
             throw new Error(`Model at ${path} does not contain a Mesh object.`);
         }
@@ -130,7 +129,6 @@ const ModelPool = class extends GameEngineComponent {
         const instancedMesh = new this.gameEngine.graphicsEngine.THREE.InstancedMesh(geometry, material, estimatedSize);
         instancedMesh.frustumCulled = false;
         instancedMesh.instanceMatrix.setUsage(this.gameEngine.graphicsEngine.THREE.DynamicDrawUsage);
-        console.log(mesh);
         instancedMesh.castShadow = true;
         instancedMesh.receiveShadow = true;
 
@@ -188,7 +186,7 @@ const ModelPool = class extends GameEngineComponent {
             if (model.instancedMeshInfo) {
                 model.instancedMeshInfo.instancedMesh.count = model.instancedMeshInfo.currentIndex;
                 model.instancedMeshInfo.currentIndex = 0;
-                // model.instancedMeshInfo.instancedMesh.instanceMatrix.needsUpdate = true;
+                model.instancedMeshInfo.instancedMesh.instanceMatrix.needsUpdate = true;
             }
         }
     }

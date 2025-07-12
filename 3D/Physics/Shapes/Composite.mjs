@@ -540,7 +540,14 @@ const Composite = class extends WorldObject {
             dummy.position.set(...this.global.body.position.lerp(last.global.body.position, 1 - lerp));
             const quat = this.global.body.rotation.slerp(last.global.body.rotation, 1 - lerp);
             dummy.quaternion.set(...[quat.x, quat.y, quat.z, quat.w]);
-            dummy.scale.set(1, 1, 1);
+            
+            if(this.mesh.meshScale){
+                dummy.scale.set(...this.mesh.meshScale);
+            }
+            else {
+                dummy.scale.set(1, 1, 1);
+            }
+            
             dummy.updateMatrix();
 
             instancedMesh.setMatrixAt(index, dummy.matrix);

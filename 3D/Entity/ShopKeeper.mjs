@@ -18,7 +18,7 @@ var ShopKeeper = class extends Entity {
         this.composite.setLocalFlag(Composite.FLAGS.STATIC, true);
         this.composite.canCollideWithMask = 0;
 
-        this.waveRadius = 18;
+        this.waveRadius = 50;
         this.playerNear = false;
         this.playerNearLast = false;
     }

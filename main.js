@@ -391,7 +391,7 @@ for (var i = 0; i < 200; i++) {
         radius: 3
     })
 
-    slime.setMeshAndAddToScene({}, gameEngine);
+    await slime.setMeshAndAddToScene({}, gameEngine);
     gameEngine.entitySystem.register(slime);
     slime.addToWorld(gameEngine.world);
     slime.getTargets = function () {

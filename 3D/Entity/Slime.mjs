@@ -139,30 +139,29 @@ var Slime = class extends HealthEntity {
     }
 
     async setMeshAndAddToScene(options, gameEngine) {
-        const gltf = await gameEngine.graphicsEngine.load("slime.glb")
-        gltf.scene.scale.set(this.sphere.radius, this.sphere.radius, this.sphere.radius);
-        gltf.scene.traverse(function (child) {
-            if (child.isMesh) {
-                child.castShadow = true;
-                child.receiveShadow = true;
-            }
-        })
-        this.sphere.mesh = gameEngine.graphicsEngine.meshLinker.createMeshData(gltf.scene);
-        this.addToScene(gameEngine);
-        this.makeHealthSprite(this.sphere.mesh, new Vector3(3, 0.2, 0), new Vector3(0, 2, 0));
-
-        // const mesh = await gameEngine.graphicsEngine.modelPool.loadInstance("slime.glb", 100);
-        // // console.log(mesh);
-        // const scene = mesh.instancedMeshInfo.instancedMesh;
-        // // scene.geometry.scale.set(this.sphere.radius, this.sphere.radius, this.sphere.radius);
-        // // scene.traverse(function (child) {
-        // //     if (child.isMesh) {
-        // //         child.castShadow = true;
-        // //         child.receiveShadow = true;
-        // //     }
-        // // })
-        // this.sphere.mesh = mesh;
+        // const gltf = await gameEngine.graphicsEngine.load("slime.glb")
+        // gltf.scene.scale.set(this.sphere.radius, this.sphere.radius, this.sphere.radius);
+        // gltf.scene.traverse(function (child) {
+        //     if (child.isMesh) {
+        //         child.castShadow = true;
+        //         child.receiveShadow = true;
+        //     }
+        // })
+        // this.sphere.mesh = gameEngine.graphicsEngine.meshLinker.createMeshData(gltf.scene);
         // this.addToScene(gameEngine);
+        // this.makeHealthSprite(this.sphere.mesh, new Vector3(3, 0.2, 0), new Vector3(0, 2, 0));
+
+        const mesh = await gameEngine.graphicsEngine.modelPool.loadInstance("slime.glb", 100);
+        mesh.meshScale = new Vector3(this.sphere.radius, this.sphere.radius, this.sphere.radius);
+        // scene.geometry.scale.set(this.sphere.radius, this.sphere.radius, this.sphere.radius);
+        // scene.traverse(function (child) {
+        //     if (child.isMesh) {
+        //         child.castShadow = true;
+        //         child.receiveShadow = true;
+        //     }
+        // })
+        this.sphere.mesh = mesh;
+        this.addToScene(gameEngine);
         // this.makeHealthSprite(this.sphere.mesh, new Vector3(3, 0.2, 0), new Vector3(0, 2, 0));
 
     }
@@ -181,7 +180,7 @@ var Slime = class extends HealthEntity {
 
     update() {
         if (this.getMainShape().mesh) {
-            this.updateHealthTexture(this.getMainShape().mesh);
+            // this.updateHealthTexture(this.getMainShape().mesh);
         }
 
         if (this.targetID != null) {
