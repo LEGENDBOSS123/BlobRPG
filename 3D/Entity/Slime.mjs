@@ -131,6 +131,7 @@ var Slime = class extends HealthEntity {
 
     addToScene(gameEngine) {
         this.sphere.addToScene(gameEngine);
+        gameEngine.graphicsEngine.addToScene(this.healthSprite);
     }
 
     addToWorld(world) {
@@ -139,31 +140,10 @@ var Slime = class extends HealthEntity {
     }
 
     async setMeshAndAddToScene(options, gameEngine) {
-        // const gltf = await gameEngine.graphicsEngine.load("slime.glb")
-        // gltf.scene.scale.set(this.sphere.radius, this.sphere.radius, this.sphere.radius);
-        // gltf.scene.traverse(function (child) {
-        //     if (child.isMesh) {
-        //         child.castShadow = true;
-        //         child.receiveShadow = true;
-        //     }
-        // })
-        // this.sphere.mesh = gameEngine.graphicsEngine.meshLinker.createMeshData(gltf.scene);
-        // this.addToScene(gameEngine);
-        // this.makeHealthSprite(this.sphere.mesh, new Vector3(3, 0.2, 0), new Vector3(0, 2, 0));
-
         const mesh = await gameEngine.graphicsEngine.modelPool.loadInstance("slime.glb", 100);
-        mesh.meshScale = new Vector3(this.sphere.radius, this.sphere.radius, this.sphere.radius);
-        // scene.geometry.scale.set(this.sphere.radius, this.sphere.radius, this.sphere.radius);
-        // scene.traverse(function (child) {
-        //     if (child.isMesh) {
-        //         child.castShadow = true;
-        //         child.receiveShadow = true;
-        //     }
-        // })
         this.sphere.mesh = mesh;
+        this.makeHealthSprite(new Vector3(9, 0.6, 0), new Vector3(0, 5, 0));
         this.addToScene(gameEngine);
-        // this.makeHealthSprite(this.sphere.mesh, new Vector3(3, 0.2, 0), new Vector3(0, 2, 0));
-
     }
 
     findTarget(targets = []) {
@@ -176,11 +156,26 @@ var Slime = class extends HealthEntity {
         }
         return null;
     }
-    
+
 
     update() {
-        if (this.getMainShape().mesh) {
-            // this.updateHealthTexture(this.getMainShape().mesh);
+        if (this.sphere.mesh) {
+            const mesh = this.sphere.mesh;
+            const info = mesh.instancedMeshInfo;
+            
+            if (Number.isFinite(mesh.instancedIndex)) {
+                const dummy = info.dummy;
+                info.instancedMesh.getMatrixAt(mesh.instancedIndex, dummy.matrix);
+                dummy.matrix.decompose(dummy.position, dummy.quaternion, dummy.scale);
+
+                this.healthSprite.position.set(...Vector3.from(dummy.position).add(this.healthInfo.position));
+                this.healthSprite.scale.set(...this.healthInfo.scale);
+                this.updateHealthTexture();
+
+                dummy.scale.set(this.sphere.radius, this.sphere.radius, this.sphere.radius);
+                dummy.updateMatrix();
+                info.instancedMesh.setMatrixAt(mesh.instancedIndex, dummy.matrix);
+            }
         }
 
         if (this.targetID != null) {
@@ -200,6 +195,7 @@ var Slime = class extends HealthEntity {
     }
 
     updateStep() {
+
         var targetID = this.findTarget(this.getTargets());
         this.targetID = targetID;
         if (targetID == null || this.health <= 0) {

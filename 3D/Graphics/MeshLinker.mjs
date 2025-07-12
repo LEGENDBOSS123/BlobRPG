@@ -11,8 +11,7 @@ var MeshLinker = class {
             id: null,
             isMeshLink: true,
             instancedMeshInfo: null,
-            instancedIndex: 0,
-            meshScale: null
+            instancedIndex: null,
         }
     }
     addMesh(id, mesh) {

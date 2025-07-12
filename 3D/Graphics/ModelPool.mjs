@@ -115,7 +115,9 @@ const ModelPool = class extends GameEngineComponent {
         var path = this.resolvePath(url);
         if (this.models.has(path)) {
             const mesh = this.models.get(path);
-            return mesh;
+            const newMesh = this.gameEngine.graphicsEngine.meshLinker.createMeshData(null, null);
+            newMesh.instancedMeshInfo = mesh.instancedMeshInfo;
+            return newMesh;
         }
         var gltf = await this.gameEngine.graphicsEngine.load(url);
         const model = this.mergeMeshes(gltf.scene)

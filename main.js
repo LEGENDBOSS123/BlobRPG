@@ -388,7 +388,7 @@ for (var i = 0; i < 200; i++) {
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
         position: new Vector3(150 + i * 0.1, 20 + i * 2, 80 + Math.random() * 5),
-        radius: 3
+        radius: 3 + Math.random() * 1,
     })
 
     await slime.setMeshAndAddToScene({}, gameEngine);
@@ -734,10 +734,12 @@ function render() {
     cashCounter.update();
     settings.update();
 
-    gameEngine.updateEntities();
+    
     
     gameEngine.particleSystem.update();
     gameEngine.updateGraphicsEngine();
+    gameEngine.updateEntities();
+    gameEngine.graphicsEngine.updateModelPool();
     gameEngine.updateGameCamera(Vector3.from(player.getMainShape()?.mesh?.mesh?.position ?? player.getMainShape().global.body.position.copy()));
     gameEngine.graphicsEngine.render();
     gameEngine.timer.step();

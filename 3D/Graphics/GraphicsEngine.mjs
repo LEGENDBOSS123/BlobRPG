@@ -135,6 +135,10 @@ var GraphicsEngine = class extends GameEngineComponent {
         return this.camera.far;
     }
 
+    updateModelPool() {
+        this.modelPool.updateCounts();
+    }
+
     updateScreenSize() {
         this.renderer.setSize(this.screenWidth, this.screenHeight);
         this.composer.setSize(this.screenWidth, this.screenHeight);
@@ -151,7 +155,6 @@ var GraphicsEngine = class extends GameEngineComponent {
             this.startTime = performance.now();
         }
         this.meshLinker.update(previousWorld, world, lerpAmount);
-        this.modelPool.updateCounts();
     }
     render() {
         for (const mixer of this.mixers) {
