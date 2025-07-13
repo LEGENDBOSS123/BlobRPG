@@ -10,6 +10,7 @@ var Entity = class extends GameEngineComponent {
         this.isEntity = true;
         this.name = options?.name ?? "";
         this.currentAnimation = null;
+        this.usesInstancing = options?.usesInstancing ?? false;
     }
 
 

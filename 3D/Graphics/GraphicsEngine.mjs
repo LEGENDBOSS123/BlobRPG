@@ -279,6 +279,15 @@ var GraphicsEngine = class extends GameEngineComponent {
         this.scene.add(object);
     }
 
+    makeShadows(mesh){
+        mesh.traverse(function (child) {
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+        });
+        return mesh;
+    }
 
     async load(url) {
         return this.textureLoader.load(url);

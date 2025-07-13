@@ -39,6 +39,7 @@ import LightSaber from "./3D/Item/LightSaber.mjs";
 import Box from "./3D/Physics/Shapes/Box.mjs";
 import Composite from "./3D/Physics/Shapes/Composite.mjs";
 import ShopKeeper from "./3D/Entity/ShopKeeper.mjs";
+import Coin from "./3D/Entity/Coin.mjs";
 
 
 var stats = new Stats();
@@ -383,7 +384,7 @@ for (var i = 0; i < 0; i++) {
 }
 
 
-for (var i = 0; i < 200; i++) {
+for (var i = 0; i < 0; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
@@ -585,7 +586,8 @@ document.addEventListener("keydown", function (e) {
 
 
 var map = await gameEngine.loadMap("lawn.glb", {
-    "ShopKeeper": ShopKeeper
+    "ShopKeeper": ShopKeeper,
+    "Coin": Coin
 });
 var damageTimeStamp = 0;
 for (const obj of map.objects) {
@@ -611,7 +613,7 @@ for (const obj of map.objects) {
         });
     }
     if (obj.name.toLowerCase().includes("start")) {
-        player.setStartPoint(obj.global.body.position);
+        player.setStartPoint(obj.global.body.position, true);
         player.respawn();
     }
     if (obj.name.toLowerCase().includes("start") || obj.name.toLowerCase().includes("checkpoint")) {
@@ -651,7 +653,12 @@ for (var mesh of map.meshes) {
     //gameEngine.graphicsEngine.addToScene(mesh);
 }
 for (var entity of map.entities) {
-    entity.setMeshAndAddToScene({}, gameEngine);
+    if (entity.usesInstancing) {
+        await entity.setMeshAndAddToScene({}, gameEngine);
+    }
+    else {
+        entity.setMeshAndAddToScene({}, gameEngine);
+    }
     gameEngine.entitySystem.register(entity);
     entity.addToWorld(gameEngine.world);
 }
@@ -734,8 +741,8 @@ function render() {
     cashCounter.update();
     settings.update();
 
-    
-    
+
+
     gameEngine.particleSystem.update();
     gameEngine.updateGraphicsEngine();
     gameEngine.updateEntities();

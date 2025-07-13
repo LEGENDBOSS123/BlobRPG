@@ -19,7 +19,7 @@ var Slime = class extends HealthEntity {
         this.reloadTime = options?.reloadTime ?? 1;
         this.maxJumpCooldown = options?.maxJumpCooldown ?? 50;
         this.jumpCooldown = options?.jumpCooldown ?? 0;
-
+        this.usesInstancing = true;
         this.lastDamageTime = 0;
         this.invincibilityFramesDuration = 100;
 

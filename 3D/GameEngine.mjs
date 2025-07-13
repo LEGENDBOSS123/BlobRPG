@@ -82,6 +82,7 @@ const GameEngine = class {
                     if (!chosen) {
                         if (child.name.startsWith("Box")) {
                             shape = Box;
+                            
                         }
                         else if (child.name.startsWith("Sphere")) {
                             shape = Sphere;
@@ -125,8 +126,8 @@ const GameEngine = class {
                 child.shadow.bias = this.graphicsEngine.shadowBias;
                 map.meshes.push(child);
             }
-            for (const c of child.children) {
-                traverse(c, colliderParsed);
+            for (let c = child.children.length - 1; c >= 0; c--) {
+                traverse(child.children[c], colliderParsed);
             }
         }.bind(this);
         var gltf = await this.graphicsEngine.load(url);

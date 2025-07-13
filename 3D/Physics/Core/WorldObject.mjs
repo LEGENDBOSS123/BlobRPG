@@ -11,7 +11,7 @@ const WorldObject = class {
 
         this.events = {};
         this.toBeRemoved = options?.toBeRemoved ?? false;
-
+        this.world = options?.world ?? null;
         this.gameEngine = options?.gameEngine ?? null;
         this._mesh = options?.mesh ?? null;
     }
@@ -142,6 +142,11 @@ const WorldObject = class {
     }
 
     destroy() {
+        this.world = null;
+        this.id = -1;
+        this.toBeRemoved = false;
+        this.gameEngine = null;
+        this.mesh = null;
         this.events = {};
     }
 }
