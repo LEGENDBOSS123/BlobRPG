@@ -1,3 +1,4 @@
+
 import CameraTHREEJS from "./CameraTHREEJS.mjs";
 import EntitySystem from "./Entity/EntitySystem.mjs";
 import GraphicsEngine from "./Graphics/GraphicsEngine.mjs";
@@ -11,8 +12,26 @@ import Sphere from "./Physics/Shapes/Sphere.mjs";
 import SimpleCameraControls from "./SimpleCameraControls.mjs";
 import SoundManager from "./Sounds/SoundManager.mjs";
 import ToastManager from "./Web/Toast/ToastManager.mjs";
+import Vector3 from "./Physics/Math3D/Vector3.mjs";
+/**
+ * @typedef {object} GameEngineOptions
+ * @property {object} [graphicsEngine] - Options for the GraphicsEngine.
+ * @property {object} [timer] - Options for the Timer.
+ * @property {object} [gameCamera] - Options for the CameraTHREEJS.
+ * @property {object} [cameraControls] - Options for the SimpleCameraControls.
+ * @property {object} [world] - Options for the Physics World.
+ * @property {object} [particleSystem] - Options for the ParticleSystem.
+ * @property {object} [soundManager] - Options for the SoundManager.
+ * @property {object} [toastManager] - Options for the ToastManager.
+ * @property {number} [fps=20] - The desired frames per second for game logic updates.
+ */
+
 
 const GameEngine = class {
+
+    /**
+     * @param {GameEngineOptions} options
+     */
     constructor(options) {
         this.entitySystem = new EntitySystem(options?.graphicsEngine);
         this.graphicsEngine = new GraphicsEngine(options?.graphicsEngine);
@@ -39,14 +58,22 @@ const GameEngine = class {
         this.fpsStepper = new Timer.Interval(1000 / this.fps);
     }
 
+    /**
+     * Steps the physics world
+     */
     stepWorld() {
         this.previousWorld = this.world.toJSON();
         this.world.step();
     }
 
+    /**
+     * Updates the game camera.
+     * @param {Vector3} position 
+     */
     updateGameCamera(position) {
         this.gameCamera.update(position, this.graphicsEngine);
     }
+
     updateGraphicsEngine() {
         this.graphicsEngine.update(this.previousWorld || this.world, this.world, this.fpsStepper.getLerpAmount());
     }
@@ -57,8 +84,15 @@ const GameEngine = class {
         this.entitySystem.update(this);
     }
 
+
+    /**
+     * Loads a map into physics objects, meshes, and entities
+     * @param {string} url 
+     * @param {Object} entities 
+     * @returns 
+     */
     async loadMap(url, entities = {}) {
-        const map = { objects: [], meshes: [], entities: [], gltf: null};
+        const map = { objects: [], meshes: [], entities: [], gltf: null };
         const traverse = function (child, colliderParsed) {
             if (child.isMesh) {
                 child.castShadow = true;
@@ -66,12 +100,12 @@ const GameEngine = class {
                 child.material.depthWrite = true;
                 child.material.side = this.graphicsEngine.THREE.DoubleSide;
                 child.geometry.computeVertexNormals();
-                if(child.userData?.invisible){
+                if (child.userData?.invisible) {
                     child.visible = false;
                 }
                 if (!colliderParsed) {
                     var invalidShape = false;
-                    var shape = Composite;
+                    var shape = Composite
                     var chosen = false;
                     for (var name in entities) {
                         if (child.name.startsWith(name)) {
@@ -82,7 +116,7 @@ const GameEngine = class {
                     if (!chosen) {
                         if (child.name.startsWith("Box")) {
                             shape = Box;
-                            
+
                         }
                         else if (child.name.startsWith("Sphere")) {
                             shape = Sphere;

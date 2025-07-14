@@ -1,6 +1,7 @@
 import Composite from "../Physics/Shapes/Composite.mjs";
 import Vector3 from "../Physics/Math3D/Vector3.mjs";
 import Entity from "./Entity.mjs";
+import Quaternion from "../Physics/Math3D/Quaternion.mjs";
 
 var ShopKeeper = class extends Entity {
     constructor(options) {
@@ -12,13 +13,13 @@ var ShopKeeper = class extends Entity {
                 }
             }
         });
-        this.size = 1.5;
+        this.size = 0.5;
 
         this.updateShapeID(this.composite);
         this.composite.setLocalFlag(Composite.FLAGS.STATIC, true);
         this.composite.canCollideWithMask = 0;
 
-        this.waveRadius = 50;
+        this.waveRadius = 10;
         this.playerNear = false;
         this.playerNearLast = false;
     }
@@ -86,7 +87,9 @@ var ShopKeeper = class extends Entity {
     }
 
     fromMesh(mesh, gameEngine) {
+
         this.composite.setPosition(Vector3.from(mesh.getWorldPosition(new gameEngine.graphicsEngine.THREE.Vector3())));
+        this.composite.global.body.rotation = Quaternion.from(mesh.getWorldQuaternion(new gameEngine.graphicsEngine.THREE.Quaternion()));
         gameEngine.graphicsEngine.disposeMesh(mesh);
     }
 

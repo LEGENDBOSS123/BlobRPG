@@ -4,8 +4,8 @@ const Sword = class extends Item {
     constructor(options) {
         super(options);
         this.damage = options?.damage ?? 10;
-        this.width = 0.75;
-        this.length = 5;
+        this.width = 0.2;
+        this.length = 2;
         this.reloadTime = options?.cooldown ?? 0;
         this.maxReloadTime = options?.maxCooldown ?? 1;
         this.maxStack = 1;

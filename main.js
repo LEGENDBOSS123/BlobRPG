@@ -56,23 +56,22 @@ document.addEventListener('contextmenu', (event) => {
     event.preventDefault();
 });
 
-
 var gameEngine = new GameEngine(
     {
         graphicsEngine: {
             window: window,
             document: document,
             container: document.body,
-            canvas: document.getElementById("canvas")
+            canvas: document.getElementById('canvas'),
         },
         gameCamera: {
-            pullback: 10,
-            maxPullback: 25,
-            minPullback: 3
+            pullback: 4,
+            maxPullback: 8,
+            minPullback: 2
         },
         cameraControls: {
             speed: 1,
-            pullbackRate: 0.2,
+            pullbackRate: 0.1,
             rotateMethods: {
                 wheel: true,
                 shiftLock: true,
@@ -339,18 +338,17 @@ gameEngine.world.setSubsteps(4);
 gameEngine.world.setVelocityIterations(16);
 gameEngine.world.setPenetrationIterations(8);
 
-var gravity = -0.4;
+var gravity = -0.35;
 
 var player = new Player({
-    radius: 1,
-    height: 4,
+    radius: 0.5,
+    height: 3,
     tiltable: false,
     moveStrength: 0.5,
-    airMoveStrength: 0.1,
-    moveSpeed: 0.2,
-    jumpSpeed: 0.4,
+    airMoveStrength: 0.25,
+    moveSpeed: 0.125,
+    jumpSpeed: 0.25,
     gravity: new Vector3(0, gravity, 0),
-    position: new Vector3(-2, 6, -0.15),
     mass: 1,
     gameEngine: gameEngine,
 });
@@ -587,7 +585,8 @@ document.addEventListener("keydown", function (e) {
 
 var map = await gameEngine.loadMap("lawn.glb", {
     "ShopKeeper": ShopKeeper,
-    "Coin": Coin
+    "Coin": Coin,
+    "Slime": Slime
 });
 var damageTimeStamp = 0;
 for (const obj of map.objects) {
@@ -661,6 +660,13 @@ for (var entity of map.entities) {
     }
     gameEngine.entitySystem.register(entity);
     entity.addToWorld(gameEngine.world);
+
+    if(entity instanceof Slime){
+        entity.getTargets = function () {
+            return [player.id];
+        }
+        entity.setGravity(new Vector3(0, gravity, 0),);
+    }
 }
 gameEngine.graphicsEngine.addToScene(map.gltf.scene)
 

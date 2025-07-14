@@ -8,26 +8,34 @@ import Terrain3 from "../Shapes/Terrain3.mjs";
 import Point from "../Shapes/Point.mjs";
 import Hitbox3 from "../Broadphase/Hitbox3.mjs";
 import Box from "../Shapes/Box.mjs";
+import World from "../Core/World.mjs";
 import ClassRegistry from "../Core/ClassRegistry.mjs";
 import DistanceConstraint from "./DistanceConstraint.mjs";
+
+
+/**
+ * Constructs a new CollisionDetector with the specified options.
+ * 
+ * @typedef {Object} CollisionDetectorOptions - Configuration options for the collision detector.
+ * @param {Map<string, Array<Composite>>} [pairs] - A map to store shape pairs that can collide.
+ * @param {World} [world] - The world context in which collisions are detected.
+ * @param {Array<CollisionContact>} [contacts] - An array to store detected collision contacts.
+ * @param {number} [binarySearchDepth=4] - The depth for binary search operations.
+ * @param {number} [velocityIterations=16] - The number of iterations to perform in collision handling.
+ * @param {number} [penetrationIterations=16] - The number of iterations to perform in collision handling.
+ * @param {number} [concavePolyhedronBinarySearchDepth=0] - The depth for binary search specific to concave polyhedrons.
+ * @param {number} [GJKBinarySearchDepth=0] - The depth for binary search in GJK algorithm.
+ */
+
 
 const CollisionDetector = class {
 
     static EPA_MAX_ITERATIONS = 64;
     static seperatorCharacter = ":";
 
+
     /**
-     * Constructs a new CollisionDetector with the specified options.
-     * 
-     * @param {Object} options - Configuration options for the collision detector.
-     * @param {Map} [options.pairs] - A map to store shape pairs that can collide.
-     * @param {Object} [options.world] - The world context in which collisions are detected.
-     * @param {Array} [options.contacts] - An array to store detected collision contacts.
-     * @param {number} [options.binarySearchDepth=4] - The depth for binary search operations.
-     * @param {number} [options.velocityIterations=16] - The number of iterations to perform in collision handling.
-     * @param {number} [options.penetrationIterations=16] - The number of iterations to perform in collision handling.
-     * @param {number} [options.concavePolyhedronBinarySearchDepth=0] - The depth for binary search specific to concave polyhedrons.
-     * @param {number} [options.GJKBinarySearchDepth=0] - The depth for binary search in GJK algorithm.
+     * @param {CollisionDetectorOptions} options
      */
     constructor(options) {
         this.pairs = options?.pairs ?? new Map();
@@ -46,10 +54,21 @@ const CollisionDetector = class {
         this.initHandlers();
     }
 
+    /**
+     * Adds a contact.
+     * @param {CollisionContact} contact 
+     */
     addContact(contact) {
         this.contacts.push(contact);
     }
 
+
+    /**
+     * Adds a pair.
+     * @param {Composite} shape1 
+     * @param {Composite} shape2 
+     * @returns 
+     */
     addPair(shape1, shape2) {
         if (!shape1.canCollideWith(shape2)) {
             return;
@@ -69,6 +88,12 @@ const CollisionDetector = class {
         return this.pairs.set(shape1.id + this.constructor.seperatorCharacter + shape2.id, [shape1, shape2]);
     }
 
+    /**
+     * Detects collision between two shapes.
+     * @param {Composite} shape1 
+     * @param {Composite} shape2 
+     * @returns 
+     */
     detectCollision(shape1, shape2) {
         if (shape1.type > shape2.type) {
             const temp = shape1;
@@ -78,6 +103,9 @@ const CollisionDetector = class {
         return this.handlers[shape1.type]?.[shape2.type]?.bind(this)(shape1, shape2);
     }
 
+    /**
+     * Initializes collision handlers.
+     */
     initHandlers() {
         this.handlers[ClassRegistry.getTypeFromName("SPHERE")] = {};
         this.handlers[ClassRegistry.getTypeFromName("SPHERE")][ClassRegistry.getTypeFromName("SPHERE")] = this.handleSphereSphere;
@@ -88,13 +116,20 @@ const CollisionDetector = class {
         this.handlers[ClassRegistry.getTypeFromName("TERRAIN3")][ClassRegistry.getTypeFromName("POINT")] = this.handleTerrainPoint;
         this.handlers[ClassRegistry.getTypeFromName("BOX")] = {};
         // this.handlers[ClassRegistry.getTypeFromName("BOX")][ClassRegistry.getTypeFromName("BOX")] = this.handleBoxBox;
-        top.ClassRegistry = ClassRegistry;
     }
 
+    /**
+     * 
+     * @param {Composite} shape 
+     */
     handle(shape) {
         this.world.spatialHash.query(shape.id, this.handleFunc);
     }
 
+    /**
+     * 
+     * @param {Array<Composite>} shapes 
+     */
     handleAll(shapes) {
         this.pairs.clear();
         for (const shape of shapes) {
@@ -105,7 +140,6 @@ const CollisionDetector = class {
         }
     }
 
-
     resolveAll() {
         for (const value of this.pairs.values()) {
             this.detectCollision(value[0], value[1]);
@@ -113,6 +147,12 @@ const CollisionDetector = class {
         this.resolveAllContacts();
     }
 
+    /**
+     * 
+     * @param {Composite} shape1 
+     * @param {Composite} shape2 
+     * @returns 
+     */
     broadphase(shape1, shape2) {
         return shape1.global.hitbox.intersects(shape2.global.hitbox);
     }
@@ -202,6 +242,12 @@ const CollisionDetector = class {
         this.maxParents.clear();
     }
 
+    /**
+     * 
+     * @param {Vector3} v 
+     * @param {Hitbox3} aabb 
+     * @returns 
+     */
     clampPointToAABB(v, aabb) {
         v = v.copy();
         const x = aabb.width * 0.5;
@@ -228,6 +274,13 @@ const CollisionDetector = class {
         return v;
     }
 
+    /**
+     * 
+     * @param {Vector3} v 
+     * @param {Hitbox3} aabb 
+     * @param {Vector3} clamped 
+     * @returns {Vector3}
+     */
     closestPointToAABB(v, aabb, clamped = this.clampPointToAABB(v, aabb)) {
         v = v.copy();
         const x = aabb.width * 0.5;
@@ -248,6 +301,14 @@ const CollisionDetector = class {
         return clamped;
     }
 
+    /**
+     * 
+     * @param {Vector3} p 
+     * @param {Vector3} a 
+     * @param {Vector3} b 
+     * @param {Vector3} c 
+     * @returns {Vector3}
+     */
     closestPointOnTriangle(p, a, b, c) {
         const abx = b.x - a.x
         const aby = b.y - a.y;
@@ -316,7 +377,6 @@ const CollisionDetector = class {
      * @param {Vector3} c 
      * @returns {number | null}
      */
-
     horizontalRayIntersectsTriangle(orig, a, b, c) {
         const EPSILON = 1e-6;
         const ax = a.x;
@@ -472,6 +532,14 @@ const CollisionDetector = class {
     }
 
 
+    /**
+     * 
+     * @param {Vector3} a 
+     * @param {Vector3} b 
+     * @param {Vector3} c 
+     * @param {Vector3} p 
+     * @returns {Array.<number>}
+     */
     barycenter(a, b, c, p) {
         let v0 = b.subtract(a);
         let v1 = c.subtract(a);
@@ -608,7 +676,7 @@ const CollisionDetector = class {
 
             }
         }
-        
+
         return null;
     }
 

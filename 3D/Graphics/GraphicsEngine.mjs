@@ -1,3 +1,5 @@
+
+
 import * as THREE from "three";
 import { EffectComposer, RenderPass, BloomEffect, CopyPass, EffectPass, ToneMappingEffect } from "postprocessing";
 import { N8AOPostPass } from './N8AO.mjs';
@@ -7,7 +9,27 @@ import Vector3 from "../Physics/Math3D/Vector3.mjs";
 import ModelPool from "./ModelPool.mjs";
 import GameEngineComponent from "../GameEngineComponent.mjs";
 
+/**
+ * @typedef {object} GraphicsEngineOptions
+ * @property {object} [canvas] - Options for the canvas element.
+ * @property {HTMLElement} [canvas.parent] - The parent HTML element for the canvas (defaults to `document.body`).
+ * @property {HTMLCanvasElement} [canvas.canvas] - An existing HTMLCanvasElement to use for rendering.
+ * @property {Window} [window] - The window object to use (defaults to global `window`).
+ * @property {Document} [document] - The document object to use (defaults to global `document`).
+ * @property {object} [camera] - Options for the Three.js PerspectiveCamera.
+ * @property {number} [camera.fov=90] - Field of view for the camera in degrees.
+ * @property {number} [camera.near=0.1] - Near clipping plane for the camera.
+ * @property {number} [camera.far] - Far clipping plane for the camera (defaults to `renderDistance`).
+ * @property {number} [renderDistance=4096] - The maximum distance for rendering objects.
+ * @property {number} [fogRatio=0.9] - The ratio for fog density relative to render distance.
+ */
+
+
+
 var GraphicsEngine = class extends GameEngineComponent {
+    /**
+     * @param {GraphicsEngineOptions} [options] - Configuration options for the graphics engine.
+     */
     constructor(options) {
         super(options);
         this.THREE = THREE;
@@ -279,7 +301,7 @@ var GraphicsEngine = class extends GameEngineComponent {
         this.scene.add(object);
     }
 
-    makeShadows(mesh){
+    makeShadows(mesh) {
         mesh.traverse(function (child) {
             if (child.isMesh) {
                 child.castShadow = true;

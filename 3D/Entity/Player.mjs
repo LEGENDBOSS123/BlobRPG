@@ -54,7 +54,7 @@ var Player = class extends Entity {
                 radius: this.radius,
                 local: {
                     body: {
-                        position: new Vector3(0, i * (options?.size ?? 1), 0),
+                        position: new Vector3(0, i * this.radius, 0),
                         mass: this.totalMass / this.height
                     }
                 }
@@ -87,9 +87,9 @@ var Player = class extends Entity {
         this.wallDetectDot = 0.2;
 
         this.itemHeldBox = new Box({
-            width: 0.75,
-            height: 8,
-            depth: 0.75,
+            width: 1,
+            height: 1,
+            depth: 1,
             global: {
                 body: {
                     position: options?.position ?? new Vector3(0, 0, 0),
@@ -109,9 +109,9 @@ var Player = class extends Entity {
         this.itemHeldConstraint = new DistanceConstraint({
             body1: this.composite,
             body2: this.itemHeldBox,
-            anchor1: new Vector3(0, 2.5, 0),
-            anchor2: new Vector3(0, 4, 0),
-            restLength: 4
+            anchor1: new Vector3(0, 0, 0),
+            anchor2: new Vector3(0, 0, 0),
+            restLength: 1
         });
 
         this.itemHeldPostCollision = function (contact) {
@@ -217,11 +217,11 @@ var Player = class extends Entity {
         }
         this.health -= damage;
         this.gameEngine.particleSystem.addParticle(new TextParticle({
-            position: this.getMainShape().global.body.position.add(new Vector3(0, 3, 0)),
+            position: this.getMainShape().global.body.position.add(new Vector3(0, 1, 0)),
             text: "-" + damage,
             velocity: new Vector3(0, 0.003, 0),
             duration: 1500,
-            size: 6,
+            size: 1,
             fadeInSpeed: 0.1,
             fadeOutSpeed: 0.1,
             shrinkSpeed: 0.2,
@@ -260,8 +260,6 @@ var Player = class extends Entity {
 
     addToWorld(world) {
         world.addComposite(this.composite);
-        world.addComposite(this.itemHeldBox);
-        world.addConstraint(this.itemHeldConstraint);
         this.updateShapeID();
     }
 
@@ -273,6 +271,8 @@ var Player = class extends Entity {
         this.itemHeldConstraint.setMeshAndAddToScene({
             color: 0xffffff
         }, this.gameEngine);
+        this.itemHeldBox.mesh.mesh.visible = false;
+        this.itemHeldConstraint.mesh.mesh.visible = false;
         // gameEngine.graphicsEngine.load("roblox_default_character.glb").then(function (gltf) {
         //     gltf.scene.scale.set(...(new Vector3(0.4, 0.4, 0.4).scale(this.sphere.radius * 1.95)));
         //     gltf.scene.children[0].quaternion.copy(Quaternion.from(gltf.scene.children[0].quaternion).rotateByAngularVelocity(new Vector3(0, 2, 0)));

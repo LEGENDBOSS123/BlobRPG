@@ -8,7 +8,9 @@ import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
 
 
-var AutoTextureLoader = class {
+class AutoTextureLoader {
+
+    
     constructor(options) {
         this.specialLoaders = {
             "glb": GLTFLoader,
@@ -26,7 +28,7 @@ var AutoTextureLoader = class {
         return new URL(path, this.assetsDirectory).href;
     }
 
-    
+
     async load(url) {
         var path = this.resolvePath(url);
         var extension = path.split('.').pop().toLowerCase();

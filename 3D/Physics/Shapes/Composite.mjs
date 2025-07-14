@@ -474,7 +474,7 @@ const Composite = class extends WorldObject {
         var cannotSleep = false;
         for (const child of this.children) {
             child.updateSleepAll();
-            if (!child.sleeping) {
+            if (!child.isSleepy) {
                 cannotSleep = true;
             }
         }
