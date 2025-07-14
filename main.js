@@ -356,7 +356,7 @@ player.setMeshAndAddToScene({}, gameEngine);
 gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
-for (var i = 0; i < 0; i++) {
+for (var i = 0; i < 1; i++) {
     const box = new Box({
         width: 5 + Math.random() * 5,
         height: 3 + Math.random() * 3,
@@ -382,15 +382,15 @@ for (var i = 0; i < 0; i++) {
 }
 
 
-for (var i = 0; i < 0; i++) {
+for (var i = 0; i < 20; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(150 + i * 0.1, 20 + i * 2, 80 + Math.random() * 5),
-        radius: 3 + Math.random() * 1,
+        position: new Vector3(0 + i * 0.1, 20 + i * 2, 0 + Math.random() * 5),
+        radius: 1 + Math.random() * 1,
     })
 
-    await slime.setMeshAndAddToScene({}, gameEngine);
+    slime.setMeshAndAddToScene({}, gameEngine);
     gameEngine.entitySystem.register(slime);
     slime.addToWorld(gameEngine.world);
     slime.getTargets = function () {
@@ -653,7 +653,7 @@ for (var mesh of map.meshes) {
 }
 for (var entity of map.entities) {
     if (entity.usesInstancing) {
-        await entity.setMeshAndAddToScene({}, gameEngine);
+        entity.setMeshAndAddToScene({}, gameEngine);
     }
     else {
         entity.setMeshAndAddToScene({}, gameEngine);

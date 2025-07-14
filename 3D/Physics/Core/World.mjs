@@ -70,6 +70,7 @@ const World = class {
         element.gameEngine = this.gameEngine;
         element.mesh = element._mesh;
         element._mesh = null;
+        element.world = this;
         this.all[element.id] = element;
         return element;
     }

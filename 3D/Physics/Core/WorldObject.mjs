@@ -92,6 +92,9 @@ const WorldObject = class {
         if(!mesh){
             return;
         }
+        if(mesh.instancedMeshInfo){
+            return;
+        }
         mesh.traverse((child) => {
             if (child.isMesh) {
                 if (child.geometry) {

@@ -44,7 +44,6 @@ const Coin = class extends Entity {
                 var entity = this.entitySystem.getEntityFromShape(otherBody);
                 if (entity.isPlayer) {
                     entity.cash += this.value;
-                    this.sphere.toBeRemoved = true;
                     this.collected = true;
                     this.timeCollected = this.sphere.gameEngine.timer.getTime();
                 }
@@ -63,36 +62,50 @@ const Coin = class extends Entity {
         this.updateShapeID();
     }
 
+    async setMesh(options, gameEngine) {
+        const mesh = await gameEngine.graphicsEngine.modelPool.loadInstance("coin.glb");
+        this.sphere.mesh = mesh;
+
+    }
+
     async setMeshAndAddToScene(options, gameEngine) {
-        if (this.sphere.mesh) {
-            return;
-        }
-        const gltf = await gameEngine.graphicsEngine.load("coin.glb");
-        ;
-        this.sphere.mesh = gameEngine.graphicsEngine.meshLinker.createMeshData(gameEngine.graphicsEngine.makeShadows(gltf.scene));
-        this.sphere.mesh.mesh.scale.set(this.sphere.radius, this.sphere.radius, this.sphere.radius);
+        await this.setMesh(options, gameEngine);
         this.addToScene(gameEngine);
     }
 
     update(gameEngine) {
         if (this.sphere.mesh) {
-            if (this.collected) {
-                var timePassed = Math.max(0, (this.gameEngine.timer.getTime() - this.timeCollected) * 0.001);
-                var timeOpacity = 0.5;
-                this.sphere.mesh.mesh.children[0].material.transparent = true;
-                this.sphere.mesh.mesh.children[0].material.alphaTest = 0.001;
-                this.sphere.mesh.mesh.children[0].material.opacity = Math.max(0, 1 - timePassed / timeOpacity);
-                this.sphere.mesh.mesh.scale.x = this.sphere.radius * Math.max(0, 1 - timePassed / timeOpacity);
-                this.sphere.mesh.mesh.scale.y = this.sphere.radius * Math.max(0, 1 - timePassed / timeOpacity);
-                this.sphere.mesh.mesh.scale.z = this.sphere.radius * Math.max(0, 1 - timePassed / timeOpacity);
-                if (this.sphere.mesh.mesh.children[0].material.opacity <= 0) {
-                    this.sphere.disposeMesh();
-                    this.gameEngine.entitySystem.remove(this);
-                    this.sphere.toBeRemoved = true;
-                    this.sphere.destroy();
+            const mesh = this.sphere.mesh;
+            const info = mesh.instancedMeshInfo;
+
+            if (Number.isFinite(mesh.instancedIndex)) {
+                const dummy = info.dummy;
+                info.instancedMesh.getMatrixAt(mesh.instancedIndex, dummy.matrix);
+                dummy.matrix.decompose(dummy.position, dummy.quaternion, dummy.scale);
+
+
+
+                dummy.scale.set(this.sphere.radius, this.sphere.radius, this.sphere.radius);
+                if (this.collected) {
+                    var timePassed = Math.max(0, (this.gameEngine.timer.getTime() - this.timeCollected) * 0.001) / 0.5;
+                   
+                    const scale = this.sphere.radius * Math.max(0, 1 - timePassed);
+
+                    dummy.scale.set(scale, scale, scale);
+                    console.log(scale, timePassed);
+                    if (timePassed >= 1) {
+                        this.sphere.disposeMesh();
+                        this.gameEngine.entitySystem.remove(this);
+                        this.sphere.world.removeComposite(this.sphere);
+                        this.sphere.destroy();
+                    }
                 }
+
+                dummy.updateMatrix();
+                info.instancedMesh.setMatrixAt(mesh.instancedIndex, dummy.matrix);
             }
         }
+
     }
 
     updateStep(gameEngine) {

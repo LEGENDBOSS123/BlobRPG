@@ -10,7 +10,7 @@ var Slime = class extends HealthEntity {
         super(options);
         this.gravity = options?.gravity ?? new Vector3(0, 0, 0);
         this.damage = options?.damage ?? 10;
-        this.speed = options?.speed ?? 0.3;
+        this.speed = options?.speed ?? 0.1;
         this.fireRate = options?.fireRate ?? 1;
         this.jumpPower = options?.jumpPower ?? 0.1;
         this.maxAmmo = options?.maxAmmo ?? 1;
@@ -144,10 +144,14 @@ var Slime = class extends HealthEntity {
         this.updateShapeID(this.sphere);
     }
 
-    async setMeshAndAddToScene(options, gameEngine) {
+    async setMesh(options, gameEngine){
         const mesh = await gameEngine.graphicsEngine.modelPool.loadInstance("slime.glb", 100);
         this.sphere.mesh = mesh;
-        this.makeHealthSprite(new Vector3(2, 0.3, 0), new Vector3(0, 1, 0));
+        this.makeHealthSprite(new Vector3(2, 0.3, 0).scale(this.sphere.radius), new Vector3(0, 1.3, 0).scale(this.sphere.radius));
+    }
+
+    async setMeshAndAddToScene(options, gameEngine) {
+        await this.setMesh(options, gameEngine);
         this.addToScene(gameEngine);
     }
 
