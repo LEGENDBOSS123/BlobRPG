@@ -336,7 +336,7 @@ settings.load();
 
 gameEngine.world.setSubsteps(4);
 gameEngine.world.setVelocityIterations(16);
-gameEngine.world.setPenetrationIterations(8);
+gameEngine.world.setPenetrationIterations(16);
 
 var gravity = -0.35;
 
@@ -358,9 +358,9 @@ player.addToWorld(gameEngine.world);
 
 for (var i = 0; i < 1; i++) {
     const box = new Box({
-        width: 5 + Math.random() * 5,
-        height: 3 + Math.random() * 3,
-        depth: 5 + Math.random() * 5,
+        width: 3,
+        height: 8,
+        depth: 3,
         global: {
             body: {
                 position: new Vector3(10 + 4, 16 + i * 3, 4),
@@ -369,7 +369,7 @@ for (var i = 0; i < 1; i++) {
         },
         local: {
             body: {
-                mass: 1
+                mass: 0.3
             }
         },
     });
@@ -382,20 +382,20 @@ for (var i = 0; i < 1; i++) {
 }
 
 
-for (var i = 0; i < 20; i++) {
+for (var i = 0; i < 0; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(0 + i * 0.1, 20 + i * 2, 0 + Math.random() * 5),
-        radius: 1 + Math.random() * 1,
+        position: new Vector3(0 + i * 0, 20 + i * 2, 0),
+        radius: 0.5,
     })
 
     slime.setMeshAndAddToScene({}, gameEngine);
     gameEngine.entitySystem.register(slime);
     slime.addToWorld(gameEngine.world);
-    slime.getTargets = function () {
-        return [player.id];
-    }
+    // slime.getTargets = function () {
+    //     return [player.id];
+    // }
 }
 
 

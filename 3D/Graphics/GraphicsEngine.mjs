@@ -144,6 +144,7 @@ var GraphicsEngine = class extends GameEngineComponent {
             if (onlyPhysicsObjects && !i.object?.isPhysicsObject) {
                 continue;
             }
+            console.log(i);
             return this.parseRaycastResult(i);
         }
         return null;

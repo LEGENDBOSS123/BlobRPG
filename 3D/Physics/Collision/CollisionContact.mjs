@@ -50,7 +50,7 @@ const CollisionContact = class extends Constraint {
         const wB = this.body2.maxParent.getEffectiveTotalInverseMass(this.normal);
         const totalInverse = wA + wB;
 
-        const correction = this.normal.scale(Math.min(penetration + this.slop, 0) / totalInverse * this.bias);
+        const correction = this.normal.scale(Math.min(penetration + this.slop, 0) / totalInverse);
         if (wA > 0) {
             this.body1.maxParent.translation.subtractInPlace(correction.scale(wA));
         }
@@ -125,7 +125,7 @@ const CollisionContact = class extends Constraint {
 
         var maxFriction = tangential.magnitude() / this.denominatorFric;
         var friction = impulse * this.material.friction;
-        this.impulse = tangentialNorm.scale(-1 * Math.max(0, Math.min(maxFriction, friction))).addInPlace(this.normal.scale(impulse));
+        this.impulse = tangentialNorm.scale(-1 * Math.max(0, Math.min(maxFriction, friction))).addInPlace(this.normal.scale(impulse * this.bias));
         this.solved = true;
         return true;
     }

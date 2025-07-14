@@ -122,7 +122,7 @@ const CollisionDetector = class {
         this.handlers[ClassRegistry.getTypeFromName("SPHERE")][ClassRegistry.getTypeFromName("BOX")] = SphereBox;
         this.handlers[ClassRegistry.getTypeFromName("SPHERE")][ClassRegistry.getTypeFromName("POLYHEDRON")] = SpherePolyhedron;
         // this.handlers[ClassRegistry.getTypeFromName("TERRAIN3")][ClassRegistry.getTypeFromName("POINT")] = this.handleTerrainPoint;
-        // this.handlers[ClassRegistry.getTypeFromName("BOX")][ClassRegistry.getTypeFromName("BOX")] = BoxBox;
+        this.handlers[ClassRegistry.getTypeFromName("BOX")][ClassRegistry.getTypeFromName("BOX")] = BoxBox;
     }
 
     /**
@@ -713,104 +713,6 @@ const CollisionDetector = class {
             p: pB.subtract(pA)
         }
     }
-
-    /**
-     * 
-     * @param {Box} box1 
-     * @param {Box} box2 
-     * @returns {boolean}
-     */
-
-    handleBoxBox(box1, box2) {
-        let box1Pos = null;
-        let box2Pos = null;
-        let pA;
-        let pB;
-        let inside = false;
-        let t1;
-        let t2;
-        var minT = 0;
-        var maxT = 1;
-        let simplex;
-        var timeOfImpact = this.timeOfImpactAABBAABB(box1.global.hitbox.translate(box1.global.body.getVelocity().scale(-1)), box1.global.body.getVelocity().scale(1), box2.global.hitbox.translate(box2.global.body.getVelocity().scale(-1)), box2.global.body.getVelocity().scale(1));
-        if (timeOfImpact != null) {
-            timeOfImpact[0] = Math.min(1, Math.max(0, timeOfImpact[0]));
-            timeOfImpact[1] = Math.min(1, Math.max(0, timeOfImpact[1]));
-
-            minT = timeOfImpact[0];
-            maxT = timeOfImpact[1];
-        }
-
-
-        var binarySearch = function (t) {
-            box1Pos = box1.global.body.previousPosition.lerp(box1.global.body.position, t);
-            box2Pos = box2.global.body.previousPosition.lerp(box2.global.body.position, t);
-
-            t1 = box1Pos.subtract(box1.global.body.position);
-            t2 = box2Pos.subtract(box2.global.body.position);
-
-            simplex = this.gjk(box1, box2, t1, t2);
-            if (simplex) {
-                return -1;
-            }
-            return 1;
-        }.bind(this);
-
-        var t = maxT;
-        for (var i = 0; i < this.GJKBinarySearchDepth; i++) {
-            t = minT + (maxT - minT) * 0.333333;
-            var result = binarySearch(t);
-            if (result > 0) {
-                minT = t;
-            } else {
-                maxT = t;
-            }
-        }
-        t = maxT;
-        if (binarySearch(t) > 0) {
-            return false;
-        }
-
-        // pA = box1.supportFunction(new Vector3(0, -1, 0)).addInPlace(t1);
-        // pB = box2.supportFunction(new Vector3(0, -1, 0).scale(-1)).addInPlace(t2);
-        // pB.x = pA.x;
-        // pB.z = pA.z;
-        // const contact = new CollisionContact();
-        // contact.pointA = pA;
-        // contact.pointB = pB;
-        // contact.normal = pA.subtract(pB).normalizeInPlace().scale(-1);
-        // if (contact.normal.isZero()) {
-        //     contact.normal = new Vector3(1, 0, 0);
-        // }
-        // if (inside) {
-        //     contact.normal.scaleInPlace(-1);
-        // }
-        // contact.body1 = box1;
-        // contact.body2 = box2;
-        // this.addContact(contact);
-        if (!simplex) {
-            return false;
-        }
-        // console.log("FR");
-        const contacts = this.epa(simplex, box1, box2, t1, t2);
-        if (!contacts) {
-            return false;
-        }
-        for (const contact of contacts.contacts) {
-            const c = new CollisionContact();
-            c.pointA = contact[0].copy();
-            c.pointB = contact[1].copy();
-            c.normal = contacts.normal.scale(-1);
-            if (c.normal.isZero()) {
-                c.normal = new Vector3(1, 0, 0);
-            }
-            c.body1 = box1;
-            c.body2 = box2;
-            this.addContact(c);
-        }
-        return true;
-    }
-
 
     /**
      * 

@@ -23,8 +23,8 @@ const World = class {
         this.spatialHash = options?.spatialHash ?? new this.broadphase({ world: this });
         this.collisionDetector = options?.collisionDetector ?? new CollisionDetector({ world: this });
         this.gameEngine = options?.gameEngine ?? null;
-        this.linearSleepThreshold = options?.linearSleepThreshold ?? 0.00000001;
-        this.angularSleepThreshold = options?.angularSleepThreshold ?? 0.9999999;
+        this.linearSleepThreshold = options?.linearSleepThreshold ?? 0.0000001;
+        this.angularSleepThreshold = options?.angularSleepThreshold ?? 0.999999;
     }
 
     setDeltaTime(deltaTime) {
@@ -84,6 +84,14 @@ const World = class {
         for (const child of element.children) {
             this.removeComposite(child, false);
         }
+
+        for(const c of element.contacts){
+            const c2 = this.gameEngine.world.getByID(c);
+            if(c2){
+                c2.awaken();
+            }
+        }
+
         this.composites.splice(this.composites.indexOf(element), 1);
         this.spatialHash.removeHitbox(element.id);
         this.remove(element);
@@ -94,7 +102,7 @@ const World = class {
         this.remove(element);
     }
 
-
+ 
     remove(element) {
         element.dispatchEvent("delete");
         element._mesh = element.mesh;

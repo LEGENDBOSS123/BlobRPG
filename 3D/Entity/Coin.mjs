@@ -92,7 +92,6 @@ const Coin = class extends Entity {
                     const scale = this.sphere.radius * Math.max(0, 1 - timePassed);
 
                     dummy.scale.set(scale, scale, scale);
-                    console.log(scale, timePassed);
                     if (timePassed >= 1) {
                         this.sphere.disposeMesh();
                         this.gameEngine.entitySystem.remove(this);

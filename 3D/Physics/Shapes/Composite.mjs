@@ -496,9 +496,10 @@ const Composite = class extends WorldObject {
     }
 
     awaken() {
+        this.isSleepy = false;
         this.sleeping = false;
         this.sleepCounter = 0;
-        this.contacts = [];
+        this.contacts.length = 0;
     }
 
     getSleepy() {
