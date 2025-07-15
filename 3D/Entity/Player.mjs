@@ -133,12 +133,13 @@ var Player = class extends Entity {
                 }
                 var scale = 1;
                 const correctNormal = contact.normal.scale(side);
+                console.log(contact);
                 otherEntity.getMainShape().applyForce(correctNormal.scale(contact.velocity.dot(correctNormal) * -0.2 * scale), contact.position);
             }
         }.bind(this);
 
         this.jumpPostCollision = function (contact) {
-            if (contact.ignore || !contact.solved) {
+            if (contact.ignore || contact.impulse.isZero()) {
                 return;
             }
             if (contact.body1.maxParent == this.composite) {

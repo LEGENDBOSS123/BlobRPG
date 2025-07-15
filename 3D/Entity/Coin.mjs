@@ -87,7 +87,7 @@ const Coin = class extends Entity {
 
                 dummy.scale.set(this.sphere.radius, this.sphere.radius, this.sphere.radius);
                 if (this.collected) {
-                    var timePassed = Math.max(0, (this.gameEngine.timer.getTime() - this.timeCollected) * 0.001) / 0.5;
+                    var timePassed = Math.max(0, (this.gameEngine.timer.getTime() - this.timeCollected) * 0.001) / 0.2;
                    
                     const scale = this.sphere.radius * Math.max(0, 1 - timePassed);
 

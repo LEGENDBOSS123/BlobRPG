@@ -25,12 +25,34 @@ const CollisionContact = class extends Constraint {
 
         this.material = options?.combinedMaterial;
 
-        this.slop = 0.01;
-        this.bias = 0.4;
+        this.slop = options?.slop ?? 0.01;
+        this.bias = options?.bias ?? 0.333333;
+        this.restitutionBias = 0;
+
+        this.integratedImpulse = new Vector3();
 
         this.denominator = 0;
         this.denominatorFric = 0;
         this.solved = false;
+    }
+
+    getCachedArray() {
+        return [this.body1.id, this.body2.id, this.pointA.copy(), this.pointB.copy(), this.integratedImpulse.scale(0.75)];
+    }
+
+    sameContact(array) {
+        const TOLERANCE = 0.0001
+        if (array[0] == this.body1.id && array[1] == this.body2.id) {
+            if (this.pointA.subtract(array[2]).magnitudeSquared() < TOLERANCE && this.pointB.subtract(array[3]).magnitudeSquared() < TOLERANCE) {
+                return true;
+            }
+        }
+        else if (array[1] == this.body1.id && array[0] == this.body2.id) {
+            if (this.pointA.subtract(array[3]).magnitudeSquared() < TOLERANCE && this.pointB.subtract(array[2]).magnitudeSquared() < TOLERANCE) {
+                return true;
+            }
+        }
+        return false;
     }
 
     isValid() {
@@ -50,7 +72,7 @@ const CollisionContact = class extends Constraint {
         const wB = this.body2.maxParent.getEffectiveTotalInverseMass(this.normal);
         const totalInverse = wA + wB;
 
-        const correction = this.normal.scale(Math.min(penetration + this.slop, 0) / totalInverse);
+        const correction = this.normal.scale(Math.min(penetration + this.slop, 0) / totalInverse * this.bias);
         if (wA > 0) {
             this.body1.maxParent.translation.subtractInPlace(correction.scale(wA));
         }
@@ -59,74 +81,94 @@ const CollisionContact = class extends Constraint {
         }
     }
 
-    solve() {
+
+    presolve() {
         const globalBody1 = this.body1.maxParent.global.body;
         const globalBody2 = this.body2.maxParent.global.body;
-
         this.velocity = this.body1.getVelocityAtPosition(this.pointA).subtractInPlace(this.body2.getVelocityAtPosition(this.pointB));
         var impactSpeed = this.velocity.dot(this.normal);
-        if (impactSpeed > 0) {
-            this.impulse = new Vector3(0, 0, 0);
-            return false;
+        this.restitutionBias = 0;
+        if (impactSpeed < 1) {
+            this.restitutionBias = -impactSpeed * this.material.restitution;
         }
         var tangential = this.velocity.projectOntoPlane(this.normal);
         var tangentialNorm = tangential.normalize();
-        if (!this.solved) {
-            var radius1 = this.pointA.subtract(globalBody1.position);
-            var radius2 = this.pointB.subtract(globalBody2.position);
 
-            var cross_n1 = radius1.cross(this.normal);
-            var rotationalEffects1 = cross_n1.dot(globalBody1.inverseMomentOfInertia.multiplyVector3(cross_n1));
+        var radius1 = this.pointA.subtract(globalBody1.position);
+        var radius2 = this.pointB.subtract(globalBody2.position);
 
-            var cross_n2 = radius2.cross(this.normal);
-            var rotationalEffects2 = cross_n2.dot(globalBody2.inverseMomentOfInertia.multiplyVector3(cross_n2));
+        var cross_n1 = radius1.cross(this.normal);
+        var rotationalEffects1 = cross_n1.dot(globalBody1.inverseMomentOfInertia.multiplyVector3(cross_n1));
 
-            rotationalEffects1 = Number.isFinite(rotationalEffects1) ? rotationalEffects1 : 0;
-            rotationalEffects2 = Number.isFinite(rotationalEffects2) ? rotationalEffects2 : 0;
+        var cross_n2 = radius2.cross(this.normal);
+        var rotationalEffects2 = cross_n2.dot(globalBody2.inverseMomentOfInertia.multiplyVector3(cross_n2));
 
+        rotationalEffects1 = Number.isFinite(rotationalEffects1) ? rotationalEffects1 : 0;
+        rotationalEffects2 = Number.isFinite(rotationalEffects2) ? rotationalEffects2 : 0;
 
-            var cross_t1 = radius1.cross(tangentialNorm);
-            var rotationalEffects1Fric = cross_t1.dot(globalBody1.inverseMomentOfInertia.multiplyVector3(cross_t1));
+        var cross_t1 = radius1.cross(tangentialNorm);
+        var rotationalEffects1Fric = cross_t1.dot(globalBody1.inverseMomentOfInertia.multiplyVector3(cross_t1));
 
-            var cross_t2 = radius2.cross(tangentialNorm);
-            var rotationalEffects2Fric = cross_t2.dot(globalBody2.inverseMomentOfInertia.multiplyVector3(cross_t2));
-            rotationalEffects1Fric = Number.isFinite(rotationalEffects1Fric) ? rotationalEffects1Fric : 0;
-            rotationalEffects2Fric = Number.isFinite(rotationalEffects2Fric) ? rotationalEffects2Fric : 0;
+        var cross_t2 = radius2.cross(tangentialNorm);
+        var rotationalEffects2Fric = cross_t2.dot(globalBody2.inverseMomentOfInertia.multiplyVector3(cross_t2));
+        rotationalEffects1Fric = Number.isFinite(rotationalEffects1Fric) ? rotationalEffects1Fric : 0;
+        rotationalEffects2Fric = Number.isFinite(rotationalEffects2Fric) ? rotationalEffects2Fric : 0;
 
-            var invMass1 = this.body1.maxParent.global.body.inverseMass;
-            var invMass2 = this.body2.maxParent.global.body.inverseMass;
+        var invMass1 = this.body1.maxParent.global.body.inverseMass;
+        var invMass2 = this.body2.maxParent.global.body.inverseMass;
 
-            if (this.body1.maxParent.isImmovable()) {
-                invMass1 = 0;
-                rotationalEffects1 = 0;
-                rotationalEffects1Fric = 0;
-            }
-            if (this.body2.maxParent.isImmovable()) {
-                invMass2 = 0;
-                rotationalEffects2 = 0;
-                rotationalEffects2Fric = 0;
-            }
-            this.denominator = invMass1 * (1 - globalBody1.linearDamping.multiply(this.normal).magnitude()) + rotationalEffects1 * (1 - globalBody1.angularDamping);
-
-            this.denominator += invMass2 * (1 - globalBody2.linearDamping.multiply(this.normal).magnitude()) + rotationalEffects2 * (1 - globalBody2.angularDamping);
-
-            this.denominatorFric = invMass1 * (1 - globalBody1.linearDamping.multiply(tangentialNorm).magnitude()) + rotationalEffects1Fric * (1 - globalBody1.angularDamping);
-
-            this.denominatorFric += invMass2 * (1 - globalBody2.linearDamping.multiply(tangentialNorm).magnitude()) + rotationalEffects2Fric * (1 - globalBody2.angularDamping);
-            if (this.denominator == 0) {
-                return false;
-            }
+        if (this.body1.maxParent.isImmovable()) {
+            invMass1 = 0;
+            rotationalEffects1 = 0;
+            rotationalEffects1Fric = 0;
         }
-        var impulse = - (1 + this.material.restitution) * impactSpeed / this.denominator;
-
-        if (impulse < 0) {
-            impulse = 0;
+        if (this.body2.maxParent.isImmovable()) {
+            invMass2 = 0;
+            rotationalEffects2 = 0;
+            rotationalEffects2Fric = 0;
         }
+        this.denominator = invMass1 * (1 - globalBody1.linearDamping.multiply(this.normal).magnitude()) + rotationalEffects1 * (1 - globalBody1.angularDamping);
 
-        var maxFriction = tangential.magnitude() / this.denominatorFric;
-        var friction = impulse * this.material.friction;
-        this.impulse = tangentialNorm.scale(-1 * Math.max(0, Math.min(maxFriction, friction))).addInPlace(this.normal.scale(impulse * this.bias));
+        this.denominator += invMass2 * (1 - globalBody2.linearDamping.multiply(this.normal).magnitude()) + rotationalEffects2 * (1 - globalBody2.angularDamping);
+
+        this.denominatorFric = invMass1 * (1 - globalBody1.linearDamping.multiply(tangentialNorm).magnitude()) + rotationalEffects1Fric * (1 - globalBody1.angularDamping);
+
+        this.denominatorFric += invMass2 * (1 - globalBody2.linearDamping.multiply(tangentialNorm).magnitude()) + rotationalEffects2Fric * (1 - globalBody2.angularDamping);
+
+        this.denominator = 1 / this.denominator;
+        this.denominatorFric = 1 / this.denominatorFric;
+
         this.solved = true;
+
+    }
+
+    solve() {
+        if (!Number.isFinite(this.denominator)) {
+            return false;
+        }
+
+
+        this.velocity = this.body1.getVelocityAtPosition(this.pointA).subtractInPlace(this.body2.getVelocityAtPosition(this.pointB));
+        var impactSpeed = this.velocity.dot(this.normal);
+
+        var tangential = this.velocity.projectOntoPlane(this.normal);
+        var tangentialNorm = tangential.normalize();
+
+
+
+        var impulse = (-impactSpeed + this.restitutionBias) * this.denominator * this.bias;
+
+
+        impulse = Math.max(0, this.normal.dot(this.integratedImpulse) + impulse) - this.normal.dot(this.integratedImpulse);
+
+        var maxFriction = tangential.magnitude() * this.denominatorFric;
+        var friction = -1 * Math.max(0, Math.min(maxFriction, impulse * this.material.friction));
+        friction = Math.min(maxFriction, Math.max(-maxFriction, tangentialNorm.dot(this.integratedImpulse) + friction) - tangentialNorm.dot(this.integratedImpulse));
+
+
+        this.impulse = tangentialNorm.scale(friction).addInPlace(this.normal.scale(impulse));
+
+        this.integratedImpulse.addInPlace(this.impulse)
         return true;
     }
 
@@ -153,23 +195,39 @@ const CollisionContact = class extends Constraint {
 
     copy() {
         var c = new this.constructor();
+        c.impulse = this.impulse.copy();
+
         c.normal = this.normal.copy();
 
-        c.body1 = this.body1;
-        c.body2 = this.body2;
-        c.pointA = this.pointA;
-        c.pointB = this.pointB;
-        c.velocity = this.velocity;
+        c.body1 = this.body1
+        c.body2 = this.body2
 
-        c.solved = this.solved;
-        c.impulse = this.impulse;
+        c.pointA = this.pointA.copy();
+        c.pointB = this.pointB.copy();
+        c.velocity = this.velocity.copy();
 
-        c.combinedMaterial = this.combinedMaterial;
+        c.body1_netForce = new Vector3();
+        c.body2_netForce = new Vector3();
+        c.body1_netTorque = new Vector3();
+        c.body2_netTorque = new Vector3();
+
+        c.material = this.material.copy();
+
+        c.slop = this.slop;
+        c.bias = this.bias;
+        c.restitutionBias = this.restitutionBias;
+
+        c.integratedImpulse = this.integratedImpulse.copy();
+
+        c.denominator = this.denominator
+        c.denominatorFric = this.denominatorFric;
+        c.solved = false;
         return c;
     }
 
     toJSON() {
         return {
+            impulse: this.impulse.toJSON(),
             normal: this.normal.toJSON(),
             body1: this.body1.id,
             body2: this.body2.id,
@@ -177,30 +235,33 @@ const CollisionContact = class extends Constraint {
             pointB: this.pointB.toJSON(),
             velocity: this.velocity.toJSON(),
             solved: this.solved,
-            impulse: this.impulse.toJSON(),
             combinedMaterial: this.combinedMaterial.toJSON(),
             slop: this.slop,
-            bias: this.bias
+            bias: this.bias,
+            restitutionBias: this.restitutionBias,
+            integratedImpulse: this.integratedImpulse.toJSON(),
+            denominator: this.denominator,
+            denominatorFric: this.denominatorFric
         }
     }
 
     static fromJSON(json, gameEngine) {
         var c = super.fromJSON(json, gameEngine);
-        c.normal = new Vector3().fromJSON(json.normal);
-
+        c.impulse = Vector3.fromJSON(json.impulse);
+        c.normal = Vector3.fromJSON(json.normal);
         c.body1 = json.body1
-        c.body2 = json.body2
+        c.body2 = json.body2;
         c.pointA = Vector3.fromJSON(json.pointA);
         c.pointB = Vector3.fromJSON(json.pointB);
         c.velocity = Vector3.fromJSON(json.velocity);
-
         c.solved = json.solved;
-        c.impulse = Vector3.fromJSON(json.impulse);
-
+        c.combinedMaterial = Material.fromJSON(json.combinedMaterial);
         c.slop = json.slop;
         c.bias = json.bias;
-
-        c.combinedMaterial = Material.fromJSON(json.combinedMaterial);
+        c.restitutionBias = json.restitutionBias;
+        c.integratedImpulse = Vector3.fromJSON(json.integratedImpulse);
+        c.denominator = json.denominator;
+        c.denominatorFric = json.denominatorFric;
         return c;
     }
 
@@ -214,6 +275,7 @@ const CollisionContact = class extends Constraint {
         super.destroy();
         this.body1 = null;
         this.body2 = null;
+        this.integratedImpulse = null;
         this.material = null;
     }
 };

@@ -24,8 +24,12 @@ const DistanceConstraint = class extends Constraint {
         this.anchor1 = options?.anchor1 ?? new Vector3();
         this.anchor2 = options?.anchor2 ?? new Vector3();
 
-        this.slop = 0.01;
-        this.bias = 0.4;
+        this.slop = options?.slop ?? 0.01;
+        this.bias = options?.bias ?? 0.333333;
+
+        this.integratedImpulse = new Vector3();
+        this.deltaLength = 0;
+        this.normal = options?.normal ?? new Vector3();
 
         this.lowerBound = options?.lowerBound ?? options?.restLength ?? 0;
         this.upperBound = options?.upperBound ?? options?.restLength ?? Infinity;
@@ -34,6 +38,26 @@ const DistanceConstraint = class extends Constraint {
         this.solved = false;
 
     }
+
+    getCachedArray() {
+        return [this.body1.id, this.body2.id, this.point1.copy(), this.point2.copy(), this.integratedImpulse.copy()];
+    }
+
+    sameContact(array) {
+        const TOLERANCE = 0.0001
+        if (array[0] == this.body1.id && array[1] == this.body2.id) {
+            if (this.point1.subtract(array[2]).magnitudeSquared() < TOLERANCE && this.point2.subtract(array[3]).magnitudeSquared() < TOLERANCE) {
+                return true;
+            }
+        }
+        else if (array[1] == this.body1.id && array[0] == this.body2.id) {
+            if (this.point1.subtract(array[3]).magnitudeSquared() < TOLERANCE && this.point2.subtract(array[2]).magnitudeSquared() < TOLERANCE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
 
     isValid() {
@@ -102,16 +126,59 @@ const DistanceConstraint = class extends Constraint {
         this.mesh.mesh.geometry.attributes.position.needsUpdate = true;
     }
 
-    solve() {
+    presolve() {
         this.point1 = this.body1.global.body.position.add(this.body1.global.body.rotation.multiplyVector3(this.anchor1));
         this.point2 = this.body2.global.body.position.add(this.body2.global.body.rotation.multiplyVector3(this.anchor2));
         var delta = this.point2.subtract(this.point1);
         var deltaLength = delta.magnitude();
+
+
         if (deltaLength == 0) {
             delta = new Vector3(0, 0.0001, 0);
             deltaLength = delta.magnitude();
         }
         var n = delta.scale(1 / deltaLength);
+        this.deltaLength = deltaLength;
+        this.normal = n;
+
+        var radius1 = this.point1.subtract(this.body1.maxParent.global.body.position);
+        var radius2 = this.point2.subtract(this.body2.maxParent.global.body.position);
+
+        var rotationalEffects1 = n.dot(this.body1.maxParent.global.body.inverseMomentOfInertia.multiplyVector3(radius1.cross(n)).cross(radius1));
+        var rotationalEffects2 = n.dot(this.body2.maxParent.global.body.inverseMomentOfInertia.multiplyVector3(radius2.cross(n)).cross(radius2));
+        rotationalEffects1 = isFinite(rotationalEffects1) ? rotationalEffects1 : 0;
+        rotationalEffects2 = isFinite(rotationalEffects2) ? rotationalEffects2 : 0;
+
+
+
+        var invMass1 = this.body1.maxParent.global.body.inverseMass;
+        var invMass2 = this.body2.maxParent.global.body.inverseMass;
+
+        if (this.body1.maxParent.isImmovable()) {
+            invMass1 = 0;
+            rotationalEffects1 = 0;
+        }
+        if (this.body2.maxParent.isImmovable()) {
+            invMass2 = 0;
+            rotationalEffects2 = 0;
+        }
+        this.denominator = invMass1 * (1 - this.body1.maxParent.global.body.linearDamping.multiply(n).magnitude()) + rotationalEffects1 * (1 - this.body1.maxParent.global.body.angularDamping);
+
+        this.denominator += invMass2 * (1 - this.body2.maxParent.global.body.linearDamping.multiply(n).magnitude()) + rotationalEffects2 * (1 - this.body2.maxParent.global.body.angularDamping);
+
+
+
+        this.denominator = 1 / this.denominator;
+        this.solved = true;
+    }
+
+    solve() {
+
+        if (!Number.isFinite(this.denominator)) {
+            return false;
+        }
+
+        const deltaLength = this.deltaLength;
         var error = 0;
         if (deltaLength < this.upperBound && deltaLength > this.lowerBound) {
             this.impulse = new Vector3();
@@ -125,41 +192,13 @@ const DistanceConstraint = class extends Constraint {
         }
         var velocity1 = this.body1.getVelocityAtPosition(this.point1);
         var velocity2 = this.body2.getVelocityAtPosition(this.point2);
-        var relVel = n.dot(velocity2.subtract(velocity1));
+        var relVel = this.normal.dot(velocity2.subtract(velocity1));
 
-        if (!this.solved) {
-            var radius1 = this.point1.subtract(this.body1.maxParent.global.body.position);
-            var radius2 = this.point2.subtract(this.body2.maxParent.global.body.position);
-
-            var rotationalEffects1 = n.dot(this.body1.maxParent.global.body.inverseMomentOfInertia.multiplyVector3(radius1.cross(n)).cross(radius1));
-            var rotationalEffects2 = n.dot(this.body2.maxParent.global.body.inverseMomentOfInertia.multiplyVector3(radius2.cross(n)).cross(radius2));
-            rotationalEffects1 = isFinite(rotationalEffects1) ? rotationalEffects1 : 0;
-            rotationalEffects2 = isFinite(rotationalEffects2) ? rotationalEffects2 : 0;
+        var lambda = (relVel + this.bias * Math.abs(error) * Math.sign(relVel)) * this.denominator * this.bias;
+        this.impulse = this.normal.scale(lambda);
+        this.integratedImpulse.addInPlace(this.impulse);
 
 
-
-            var invMass1 = this.body1.maxParent.global.body.inverseMass;
-            var invMass2 = this.body2.maxParent.global.body.inverseMass;
-
-            if (this.body1.maxParent.isImmovable()) {
-                invMass1 = 0;
-                rotationalEffects1 = 0;
-            }
-            if (this.body2.maxParent.isImmovable()) {
-                invMass2 = 0;
-                rotationalEffects2 = 0;
-            }
-            this.denominator = invMass1 * (1 - this.body1.maxParent.global.body.linearDamping.multiply(n).magnitude()) + rotationalEffects1 * (1 - this.body1.maxParent.global.body.angularDamping);
-
-            this.denominator += invMass2 * (1 - this.body2.maxParent.global.body.linearDamping.multiply(n).magnitude()) + rotationalEffects2 * (1 - this.body2.maxParent.global.body.angularDamping);
-
-            if (this.denominator == 0) {
-                return false;
-            }
-        }
-        var lambda = (relVel + this.bias * Math.abs(error) * Math.sign(relVel)) / this.denominator;
-        this.impulse = n.scale(lambda);
-        this.solved = true;
         return true;
     }
 
@@ -228,6 +267,9 @@ const DistanceConstraint = class extends Constraint {
         json.denominator = this.denominator;
         json.solved = this.solved;
 
+        json.integratedImpulse = this.integratedImpulse.toJSON();
+        json.deltaLength = this.deltaLength;
+
         return json;
     }
 
@@ -246,6 +288,8 @@ const DistanceConstraint = class extends Constraint {
         distanceConstraint.slop = json.slop;
         distanceConstraint.denominator = json.denominator;
         distanceConstraint.solved = json.solved;
+        distanceConstraint.integratedImpulse = Vector3.fromJSON(json.integratedImpulse);
+        distanceConstraint.deltaLength = json.deltaLength;
         return distanceConstraint;
     }
 

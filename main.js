@@ -66,7 +66,7 @@ var gameEngine = new GameEngine(
         },
         gameCamera: {
             pullback: 4,
-            maxPullback: 8,
+            maxPullback: 16,
             minPullback: 2
         },
         cameraControls: {
@@ -336,7 +336,7 @@ settings.load();
 
 gameEngine.world.setSubsteps(4);
 gameEngine.world.setVelocityIterations(16);
-gameEngine.world.setPenetrationIterations(16);
+gameEngine.world.setPenetrationIterations(8);
 
 var gravity = -0.35;
 
@@ -356,7 +356,7 @@ player.setMeshAndAddToScene({}, gameEngine);
 gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
-for (var i = 0; i < 1; i++) {
+for (var i = 0; i < 2; i++) {
     const box = new Box({
         width: 3,
         height: 8,
@@ -369,11 +369,11 @@ for (var i = 0; i < 1; i++) {
         },
         local: {
             body: {
-                mass: 0.3
+                mass: 1
             }
         },
     });
-    box.setFriction(0.5);
+    box.setFriction(1);
     box.setRestitution(0);
     box.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
 
@@ -382,7 +382,7 @@ for (var i = 0; i < 1; i++) {
 }
 
 
-for (var i = 0; i < 0; i++) {
+for (var i = 0; i < 8; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),

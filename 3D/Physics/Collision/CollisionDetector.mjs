@@ -51,6 +51,8 @@ const CollisionDetector = class {
         this.concavePolyhedronBinarySearchDepth = options?.concavePolyhedronBinarySearchDepth ?? 0;
         this.GJKBinarySearchDepth = options?.GJKBinarySearchDepth ?? 0;
         this.maxParents = new Set();
+        this.cachedContacts = new Map();
+        this.warmStarting = true;
         this.handleFunc = function (x, y) {
             this.addPair(this.world.getByID(x), this.world.getByID(y));
         }.bind(this);
@@ -187,6 +189,52 @@ const CollisionDetector = class {
 
         var tmpVec1 = new Vector3();
         var tmpVec2 = new Vector3();
+        for (const contact of this.contacts) {
+            if (contact.ignore) {
+                continue;
+            }
+            contact.presolve();
+        }
+        if (this.warmStarting) {
+            for (const contact of this.contacts) {
+                if (contact.ignore) {
+                    continue;
+                }
+                const cachedBody1 = this.cachedContacts.get(contact.body1.id);
+                let found = false;
+                if (cachedBody1) {
+                    for (const value of cachedBody1) {
+                        if (contact.sameContact(value)) {
+                            const a = contact.body1.maxParent;
+                            const b = contact.body2.maxParent;
+                            const a_body = a.global.body;
+                            const b_body = b.global.body;
+
+                            contact.integratedImpulse = value[4];
+                            contact.impulse = contact.integratedImpulse.copy();
+                            contact.applyForces();
+
+                            tmpVec1.setXYZ(1 - a_body.linearDamping.x, 1 - a_body.linearDamping.y, 1 - a_body.linearDamping.z);
+
+                            tmpVec2.setXYZ(1 - b_body.linearDamping.x, 1 - b_body.linearDamping.y, 1 - b_body.linearDamping.z);
+
+                            const v1 = contact.body1_netForce.scale(a.getEffectiveTotalInverseMass(contact.normal)).multiplyInPlace(tmpVec1);
+                            const a1 = a_body.inverseMomentOfInertia.multiplyVector3(contact.body1_netTorque).scaleInPlace(1 - a_body.angularDamping);
+                            const v2 = contact.body2_netForce.scale(b.getEffectiveTotalInverseMass(contact.normal)).multiplyInPlace(tmpVec2);
+                            const a2 = b_body.inverseMomentOfInertia.multiplyVector3(contact.body2_netTorque).scaleInPlace(1 - b_body.angularDamping);
+
+                            a.addVelocityAndAngularVelocity(v1, a1);
+                            b.addVelocityAndAngularVelocity(v2, a2);
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if(!found){
+                    contact.integratedImpulse.reset();
+                }
+            }
+        }
 
         for (var iter = 0; iter < this.velocityIterations; iter++) {
             for (const contact of this.contacts) {
@@ -210,6 +258,7 @@ const CollisionDetector = class {
 
                 a.addVelocityAndAngularVelocity(v1, a1);
                 b.addVelocityAndAngularVelocity(v2, a2);
+
             }
         }
         for (var iter = 0; iter < this.penetrationIterations; iter++) {
@@ -224,12 +273,21 @@ const CollisionDetector = class {
             mp.translate(mp.translation);
         }
 
+        this.cachedContacts.clear();
         for (const contact of this.contacts) {
             if (contact.ignore) {
                 continue;
             }
             contact.body1.contacts.length = 0;
             contact.body2.contacts.length = 0;
+            if (this.warmStarting && !contact.integratedImpulse.isZero()) {
+                const cached = contact.getCachedArray();
+                if (this.cachedContacts.has(contact.body1.id)) {
+                    this.cachedContacts.get(contact.body1.id).push(cached);
+                } else {
+                    this.cachedContacts.set(contact.body1.id, [cached]);
+                }
+            }
         }
 
         for (const contact of this.contacts) {
@@ -595,7 +653,7 @@ const CollisionDetector = class {
 
 
 
-            if (p.p.dot(direction) - minDistance < 0.0001) {
+            if (p.p.dot(direction) - minDistance < 0.001) {
                 let closestPlane = {
                     normal: faces[closestFace][1].p.subtract(faces[closestFace][0].p).cross(faces[closestFace][2].p.subtract(faces[closestFace][0].p)).normalize(),
                     distance: null
@@ -611,9 +669,6 @@ const CollisionDetector = class {
                 let normal = localA.subtract(localB).normalizeInPlace();
                 const contacts = [
                     [localA, localB],
-                    // [faces[closestFace][0].a, faces[closestFace][0].b],
-                    // [faces[closestFace][1].a, faces[closestFace][1].b],
-                    // [faces[closestFace][2].a, faces[closestFace][2].b]
                 ];
                 return {
                     contacts: contacts,
@@ -662,7 +717,7 @@ const CollisionDetector = class {
                 ]);
 
 
-                if (faces[faces.length - 1][3].p.dot(faces[faces.length - 1][0].p) < -0.0001) {
+                if (faces[faces.length - 1][3].p.dot(faces[faces.length - 1][0].p) < -0.001) {
                     let temp = faces[faces.length - 1][0];
                     faces[faces.length - 1][0] = faces[faces.length - 1][1];
                     faces[faces.length - 1][1] = temp;

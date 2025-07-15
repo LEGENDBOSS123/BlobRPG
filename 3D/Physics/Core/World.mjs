@@ -23,7 +23,7 @@ const World = class {
         this.spatialHash = options?.spatialHash ?? new this.broadphase({ world: this });
         this.collisionDetector = options?.collisionDetector ?? new CollisionDetector({ world: this });
         this.gameEngine = options?.gameEngine ?? null;
-        this.linearSleepThreshold = options?.linearSleepThreshold ?? 0.0000001;
+        this.linearSleepThreshold = options?.linearSleepThreshold ?? 0.000001;
         this.angularSleepThreshold = options?.angularSleepThreshold ?? 0.999999;
     }
 
@@ -86,9 +86,11 @@ const World = class {
         }
 
         for(const c of element.contacts){
-            const c2 = this.gameEngine.world.getByID(c);
+            const c2 = this.getByID(c);
+            console.log(c2);
             if(c2){
                 c2.awaken();
+                c2.isSleepy = false;
             }
         }
 

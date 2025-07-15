@@ -43,7 +43,7 @@ const Composite = class extends WorldObject {
         this.isSensor = options?.isSensor ?? false;
         this.local.hitbox = Hitbox3.from(options?.local?.hitbox);
         this.sleeping = options?.sleeping ?? false;
-        this.sleepThreshold = options?.sleepThreshold ?? 16;
+        this.sleepThreshold = options?.sleepThreshold ?? 32;
         this.sleepCounter = options?.sleepCounter ?? 0;
         this.isSleepy = options?.isSleepy ?? false;
         this.contacts = [];
@@ -474,12 +474,13 @@ const Composite = class extends WorldObject {
         var cannotSleep = false;
         for (const child of this.children) {
             child.updateSleepAll();
-            if (!child.isSleepy) {
+            if (!child.isSleepy || !child.sleeping) {
                 cannotSleep = true;
             }
         }
         if (cannotSleep) {
             this.awaken();
+            this.isSleepy = false;
             return;
         }
 
@@ -496,7 +497,6 @@ const Composite = class extends WorldObject {
     }
 
     awaken() {
-        this.isSleepy = false;
         this.sleeping = false;
         this.sleepCounter = 0;
         this.contacts.length = 0;

@@ -283,6 +283,9 @@ const Modal = class extends WebComponent {
             }
             this.addEventListener("dblclick", this.modalHeaderElement, "dblclick",
                 function (e) {
+                    if(e.target != this.modalHeaderElement) {
+                        return;
+                    }
                     if (this.html.classList.contains("modal-fullscreen")) {
                         this.html.style.width = previousWidth;
                         this.html.style.height = previousHeight;

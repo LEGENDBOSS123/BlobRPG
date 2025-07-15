@@ -33,7 +33,7 @@ const PhysicsBody3 = class {
         this.setVelocity(velocity);
     }
 
-    getVelocityAtPosition(position) {
+    getVelocityAtPosition(position = new Vector3()) {
         return this.getVelocity().addInPlace(this.getAngularVelocity().cross(position.subtract(this.position)));
     }
 
