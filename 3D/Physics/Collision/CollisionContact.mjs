@@ -3,8 +3,13 @@ import Constraint from "./Constraint.mjs";
 import ClassRegistry from "../Core/ClassRegistry.mjs";
 import Material from "./Material.mjs";
 
+
+
 const CollisionContact = class extends Constraint {
     static name = "COLLISIONCONTACT";
+    static penetrationBias = 0.8;
+    static impulseBias = 0.4;
+
     constructor(options) {
         super(options);
         this.impulse = options?.impulse;
@@ -26,7 +31,6 @@ const CollisionContact = class extends Constraint {
         this.material = options?.combinedMaterial;
 
         this.slop = options?.slop ?? 0.01;
-        this.bias = options?.bias ?? 0.3333333;
         this.restitutionBias = 0;
 
         this.integratedImpulse = new Vector3();
@@ -37,18 +41,13 @@ const CollisionContact = class extends Constraint {
     }
 
     getCachedArray() {
-        return [this.body1.id, this.body2.id, this.pointA.copy(), this.pointB.copy(), this.integratedImpulse.scale(0.75)];
+        return [this.body1.id, this.body2.id, this.pointA.copy(), this.pointB.copy(), this.normal.copy(), this.integratedImpulse];
     }
 
     sameContact(array) {
-        const TOLERANCE = 0.01;
+        const TOLERANCE = 0.00001;
         if (array[0] == this.body1.id && array[1] == this.body2.id) {
-            if (this.pointA.subtract(array[2]).magnitudeSquared() < TOLERANCE && this.pointB.subtract(array[3]).magnitudeSquared() < TOLERANCE) {
-                return true;
-            }
-        }
-        else if (array[1] == this.body1.id && array[0] == this.body2.id) {
-            if (this.pointA.subtract(array[3]).magnitudeSquared() < TOLERANCE && this.pointB.subtract(array[2]).magnitudeSquared() < TOLERANCE) {
+            if (Math.abs(this.normal.dot(array[4]) - 1) < TOLERANCE && this.pointA.subtract(array[2]).magnitudeSquared() < TOLERANCE && this.pointB.subtract(array[3]).magnitudeSquared() < TOLERANCE) {
                 return true;
             }
         }
@@ -72,7 +71,7 @@ const CollisionContact = class extends Constraint {
         const wB = this.body2.maxParent.getEffectiveTotalInverseMass(this.normal);
         const totalInverse = wA + wB;
 
-        const correction = this.normal.scale(Math.min(penetration + this.slop, 0) / totalInverse * this.bias);
+        const correction = this.normal.scale(Math.min(penetration + this.slop, 0) / totalInverse * this.constructor.penetrationBias);
         if (wA > 0) {
             this.body1.maxParent.translation.subtractInPlace(correction.scale(wA));
         }
@@ -156,19 +155,18 @@ const CollisionContact = class extends Constraint {
 
 
 
-        var impulse = (-impactSpeed + this.restitutionBias) * this.denominator * this.bias;
-
-
-        impulse = Math.max(0, this.normal.dot(this.integratedImpulse) + impulse) - this.normal.dot(this.integratedImpulse);
+        var impulse = (-impactSpeed + this.restitutionBias) * this.denominator * this.constructor.impulseBias;
 
         var maxFriction = tangential.magnitude() * this.denominatorFric;
         var friction = -1 * Math.max(0, Math.min(maxFriction, impulse * this.material.friction));
         friction = Math.min(maxFriction, Math.max(-maxFriction, tangentialNorm.dot(this.integratedImpulse) + friction) - tangentialNorm.dot(this.integratedImpulse));
 
+        impulse = Math.max(0, this.normal.dot(this.integratedImpulse) + impulse) - this.normal.dot(this.integratedImpulse);
+
 
         this.impulse = tangentialNorm.scale(friction).addInPlace(this.normal.scale(impulse));
 
-        this.integratedImpulse.addInPlace(this.impulse)
+        this.integratedImpulse.addInPlace(this.impulse);
         return true;
     }
 
@@ -214,7 +212,6 @@ const CollisionContact = class extends Constraint {
         c.material = this.material.copy();
 
         c.slop = this.slop;
-        c.bias = this.bias;
         c.restitutionBias = this.restitutionBias;
 
         c.integratedImpulse = this.integratedImpulse.copy();
@@ -237,7 +234,6 @@ const CollisionContact = class extends Constraint {
             solved: this.solved,
             combinedMaterial: this.combinedMaterial.toJSON(),
             slop: this.slop,
-            bias: this.bias,
             restitutionBias: this.restitutionBias,
             integratedImpulse: this.integratedImpulse.toJSON(),
             denominator: this.denominator,
@@ -257,7 +253,6 @@ const CollisionContact = class extends Constraint {
         c.solved = json.solved;
         c.combinedMaterial = Material.fromJSON(json.combinedMaterial);
         c.slop = json.slop;
-        c.bias = json.bias;
         c.restitutionBias = json.restitutionBias;
         c.integratedImpulse = Vector3.fromJSON(json.integratedImpulse);
         c.denominator = json.denominator;

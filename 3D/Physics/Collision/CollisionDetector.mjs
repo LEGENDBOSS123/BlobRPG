@@ -210,7 +210,7 @@ const CollisionDetector = class {
                             const a_body = a.global.body;
                             const b_body = b.global.body;
 
-                            contact.integratedImpulse = value[4];
+                            contact.integratedImpulse = value[5];
                             contact.impulse = contact.integratedImpulse.copy();
                             contact.applyForces();
 
@@ -229,9 +229,6 @@ const CollisionDetector = class {
                             break;
                         }
                     }
-                }
-                if(!found){
-                    contact.integratedImpulse.reset();
                 }
             }
         }
@@ -280,7 +277,7 @@ const CollisionDetector = class {
             }
             contact.body1.contacts.length = 0;
             contact.body2.contacts.length = 0;
-            if (this.warmStarting && !contact.integratedImpulse.isZero()) {
+            if (this.warmStarting) {
                 const cached = contact.getCachedArray();
                 if (this.cachedContacts.has(contact.body1.id)) {
                     this.cachedContacts.get(contact.body1.id).push(cached);

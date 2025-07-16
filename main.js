@@ -336,8 +336,8 @@ settings.load();
 
 
 gameEngine.world.setSubsteps(4);
-gameEngine.world.setVelocityIterations(16);
-gameEngine.world.setPenetrationIterations(16);
+gameEngine.world.setVelocityIterations(32);
+gameEngine.world.setPenetrationIterations(32);
 
 var gravity = -0.35;
 
@@ -350,7 +350,7 @@ var player = new Player({
     moveSpeed: 0.5,
     jumpSpeed: 1,
     gravity: new Vector3(0, gravity, 0),
-    mass: 1,
+    mass: 4,
     gameEngine: gameEngine,
 });
 player.setMeshAndAddToScene({}, gameEngine);
@@ -358,12 +358,12 @@ gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
 
-const friction = 0.5;
+const friction = 1;
 for (var i = 0; i < 1; i++) {
     const box = new Box({
-        width: 6,
+        width: 10,
         height: 2,
-        depth: 6,
+        depth: 10,
         global: {
             body: {
                 position: new Vector3(10 + 4, 16 + i * 3, 4),
@@ -372,7 +372,7 @@ for (var i = 0; i < 1; i++) {
         },
         local: {
             body: {
-                mass: 1
+                mass: 4
             }
         },
     });
@@ -386,9 +386,9 @@ for (var i = 0; i < 1; i++) {
 
 for (var i = 0; i < 1; i++) {
     const box = new Box({
-        width: 4,
+        width: 8,
         height: 2,
-        depth: 4,
+        depth: 8,
         global: {
             body: {
                 position: new Vector3(10 + 4, 30 + i * 3, 4),
@@ -397,7 +397,7 @@ for (var i = 0; i < 1; i++) {
         },
         local: {
             body: {
-                mass: 1
+                mass: 4
             }
         },
     });
@@ -410,9 +410,9 @@ for (var i = 0; i < 1; i++) {
 }
 for (var i = 0; i < 1; i++) {
     const box = new Box({
-        width: 3,
+        width: 6,
         height: 2,
-        depth: 3,
+        depth: 6,
         global: {
             body: {
                 position: new Vector3(10 + 4, 34 + i * 3, 4),
@@ -421,7 +421,7 @@ for (var i = 0; i < 1; i++) {
         },
         local: {
             body: {
-                mass: 1
+                mass: 4
             }
         },
     });
@@ -434,9 +434,9 @@ for (var i = 0; i < 1; i++) {
 }
 for (var i = 0; i < 1; i++) {
     const box = new Box({
-        width: 1,
+        width: 4,
         height: 2,
-        depth: 1,
+        depth: 4,
         global: {
             body: {
                 position: new Vector3(10 + 4, 38 + i * 3, 4),
@@ -445,7 +445,7 @@ for (var i = 0; i < 1; i++) {
         },
         local: {
             body: {
-                mass: 1
+                mass: 4
             }
         },
     });
@@ -462,16 +462,16 @@ for (var i = 0; i < 0; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(20 + i * 0.3, 20 + i * 0.3, 20),
+        position: new Vector3(-20, 20 + i *0.01, i*0.01),
         radius: 1,
     })
-
+    slime.sphere.setFriction(friction)
     slime.setMeshAndAddToScene({}, gameEngine);
     gameEngine.entitySystem.register(slime);
     slime.addToWorld(gameEngine.world);
-    slime.getTargets = function () {
-        return [player.id];
-    }
+    // slime.getTargets = function () {
+    //     return [player.id];
+    // }
 }
 
 // const ufo = new UFO({

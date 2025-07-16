@@ -17,7 +17,7 @@ var Slime = class extends HealthEntity {
         this.ammo = options?.ammo ?? this.maxAmmo;
         this.range = options?.range ?? 3;
         this.reloadTime = options?.reloadTime ?? 1;
-        this.maxJumpCooldown = options?.maxJumpCooldown ?? 50;
+        this.maxJumpCooldown = options?.maxJumpCooldown ?? 30;
         this.jumpCooldown = options?.jumpCooldown ?? 0;
         this.usesInstancing = true;
         this.lastDamageTime = 0;
@@ -144,7 +144,7 @@ var Slime = class extends HealthEntity {
         this.updateShapeID(this.sphere);
     }
 
-    async setMesh(options, gameEngine){
+    async setMesh(options, gameEngine) {
         const mesh = await gameEngine.graphicsEngine.modelPool.loadInstance("slime.glb", 100);
         this.sphere.mesh = mesh;
         this.makeHealthSprite(new Vector3(2, 0.3, 0).scale(this.sphere.radius), new Vector3(0, 1.3, 0).scale(this.sphere.radius));
@@ -204,8 +204,10 @@ var Slime = class extends HealthEntity {
     }
 
     updateStep() {
+        
 
-        if(this.getMainShape().global.body.position.y < -100){
+
+        if (this.getMainShape().global.body.position.y < -100) {
             this.health = 0;
         }
 
@@ -220,17 +222,17 @@ var Slime = class extends HealthEntity {
         var targetEntity = this.gameEngine.entitySystem.getByID(targetID);
 
         var targetBody = targetEntity.getMainShape();
+        
         if (!targetBody) {
             return;
         }
+        
         var direction = targetBody.global.body.position.subtract(this.sphere.global.body.position);
 
         direction.y = 0;
         direction.normalizeInPlace().scaleInPlace(this.speed);
         direction.y = this.jumpPower;
-
-
-
+        this.sphere.awaken();
         if (this.jumpCooldown != this.maxJumpCooldown) {
             this.jumpCooldown -= 1;
             return;

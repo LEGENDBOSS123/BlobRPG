@@ -20,6 +20,10 @@ const Composite = class extends WorldObject {
 
     static name = "COMPOSITE";
 
+    static linearSleepThreshold = 0.001;
+    static angularSleepThreshold = 0.999995;
+    static sleepThreshold = 80;
+
     constructor(options) {
         super(options);
 
@@ -43,7 +47,6 @@ const Composite = class extends WorldObject {
         this.isSensor = options?.isSensor ?? false;
         this.local.hitbox = Hitbox3.from(options?.local?.hitbox);
         this.sleeping = options?.sleeping ?? false;
-        this.sleepThreshold = options?.sleepThreshold ?? 80;
         this.sleepCounter = options?.sleepCounter ?? 0;
         this.isSleepy = options?.isSleepy ?? false;
         this.contacts = [];
@@ -300,7 +303,7 @@ const Composite = class extends WorldObject {
             }
             return [force, (position.subtract(this.global.body.position)).cross(force)];
         }
-        return this.maxParent.getForceEffects(force, position);
+        return this.maxParent.getForceEffect(force, position);
     }
 
     applyForce(force, position = this.global.body.position) {
@@ -359,6 +362,9 @@ const Composite = class extends WorldObject {
     addVelocityAndAngularVelocity(velocity, angularVelocity) {
         this.global.body.angularVelocity.addInPlace(angularVelocity);
         this.global.body.setVelocity(this.global.body.getVelocity().addInPlace(velocity).addInPlace(this.distanceToMaxParent.cross(angularVelocity)));
+        if(this.sleeping && velocity.magnitudeSquared() < 0.00001 && angularVelocity.magnitudeSquared() < 0.00001){
+            this.awakenAll();
+        }
         for (const child of this.children) {
             child.addVelocityAndAngularVelocity(velocity, angularVelocity);
         }
@@ -499,49 +505,59 @@ const Composite = class extends WorldObject {
         }
         return true;
     }
-    
+
     updateIsSleepy() {
-        this.isSleepy = this.global.body.getVelocity().magnitudeSquared() < this.gameEngine.world.linearSleepThreshold && this.global.body.actualPreviousPosition.distanceSquared(this.global.body.position) < this.gameEngine.world.linearSleepThreshold && this.global.body.previousRotation.dot(this.global.body.rotation) > this.gameEngine.world.angularSleepThreshold;
+        this.isSleepy = this.global.body.getVelocity().magnitudeSquared() < this.constructor.linearSleepThreshold && this.global.body.actualPreviousPosition.distanceSquared(this.global.body.position) < this.constructor.linearSleepThreshold && this.global.body.previousRotation.dot(this.global.body.rotation) > this.constructor.angularSleepThreshold;
     }
 
     updateSleepAll() {
-        this.updateIsSleepy();
-        for (const c of this.sleepingContacts) {
+        if (this.isMaxParent()) {
+            this.updateIsSleepyAll();
+        }
+
+        for (const c of (this.sleepingContacts.length > 0 ? this.sleepingContacts : this.contacts)) {
             const c2 = this.gameEngine.world.getByID(c);
             if (c2 && !c2.isSleepy) {
-                this.maxParent.awakenAll();
-                break;
+                this.awaken();
             }
-            if(!c2){
+            if (!c2) {
                 this.maxParent.awakenAll();
-                break;
+                return true
             }
         }
-        var cannotSleep = false;
         for (const child of this.children) {
-            child.updateSleepAll();
-            if (!child.isSleepy && !child.sleeping) {
-                cannotSleep = true;
+            if (child.updateSleepAll()) {
+                return true;
+            }
+            if (!child.isSleepy) {
+                this.maxParent.awakenAll();
+                return true
             }
         }
-        if (cannotSleep) {
-            this.maxParent.awakenAll();
-            return;
+        if (this.isSleepy) {
+            this.getSleepy();
+            return false;
         }
-
-        return this.isSleepy ? this.getSleepy() : this.maxParent.awakenAll();
+        this.awaken();
+        return false;
     }
-
     updateAfterCollisionAll() {
         if (this.isMaxParent()) {
             this.syncAll();
         }
     }
 
-    awakenAll(){
+    awakenAll() {
         this.awaken();
         for (const child of this.children) {
             child.awakenAll();
+        }
+    }
+
+    updateIsSleepyAll() {
+        this.updateIsSleepy();
+        for (const child of this.children) {
+            child.updateIsSleepyAll();
         }
     }
 
@@ -553,14 +569,17 @@ const Composite = class extends WorldObject {
 
     getSleepy() {
         this.sleepCounter++;
-        if (this.sleepCounter >= this.sleepThreshold) {
+        if (this.sleepCounter > this.constructor.sleepThreshold) {
             this.sleep();
         }
     }
 
     sleep() {
+        this.sleepCounter = this.constructor.sleepThreshold;
+        if (this.sleeping) {
+            return;
+        }
         this.sleeping = true;
-        this.sleepCounter = this.sleepThreshold;
         this.sleepingContacts = [...this.contacts];
     }
 
@@ -622,7 +641,6 @@ const Composite = class extends WorldObject {
         composite.local.hitbox = this.local.hitbox.toJSON();
         composite.local.flags = this.local.flags;
         composite.sleeping = this.sleeping;
-        composite.sleepThreshold = this.sleepThreshold;
         composite.sleepCounter = this.sleepCounter;
         composite.dimensionsJustChanged = this.dimensionsJustChanged;
         composite.translation = this.translation.toJSON();
@@ -650,7 +668,6 @@ const Composite = class extends WorldObject {
         composite.local.flags = json.local.flags;
         composite.gameEngine = gameEngine;
         composite.sleeping = json.sleeping;
-        composite.sleepThreshold = json.sleepThreshold;
         composite.sleepCounter = json.sleepCounter;
         composite.dimensionsJustChanged = json.dimensionsJustChanged;
         composite.translation = Vector3.fromJSON(json.translation);

@@ -435,7 +435,6 @@ var Player = class extends Entity {
             velDelta.y = this.jumpSpeed;
             this.canJump = false;
         }
-        // console.log(velDelta);
         this.composite.setTrueVelocity(this.composite.getTrueVelocity().add(velDelta));
     }
 

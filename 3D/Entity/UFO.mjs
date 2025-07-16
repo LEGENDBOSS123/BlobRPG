@@ -32,7 +32,7 @@ class UFO extends Entity {
         this.player = options?.player ?? null;
         this.targetPosition = null;
         this.targetRadius = 24;
-        this.velocity = options?.velocity ?? 0.2;
+        this.velocity = options?.velocity ?? 0.1;
         this.pushVelocity = options?.pushVelocity ?? 0.1;
 
         this.beamCollision = function (contact) {
@@ -71,7 +71,13 @@ class UFO extends Entity {
     async setMesh(options, gameEngine) {
         const gltf = await gameEngine.graphicsEngine.load("UFO.glb");
         gameEngine.graphicsEngine.makeShadows(gltf.scene);
-        var meshData = gameEngine.graphicsEngine.meshLinker.createMeshData(gltf.scene);
+        var meshData = gameEngine.graphicsEngine.meshLinker.createMeshData(gltf.scene, 
+            gameEngine.graphicsEngine.createAnimations(gltf.scene, gltf.animations)
+        );
+        for(var i in meshData.animations.actions){
+            meshData.animations.actions[i].play();
+        }
+        console.log(meshData.animations)
         this.composite.mesh = meshData;
         this.beamSensor.setMesh({
             color: 0xff0000

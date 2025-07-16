@@ -205,9 +205,9 @@ class BoxBox {
     static getContactPointsFaceFace(collisionDetector, axes, box1, box2, t1, t2, normal, overlap, type) {
         const points = [];
 
-        for (let x = -1; x <= 1; x+=2) {
-            for (let y = -1; y <= 1; y+=2) {
-                for (let z = -1; z <= 1; z+=2) {
+        for (let x = -1; x <= 1; x += 2) {
+            for (let y = -1; y <= 1; y += 2) {
+                for (let z = -1; z <= 1; z += 2) {
                     let box1Vert = axes[0].scale(x).addInPlace(axes[1].scale(y)).addInPlace(axes[2].scale(z)).addInPlace(box1.global.body.position);
 
                     let relativeVert = box2.global.body.rotation.conjugate().multiplyVector3(box1Vert.subtract(box2.global.body.position));
@@ -218,15 +218,15 @@ class BoxBox {
                         let closestVert = collisionDetector.closestPointToAABB(relativeVert, box2, clampedVert);
                         points.push([box1Vert, box2.translateLocalToWorld(closestVert)]);
                     }
-                    
+
                 }
             }
         }
-        
 
-        for (let x = -1; x <= 1; x+=2) {
-            for (let y = -1; y <= 1; y+=2) {
-                for (let z = -1; z <= 1; z+=2) {
+
+        for (let x = -1; x <= 1; x += 2) {
+            for (let y = -1; y <= 1; y += 2) {
+                for (let z = -1; z <= 1; z += 2) {
                     let box2Vert = axes[3].scale(x).addInPlace(axes[4].scale(y)).addInPlace(axes[5].scale(z)).addInPlace(box2.global.body.position);
 
                     let relativeVert = box1.global.body.rotation.conjugate().multiplyVector3(box2Vert.subtract(box1.global.body.position));
@@ -342,7 +342,7 @@ class BoxBox {
                     return false;
                 }
 
-                const points = this.getContactPoints(collisionDetector, testAxes, box1, box2, t1, t2, normal, minOverlap, contactType);
+                let points = this.getContactPoints(collisionDetector, testAxes, box1, box2, t1, t2, normal, minOverlap, contactType);
                 for (const p of points) {
                     const contact = new CollisionContact();
                     contact.body1 = box1;
@@ -352,6 +352,20 @@ class BoxBox {
                     contact.normal = normal.copy();
                     collisionDetector.addContact(contact);
                 }
+                const simplex = collisionDetector.gjk(box1, box2, t1, t2);
+                if (simplex) {
+                    const epa = collisionDetector.epa(simplex, box1, box2, t1, t2 );
+                    if (epa) {
+                        const contact = new CollisionContact();
+                        contact.body1 = box1;
+                        contact.body2 = box2;
+                        contact.pointA = epa.contacts[0][0].subtract(t1);
+                        contact.pointB = epa.contacts[0][1].subtract(t2);
+                        contact.normal = epa.normal.copy().scale(-1);
+                        collisionDetector.addContact(contact);
+                    }
+                }
+
                 return true;
             }
 
@@ -359,9 +373,6 @@ class BoxBox {
             if (globalInside) {
                 result = -1;
             }
-
-
-
 
             if (result > 0) {
                 minT = t;
