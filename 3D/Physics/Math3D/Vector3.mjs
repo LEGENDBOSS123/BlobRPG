@@ -202,6 +202,10 @@ const Vector3 = class {
         return new this.constructor(this.x + (v.x - this.x) * c, this.y + (v.y - this.y) * c, this.z + (v.z - this.z) * c);
     }
 
+    sign(){
+        return new this.constructor(Math.sign(this.x), Math.sign(this.y), Math.sign(this.z));
+    }
+
     distance(v) {
         return Math.sqrt((this.x - v.x) * (this.x - v.x) + (this.y - v.y) * (this.y - v.y) + (this.z - v.z) * (this.z - v.z));
     }

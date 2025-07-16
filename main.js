@@ -358,7 +358,7 @@ gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
 
-const friction = 1;
+const friction = 0.2;
 for (var i = 0; i < 1; i++) {
     const box = new Box({
         width: 10,

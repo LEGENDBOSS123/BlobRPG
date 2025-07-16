@@ -244,21 +244,19 @@ class BoxBox {
     }
 
     static getContactPoints(collisionDetector, axes, box1, box2, t1, t2, normal, overlap, type) {
-        if (type == this.FACE) {
-            return this.getContactPointsFaceFace(collisionDetector, axes, box1, box2, t1, t2, normal, overlap, type);
-        }
-
-        const points = [];
-        const TOLERANCE = 0.0001;
-
-        if (overlap) {
-
+        switch (type) {
+            case this.FACE:
+                return this.getContactPointsFaceFace(collisionDetector, axes, box1, box2, t1, t2, normal, overlap, type);
+                break;
+            case this.EDGE:
+                return [];
         }
 
     }
 
     static FACE = 0;
-    static EDGE = 0;
+    static EDGE = 1;
+    static EDGE_FACE = 2;
 
     static handle(collisionDetector, box1, box2, minT, maxT) {
 
@@ -354,7 +352,7 @@ class BoxBox {
                 }
                 const simplex = collisionDetector.gjk(box1, box2, t1, t2);
                 if (simplex) {
-                    const epa = collisionDetector.epa(simplex, box1, box2, t1, t2 );
+                    const epa = collisionDetector.epa(simplex, box1, box2, t1, t2);
                     if (epa) {
                         const contact = new CollisionContact();
                         contact.body1 = box1;

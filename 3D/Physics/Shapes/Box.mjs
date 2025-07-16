@@ -68,6 +68,25 @@ const Box = class extends Composite {
         return this.local.body.momentOfInertia;
     }
 
+    supportAlongAxis(axis, center) {
+        const rot = this.global.body.rotation;
+        const inv = rot.conjugate();
+        const localAxis = inv.multiplyVector3(axis);
+
+        const hw = this.width * 0.5;
+        const hh = this.height * 0.5;
+        const hd = this.depth * 0.5;
+
+        const sign = localAxis.sign();
+        const support = new Vector3(hw * sign.x, hh * sign.y, hd * sign.z);
+        const world = rot.multiplyVector3(support).add(center);
+
+        return {
+            max: world.dot(axis),
+            min: world.dot(axis) - 2 * Math.abs(localAxis.dot(support))
+        };
+    }
+
     calculateLocalHitbox() {
         this.local.hitbox.min = new Vector3(-this.width / 2, -this.height / 2, -this.depth / 2);
         this.local.hitbox.max = new Vector3(this.width / 2, this.height / 2, this.depth / 2);

@@ -529,7 +529,7 @@ const Composite = class extends WorldObject {
             if (child.updateSleepAll()) {
                 return true;
             }
-            if (!child.isSleepy) {
+            if (!child.isSleepy && !child.sleeping) {
                 this.maxParent.awakenAll();
                 return true
             }

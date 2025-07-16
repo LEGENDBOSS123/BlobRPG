@@ -166,6 +166,10 @@ const CollisionDetector = class {
         return shape1.global.hitbox.intersects(shape2.global.hitbox);
     }
 
+    pointInsideAABB(point, aabb) {
+        return this.clampPointToAABB(point, aabb).equals(point);
+    }
+
     resolveAllContacts() {
 
         for (const constraint of this.world.constraints) {
@@ -193,7 +197,7 @@ const CollisionDetector = class {
             if (contact.ignore) {
                 continue;
             }
-            contact.presolve();
+            contact.presolve(this.world.deltaTime);
         }
         if (this.warmStarting) {
             for (const contact of this.contacts) {
