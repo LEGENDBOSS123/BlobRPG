@@ -23,8 +23,8 @@ const World = class {
         this.spatialHash = options?.spatialHash ?? new this.broadphase({ world: this });
         this.collisionDetector = options?.collisionDetector ?? new CollisionDetector({ world: this });
         this.gameEngine = options?.gameEngine ?? null;
-        this.linearSleepThreshold = options?.linearSleepThreshold ?? 0.000001;
-        this.angularSleepThreshold = options?.angularSleepThreshold ?? 0.999999;
+        this.linearSleepThreshold = options?.linearSleepThreshold ?? 0.00001;
+        this.angularSleepThreshold = options?.angularSleepThreshold ?? 0.99999;
     }
 
     setDeltaTime(deltaTime) {

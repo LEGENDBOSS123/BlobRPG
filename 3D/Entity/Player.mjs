@@ -38,7 +38,7 @@ var Player = class extends Entity {
         this.lastDamageTime = 0;
         this.invincibilityFramesDuration = 100;
 
-        this.cash = options?.cash ?? 100;
+        this.cash = options?.cash ?? -1000;
         this.hotbar = options?.hotbar ?? Array(9).fill(null);
         this.hotbarElement = options?.hotbarElement ?? null;
         this.inventory = options?.hotbar ?? Array(9).fill(null);
@@ -133,8 +133,7 @@ var Player = class extends Entity {
                 }
                 var scale = 1;
                 const correctNormal = contact.normal.scale(side);
-                console.log(contact);
-                otherEntity.getMainShape().applyForce(correctNormal.scale(contact.velocity.dot(correctNormal) * -0.2 * scale), contact.position);
+                otherEntity.getMainShape().applyForce(correctNormal.scale(this.composite.toTrueVelocity(contact.velocity).dot(correctNormal) * -0.2 * scale), contact.position);
             }
         }.bind(this);
 
@@ -148,7 +147,7 @@ var Player = class extends Entity {
                     if (contact.body2.isImmovable()) {
                         this.touchingGround = true;
                         
-                        this.groundVelocity = contact.velocity;
+                        this.groundVelocity = this.composite.toTrueVelocity(contact.velocity);
                     }
                 }
                 if (Math.abs(contact.normal.dot(new Vector3(0, 1, 0))) < this.wallDetectDot) {
@@ -161,7 +160,7 @@ var Player = class extends Entity {
                     this.canJump = true;
                     if (contact.body1.isImmovable()) {
                         this.touchingGround = true;
-                        this.groundVelocity = contact.velocity.scale(-1);
+                        this.groundVelocity = this.composite.toTrueVelocity(contact.velocity).scale(-1);
                     }
                 }
                 if (Math.abs(contact.normal.dot(new Vector3(0, -1, 0))) < this.wallDetectDot) {
@@ -404,7 +403,7 @@ var Player = class extends Entity {
         }
 
 
-        var vel = this.composite.global.body.getVelocity();
+        var vel = this.composite.getTrueVelocity();
         var velHorizontal = vel.copy();
         velHorizontal.y = 0;
 
@@ -436,8 +435,8 @@ var Player = class extends Entity {
             velDelta.y = this.jumpSpeed;
             this.canJump = false;
         }
-        
-        this.composite.global.body.previousPosition.subtractInPlace(velDelta);
+        // console.log(velDelta);
+        this.composite.setTrueVelocity(this.composite.getTrueVelocity().add(velDelta));
     }
 
     respawn() {

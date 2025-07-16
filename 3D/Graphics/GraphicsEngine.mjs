@@ -96,7 +96,7 @@ var GraphicsEngine = class extends GameEngineComponent {
 
 
         this.lights = [];
-        this.shadowBias = -0.001;
+        this.shadowBias = -0.0001;
         this.setupLights();
 
         this.updateScreenSize();
@@ -259,7 +259,7 @@ var GraphicsEngine = class extends GameEngineComponent {
         this.scene.add(this.ambientLight);
         this.lights.push(this.ambientLight);
 
-        var range = 256;
+        var range = 64;
 
         this.sunlight = new this.THREE.DirectionalLight(0xffffff, 1);
         this.sunlight.direction = new this.THREE.Vector3(0, -1, 0);

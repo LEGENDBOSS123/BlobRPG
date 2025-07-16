@@ -205,6 +205,10 @@ var Slime = class extends HealthEntity {
 
     updateStep() {
 
+        if(this.getMainShape().global.body.position.y < -100){
+            this.health = 0;
+        }
+
         var targetID = this.findTarget(this.getTargets());
         this.targetID = targetID;
         if (targetID == null || this.health <= 0) {

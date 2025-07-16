@@ -119,7 +119,7 @@ const Box = class extends Composite {
 
     setMesh(options, gameEngine) {
         var geometry = options?.geometry ?? new gameEngine.graphicsEngine.THREE.BoxGeometry(this.width, this.height, this.depth);
-        this.mesh = gameEngine.graphicsEngine.meshLinker.createMeshData(new gameEngine.graphicsEngine.THREE.Mesh(geometry, options?.material ?? new gameEngine.graphicsEngine.THREE.MeshPhongMaterial({ color: 0x00ff00, wireframe: false })));
+        this.mesh = gameEngine.graphicsEngine.meshLinker.createMeshData(new gameEngine.graphicsEngine.THREE.Mesh(geometry, options?.material ?? new gameEngine.graphicsEngine.THREE.MeshPhongMaterial({ color: options?.color ?? 0x00ff00, wireframe: false })));
     }
 
     setMeshAndAddToScene(options, gameEngine) {

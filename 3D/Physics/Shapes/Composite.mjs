@@ -269,6 +269,22 @@ const Composite = class extends WorldObject {
         this.setMaxParentAll(this);
     }
 
+    toTrueVelocity(v) {
+        return v.scale(this.world.inverseDeltaTime);
+    }
+
+    fromTrueVelocity(v) {
+        return v.scale(this.world.deltaTime);
+    }
+
+    getTrueVelocity(){
+        return this.global.body.getVelocity().scale(this.world.inverseDeltaTime);
+    }
+
+    setTrueVelocity(v){
+        this.global.body.setVelocity(v.scale(this.world.deltaTime));
+    }
+
     getVelocityAtPosition(position) {
         return this.global.body.getVelocityAtPosition(position);
     }
@@ -377,7 +393,7 @@ const Composite = class extends WorldObject {
         this.global.body.setMass(this.global.body.mass)
 
         if (this.getLocalFlag(this.constructor.FLAGS.CENTER_OF_MASS)) {
-            const centerOfMass = this.getCenterOfMass(true);
+            const centerOfMass = this.getCenterOfMass();
             const nonRotatedTranslation = this.global.body.position.subtract(centerOfMass);
             if (nonRotatedTranslation.magnitudeSquared() > 0) {
                 const translationAmount = this.global.body.rotation.conjugate().multiplyVector3(this.global.body.position.subtract(centerOfMass));

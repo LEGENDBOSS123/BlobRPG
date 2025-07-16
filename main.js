@@ -40,6 +40,7 @@ import Box from "./3D/Physics/Shapes/Box.mjs";
 import Composite from "./3D/Physics/Shapes/Composite.mjs";
 import ShopKeeper from "./3D/Entity/ShopKeeper.mjs";
 import Coin from "./3D/Entity/Coin.mjs";
+import UFO from "./3D/Entity/UFO.mjs";
 
 
 var stats = new Stats();
@@ -95,7 +96,7 @@ var gameEngine = new GameEngine(
 
 window.gameEngine = gameEngine;
 gameEngine.graphicsEngine.ambientLight.intensity = 3;
-gameEngine.graphicsEngine.setBackgroundImage("autumn_field_puresky_8k.hdr", true, false);
+gameEngine.graphicsEngine.setBackgroundImage("autumn_field_puresky_1k.hdr", true, false);
 gameEngine.graphicsEngine.setSunlightDirection(new Vector3(-2, -8, -5));
 gameEngine.graphicsEngine.setSunlightBrightness(1);
 gameEngine.graphicsEngine.renderDistance = 1600;
@@ -336,7 +337,7 @@ settings.load();
 
 gameEngine.world.setSubsteps(4);
 gameEngine.world.setVelocityIterations(16);
-gameEngine.world.setPenetrationIterations(8);
+gameEngine.world.setPenetrationIterations(16);
 
 var gravity = -0.35;
 
@@ -346,8 +347,8 @@ var player = new Player({
     tiltable: false,
     moveStrength: 0.5,
     airMoveStrength: 0.25,
-    moveSpeed: 0.125,
-    jumpSpeed: 0.25,
+    moveSpeed: 0.5,
+    jumpSpeed: 1,
     gravity: new Vector3(0, gravity, 0),
     mass: 1,
     gameEngine: gameEngine,
@@ -382,21 +383,30 @@ for (var i = 0; i < 2; i++) {
 }
 
 
-for (var i = 0; i < 8; i++) {
+for (var i = 0; i < 60; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(0 + i * 0, 20 + i * 2, 0),
-        radius: 0.5,
+        position: new Vector3(20 + i * 0.3, 20 + i * 0.3, 20),
+        radius: 1,
     })
 
     slime.setMeshAndAddToScene({}, gameEngine);
     gameEngine.entitySystem.register(slime);
     slime.addToWorld(gameEngine.world);
-    // slime.getTargets = function () {
-    //     return [player.id];
-    // }
+    slime.getTargets = function () {
+        return [player.id];
+    }
 }
+
+const ufo = new UFO({
+    player: player,
+    gameEngine: gameEngine
+});
+
+ufo.setMeshAndAddToScene({}, gameEngine);
+gameEngine.entitySystem.register(ufo);
+ufo.addToWorld(gameEngine.world);
 
 
 var toolTip = new Tooltip({
@@ -661,7 +671,7 @@ for (var entity of map.entities) {
     gameEngine.entitySystem.register(entity);
     entity.addToWorld(gameEngine.world);
 
-    if(entity instanceof Slime){
+    if (entity instanceof Slime) {
         entity.getTargets = function () {
             return [player.id];
         }
