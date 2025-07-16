@@ -13,14 +13,40 @@ const Box = class extends Composite {
         this.width = options?.width ?? 1;
         this.height = options?.height ?? 1;
         this.depth = options?.depth ?? 1;
-        this.vertices = [];
+        this.localVertices = options?.localVertices ?? [];
+        this.globalVertices = options?.globalVertices ?? [];
+        this.faces = options?.faces ?? [
+            [0, 2, 1], [0, 3, 2], [4, 5, 6],
+            [4, 6, 7], [0, 1, 5], [0, 5, 4],
+            [2, 3, 7], [2, 7, 6], [0, 4, 7],
+            [0, 7, 3], [1, 2, 6], [1, 6, 5],
+        ];
         this.setLocalFlag(this.constructor.FLAGS.OCCUPIES_SPACE, true);
         this.dimensionsChanged();
     }
 
 
-    getVerticesLength(){
+    getVerticesLength() {
         return 8;
+    }
+
+
+    dimensionsChanged() {
+        const halfWidth = this.width / 2;
+        const halfHeight = this.height / 2;
+        const halfDepth = this.depth / 2;
+
+        this.localVertices = [
+            new Vector3(halfWidth, -halfHeight, halfDepth),
+            new Vector3(-halfWidth, -halfHeight, halfDepth),
+            new Vector3(-halfWidth, halfHeight, halfDepth),
+            new Vector3(halfWidth, halfHeight, halfDepth),
+            new Vector3(halfWidth, -halfHeight, -halfDepth),
+            new Vector3(-halfWidth, -halfHeight, -halfDepth),
+            new Vector3(-halfWidth, halfHeight, -halfDepth),
+            new Vector3(halfWidth, halfHeight, -halfDepth)
+        ];
+        super.dimensionsChanged();
     }
 
     supportFunction(direction) {
@@ -48,72 +74,24 @@ const Box = class extends Composite {
         return this.local.hitbox;
     }
 
+    calculateGlobalVertices() {
+        this.globalVertices.length = this.localVertices.length;
+        for (var i = 0; i < this.localVertices.length; i++) {
+            this.globalVertices[i] = this.translateLocalToWorld(this.localVertices[i]);
+        }
+    }
+
     calculateGlobalHitbox(forced = false) {
         if (this.sleeping && !forced) {
             return;
         }
-        var localHitbox = this.local.hitbox;
-
-        var updateForVertex = function (v) {
-            this.global.body.rotation.multiplyVector3InPlace(v).addInPlace(this.global.body.position);
-            this.global.hitbox.expandToFitPoint(v);
-        }.bind(this);
-
+        this.calculateGlobalVertices();
         this.global.hitbox.min = new Vector3(Infinity, Infinity, Infinity);
         this.global.hitbox.max = new Vector3(-Infinity, -Infinity, -Infinity);
-
-        updateForVertex(localHitbox.min.copy());
-        updateForVertex(localHitbox.max.copy());
-        var vector = new Vector3();
-        vector.x = localHitbox.min.x;
-        vector.y = localHitbox.min.y;
-        vector.z = localHitbox.max.z;
-        updateForVertex(vector);
-        vector.x = localHitbox.min.x;
-        vector.y = localHitbox.max.y;
-        vector.z = localHitbox.min.z;
-        updateForVertex(vector);
-        vector.x = localHitbox.min.x;
-        vector.y = localHitbox.max.y;
-        vector.z = localHitbox.max.z;
-        updateForVertex(vector);
-        vector.x = localHitbox.max.x;
-        vector.y = localHitbox.min.y;
-        vector.z = localHitbox.min.z;
-        updateForVertex(vector);
-        vector.x = localHitbox.max.x;
-        vector.y = localHitbox.min.y;
-        vector.z = localHitbox.max.z;
-        updateForVertex(vector);
-        vector.x = localHitbox.max.x;
-        vector.y = localHitbox.max.y;
-        vector.z = localHitbox.min.z;
-        updateForVertex(vector);
+        for (var v of this.globalVertices) {
+            this.global.hitbox.expandToFitPoint(v);
+        }
         return this.global.hitbox;
-    }
-
-    getVertices() {
-        var vertices = [];
-        for (var x = -1; x <= 1; x += 2) {
-            for (var y = -1; y <= 1; y += 2) {
-                for (var z = -1; z <= 1; z += 2) {
-                    vertices.push(this.translateLocalToWorld(new Vector3(x * this.width / 2, y * this.height / 2, z * this.depth / 2)));
-                }
-            }
-        }
-        return vertices;
-    }
-
-    getLocalVertices() {
-        var vertices = [];
-        for (var x = -1; x <= 1; x += 2) {
-            for (var y = -1; y <= 1; y += 2) {
-                for (var z = -1; z <= 1; z += 2) {
-                    vertices.push(new Vector3(x, y, z));
-                }
-            }
-        }
-        return vertices;
     }
 
 
@@ -157,6 +135,7 @@ const Box = class extends Composite {
         box.width = json.width;
         box.height = json.height;
         box.depth = json.depth;
+        box.dimensionsChanged();
         return box;
     }
 };

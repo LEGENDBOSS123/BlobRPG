@@ -43,10 +43,11 @@ const Composite = class extends WorldObject {
         this.isSensor = options?.isSensor ?? false;
         this.local.hitbox = Hitbox3.from(options?.local?.hitbox);
         this.sleeping = options?.sleeping ?? false;
-        this.sleepThreshold = options?.sleepThreshold ?? 32;
+        this.sleepThreshold = options?.sleepThreshold ?? 80;
         this.sleepCounter = options?.sleepCounter ?? 0;
         this.isSleepy = options?.isSleepy ?? false;
         this.contacts = [];
+        this.sleepingContacts = [];
 
         this.translation = new Vector3();
         this.distanceToMaxParent = new Vector3();
@@ -277,11 +278,11 @@ const Composite = class extends WorldObject {
         return v.scale(this.world.deltaTime);
     }
 
-    getTrueVelocity(){
+    getTrueVelocity() {
         return this.global.body.getVelocity().scale(this.world.inverseDeltaTime);
     }
 
-    setTrueVelocity(v){
+    setTrueVelocity(v) {
         this.global.body.setVelocity(v.scale(this.world.deltaTime));
     }
 
@@ -474,36 +475,61 @@ const Composite = class extends WorldObject {
         }
     }
 
+    static determineNormals(faces, vertices) {
+        const normals = [];
+        for (const face of faces) {
+            const a = vertices[face[0]];
+            const b = vertices[face[1]];
+            const c = vertices[face[2]];
+            const normal = b.subtract(a).cross(c.subtract(a));
+            normals.push(normal.normalize());
+        }
+        return normals;
+    }
+
+    static determineConcavity(faces, vertices, normals) {
+        for (const point of vertices) {
+            for (var face = 0; face < faces.length; face++) {
+                const a = vertices[faces[face][0]];
+                const normal = normals[face];
+                if (a.subtract(point).dot(normal) < -1e-6) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
     updateIsSleepy() {
         this.isSleepy = this.global.body.getVelocity().magnitudeSquared() < this.gameEngine.world.linearSleepThreshold && this.global.body.actualPreviousPosition.distanceSquared(this.global.body.position) < this.gameEngine.world.linearSleepThreshold && this.global.body.previousRotation.dot(this.global.body.rotation) > this.gameEngine.world.angularSleepThreshold;
     }
 
     updateSleepAll() {
         this.updateIsSleepy();
-        for (const c of this.contacts) {
+        for (const c of this.sleepingContacts) {
             const c2 = this.gameEngine.world.getByID(c);
             if (c2 && !c2.isSleepy) {
-                this.awaken();
+                this.maxParent.awakenAll();
+                break;
+            }
+            if(!c2){
+                this.maxParent.awakenAll();
                 break;
             }
         }
         var cannotSleep = false;
         for (const child of this.children) {
             child.updateSleepAll();
-            if (!child.isSleepy || !child.sleeping) {
+            if (!child.isSleepy && !child.sleeping) {
                 cannotSleep = true;
             }
         }
         if (cannotSleep) {
-            this.awaken();
-            this.isSleepy = false;
+            this.maxParent.awakenAll();
             return;
         }
 
-        if (this.isSleepy) {
-            return this.getSleepy();
-        }
-        return this.awaken();
+        return this.isSleepy ? this.getSleepy() : this.maxParent.awakenAll();
     }
 
     updateAfterCollisionAll() {
@@ -512,10 +538,17 @@ const Composite = class extends WorldObject {
         }
     }
 
+    awakenAll(){
+        this.awaken();
+        for (const child of this.children) {
+            child.awakenAll();
+        }
+    }
+
     awaken() {
         this.sleeping = false;
         this.sleepCounter = 0;
-        this.contacts.length = 0;
+        this.sleepingContacts.length = 0;
     }
 
     getSleepy() {
@@ -528,6 +561,7 @@ const Composite = class extends WorldObject {
     sleep() {
         this.sleeping = true;
         this.sleepCounter = this.sleepThreshold;
+        this.sleepingContacts = [...this.contacts];
     }
 
     translateChildren(v) {
@@ -562,7 +596,7 @@ const Composite = class extends WorldObject {
             dummy.updateMatrix();
 
             instancedMesh.setMatrixAt(index, dummy.matrix);
-                return;
+            return;
         }
         this.mesh.mesh.position.set(...this.global.body.position.lerp(last.global.body.position, 1 - lerp));
         const quat = this.global.body.rotation.slerp(last.global.body.rotation, 1 - lerp);
@@ -593,6 +627,8 @@ const Composite = class extends WorldObject {
         composite.dimensionsJustChanged = this.dimensionsJustChanged;
         composite.translation = this.translation.toJSON();
         composite.distanceToMaxParent = this.distanceToMaxParent.toJSON();
+        composite.contacts = [...this.contacts];
+        composite.sleepingContacts = [...this.sleepingContacts];
         return composite;
     }
 
@@ -619,6 +655,8 @@ const Composite = class extends WorldObject {
         composite.dimensionsJustChanged = json.dimensionsJustChanged;
         composite.translation = Vector3.fromJSON(json.translation);
         composite.distanceToMaxParent = Vector3.fromJSON(json.distanceToMaxParent);
+        composite.contacts = [...json.contacts];
+        composite.sleepingContacts = [...json.sleepingContacts];
         return composite;
     }
 

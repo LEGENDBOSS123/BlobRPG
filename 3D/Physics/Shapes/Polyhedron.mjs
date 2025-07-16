@@ -38,35 +38,12 @@ const Polyhedron = class extends Composite {
     }
 
     dimensionsChanged() {
-        this.normals = Polyhedron.determineNormals(this.faces, this.localVertices);
+        this.normals = this.constructor.determineNormals(this.faces, this.localVertices);
         this.isConvex = this.constructor.determineConcavity(this.faces, this.localVertices, this.normals);
         super.dimensionsChanged();
     }
 
-    static determineNormals(faces, vertices) {
-        const normals = [];
-        for (const face of faces) {
-            const a = vertices[face[0]];
-            const b = vertices[face[1]];
-            const c = vertices[face[2]];
-            const normal = b.subtract(a).cross(c.subtract(a));
-            normals.push(normal.normalize());
-        }
-        return normals;
-    }
-
-    static determineConcavity(faces, vertices, normals) {
-        for (const point of vertices) {
-            for (var face = 0; face < faces.length; face++) {
-                const a = vertices[faces[face][0]];
-                const normal = normals[face];
-                if (a.subtract(point).dot(normal) < -1e-6) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
+    
 
     calculateGlobalVertices() {
         this.globalVertices.length = this.localVertices.length;
