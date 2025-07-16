@@ -8,7 +8,7 @@ import Material from "./Material.mjs";
 const CollisionContact = class extends Constraint {
     static name = "COLLISIONCONTACT";
     static penetrationBias = 0.8;
-    static impulseBias = 0.4;
+    static impulseBias = 0.5;
 
     constructor(options) {
         super(options);
