@@ -357,6 +357,8 @@ player.setMeshAndAddToScene({}, gameEngine);
 gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
+
+const friction = 3;
 for (var i = 0; i < 1; i++) {
     const box = new Box({
         width: 6,
@@ -374,7 +376,7 @@ for (var i = 0; i < 1; i++) {
             }
         },
     });
-    box.setFriction(1);
+    box.setFriction(friction);
     box.setRestitution(0);
     box.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
 
@@ -399,7 +401,7 @@ for (var i = 0; i < 1; i++) {
             }
         },
     });
-    box.setFriction(1);
+    box.setFriction(friction);
     box.setRestitution(0);
     box.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
 
@@ -423,7 +425,7 @@ for (var i = 0; i < 1; i++) {
             }
         },
     });
-    box.setFriction(1);
+    box.setFriction(friction);
     box.setRestitution(0);
     box.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
 
@@ -437,7 +439,7 @@ for (var i = 0; i < 1; i++) {
         depth: 1,
         global: {
             body: {
-                position: new Vector3(10 + 4, 36 + i * 3, 4),
+                position: new Vector3(10 + 4, 38 + i * 3, 4),
                 acceleration: new Vector3(0, gravity, 0),
             }
         },
@@ -447,7 +449,7 @@ for (var i = 0; i < 1; i++) {
             }
         },
     });
-    box.setFriction(1);
+    box.setFriction(friction);
     box.setRestitution(0);
     box.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
 

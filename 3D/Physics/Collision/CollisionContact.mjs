@@ -26,7 +26,7 @@ const CollisionContact = class extends Constraint {
         this.material = options?.combinedMaterial;
 
         this.slop = options?.slop ?? 0.01;
-        this.bias = options?.bias ?? 0.333333;
+        this.bias = options?.bias ?? 0.3333333;
         this.restitutionBias = 0;
 
         this.integratedImpulse = new Vector3();
@@ -41,7 +41,7 @@ const CollisionContact = class extends Constraint {
     }
 
     sameContact(array) {
-        const TOLERANCE = 0.0001
+        const TOLERANCE = 0.01;
         if (array[0] == this.body1.id && array[1] == this.body2.id) {
             if (this.pointA.subtract(array[2]).magnitudeSquared() < TOLERANCE && this.pointB.subtract(array[3]).magnitudeSquared() < TOLERANCE) {
                 return true;
