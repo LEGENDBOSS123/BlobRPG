@@ -362,7 +362,7 @@ const Composite = class extends WorldObject {
     addVelocityAndAngularVelocity(velocity, angularVelocity) {
         this.global.body.angularVelocity.addInPlace(angularVelocity);
         this.global.body.setVelocity(this.global.body.getVelocity().addInPlace(velocity).addInPlace(this.distanceToMaxParent.cross(angularVelocity)));
-        if(this.sleeping && velocity.magnitudeSquared() < 0.00001 && angularVelocity.magnitudeSquared() < 0.00001){
+        if(this.sleeping && velocity.magnitudeSquared() > 0.0001 || angularVelocity.magnitudeSquared() > 0.0001){
             this.awakenAll();
         }
         for (const child of this.children) {
