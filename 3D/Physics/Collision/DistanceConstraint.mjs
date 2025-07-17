@@ -4,6 +4,11 @@ import ClassRegistry from "../Core/ClassRegistry.mjs";
 import Quaternion from "../Math3D/Quaternion.mjs";
 const DistanceConstraint = class extends Constraint {
     static name = "DISTANCECONSTRAINT";
+
+    static penetrationRelaxation = 0.75;
+    static impulseRelaxation = 1.1;
+    static bias = 0;
+    
     constructor(options) {
 
         super(options);
@@ -25,7 +30,7 @@ const DistanceConstraint = class extends Constraint {
         this.anchor2 = options?.anchor2 ?? new Vector3();
 
         this.slop = options?.slop ?? 0.01;
-        this.bias = options?.bias ?? 0.333333;
+        this.bias = 0;
 
         this.integratedImpulse = new Vector3();
         this.deltaLength = 0;
@@ -89,7 +94,7 @@ const DistanceConstraint = class extends Constraint {
         const wB = this.body2.maxParent.getEffectiveTotalInverseMass(normal);
         const totalInverse = wA + wB;
 
-        const correction = normal.scale(-(error - Math.sign(error) * this.slop) / totalInverse * this.bias);
+        const correction = normal.scale(-(error - Math.sign(error) * this.slop) / totalInverse * this.constructor.penetrationRelaxation);
         if (wA > 0) {
             this.body1.maxParent.translation.subtractInPlace(correction.scale(wA));
         }
@@ -149,8 +154,6 @@ const DistanceConstraint = class extends Constraint {
         rotationalEffects1 = isFinite(rotationalEffects1) ? rotationalEffects1 : 0;
         rotationalEffects2 = isFinite(rotationalEffects2) ? rotationalEffects2 : 0;
 
-
-
         var invMass1 = this.body1.maxParent.global.body.inverseMass;
         var invMass2 = this.body2.maxParent.global.body.inverseMass;
 
@@ -190,11 +193,14 @@ const DistanceConstraint = class extends Constraint {
         else if (deltaLength < this.lowerBound) {
             error = deltaLength - this.lowerBound;
         }
+
+        this.bias = Math.sign(error) * this.constructor.bias;
+
         var velocity1 = this.body1.getVelocityAtPosition(this.point1);
         var velocity2 = this.body2.getVelocityAtPosition(this.point2);
         var relVel = this.normal.dot(velocity2.subtract(velocity1));
 
-        var lambda = (relVel + this.bias * Math.abs(error) * Math.sign(relVel)) * this.denominator * this.bias;
+        var lambda = (relVel + this.bias * Math.abs(error) * Math.sign(relVel)) * this.denominator * this.constructor.impulseRelaxation;
         this.impulse = this.normal.scale(lambda);
         this.integratedImpulse.addInPlace(this.impulse);
 

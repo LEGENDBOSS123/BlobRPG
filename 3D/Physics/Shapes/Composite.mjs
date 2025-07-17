@@ -22,7 +22,7 @@ const Composite = class extends WorldObject {
 
     static linearSleepThreshold = 0.001;
     static angularSleepThreshold = 0.999995;
-    static sleepThreshold = 80;
+    static sleepThreshold = 40;
 
     constructor(options) {
         super(options);
@@ -518,11 +518,12 @@ const Composite = class extends WorldObject {
         for (const c of (this.sleepingContacts.length > 0 ? this.sleepingContacts : this.contacts)) {
             const c2 = this.gameEngine.world.getByID(c);
             if (c2 && !c2.isSleepy) {
-                this.awaken();
+                this.maxParent.awakenAll();
+                return;
             }
             if (!c2) {
                 this.maxParent.awakenAll();
-                return true
+                return true;
             }
         }
         for (const child of this.children) {

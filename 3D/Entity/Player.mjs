@@ -38,7 +38,7 @@ var Player = class extends Entity {
         this.lastDamageTime = 0;
         this.invincibilityFramesDuration = 100;
 
-        this.cash = options?.cash ?? -1000;
+        this.cash = options?.cash ?? 1000;
         this.hotbar = options?.hotbar ?? Array(9).fill(null);
         this.hotbarElement = options?.hotbarElement ?? null;
         this.inventory = options?.hotbar ?? Array(9).fill(null);
@@ -138,7 +138,7 @@ var Player = class extends Entity {
         }.bind(this);
 
         this.jumpPostCollision = function (contact) {
-            if (contact.ignore || contact.integratedImpulse.isZero()) {
+            if (contact.ignore || contact.integratedImpulse.isZero() || contact.impulse.isZero()) {
                 return;
             }
             if (contact.body1.maxParent == this.composite) {

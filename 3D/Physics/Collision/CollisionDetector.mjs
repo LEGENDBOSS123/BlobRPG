@@ -197,7 +197,7 @@ const CollisionDetector = class {
             if (contact.ignore) {
                 continue;
             }
-            contact.presolve(this.world.deltaTime);
+            contact.presolve();
         }
         if (this.warmStarting) {
             for (const contact of this.contacts) {

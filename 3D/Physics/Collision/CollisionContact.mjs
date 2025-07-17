@@ -8,8 +8,8 @@ import Material from "./Material.mjs";
 const CollisionContact = class extends Constraint {
     static name = "COLLISIONCONTACT";
     static penetrationRelaxation = 0.75;
-    static impulseRelaxation = 1.1;
-    static bias = 0;
+    static impulseRelaxation = 0.9;
+    static bias = 0.00001;
 
     constructor(options) {
         super(options);
@@ -159,11 +159,10 @@ const CollisionContact = class extends Constraint {
         var tangentialNorm = tangential.normalize();
 
 
-
         var impulse = (-impactSpeed + this.restitutionBias + this.bias) * this.denominator * this.constructor.impulseRelaxation;
 
-        var maxFriction = tangential.magnitude() * this.denominatorFric;
-        var friction = -1 * Math.max(0, Math.min(maxFriction, impulse * this.material.friction));
+        var friction = -tangential.magnitude() * this.denominatorFric;
+        var maxFriction = Math.min(Math.abs(friction), Math.abs(impulse) * this.material.friction);
         friction = Math.min(maxFriction, Math.max(-maxFriction, tangentialNorm.dot(this.integratedImpulse) + friction) - tangentialNorm.dot(this.integratedImpulse));
 
         impulse = Math.max(0, this.normal.dot(this.integratedImpulse) + impulse) - this.normal.dot(this.integratedImpulse);
