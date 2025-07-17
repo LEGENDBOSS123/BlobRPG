@@ -20,8 +20,8 @@ const Composite = class extends WorldObject {
 
     static name = "COMPOSITE";
 
-    static linearSleepThreshold = 0.001;
-    static angularSleepThreshold = 0.999995;
+    static linearSleepThreshold = 0.00004;
+    static angularSleepThreshold = 0.999999;
     static sleepThreshold = 40;
 
     constructor(options) {

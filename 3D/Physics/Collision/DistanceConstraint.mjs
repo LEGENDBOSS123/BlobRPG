@@ -5,9 +5,9 @@ import Quaternion from "../Math3D/Quaternion.mjs";
 const DistanceConstraint = class extends Constraint {
     static name = "DISTANCECONSTRAINT";
 
-    static penetrationRelaxation = 0.75;
-    static impulseRelaxation = 0.9;
-    static bias = 0.00001;
+    static penetrationRelaxation = 0.8;
+    static impulseRelaxation = 0.4;
+    static bias = 0.00004;
     
     constructor(options) {
 
@@ -32,7 +32,7 @@ const DistanceConstraint = class extends Constraint {
         this.slop = options?.slop ?? 0.01;
         this.bias = 0;
 
-        this.integratedImpulse = new Vector3();
+        this.normalImpulse = 0;
         this.deltaLength = 0;
         this.normal = options?.normal ?? new Vector3();
 
@@ -45,7 +45,7 @@ const DistanceConstraint = class extends Constraint {
     }
 
     getCachedArray() {
-        return [this.body1.id, this.body2.id, this.point1.copy(), this.point2.copy(), this.integratedImpulse.copy()];
+        return [this.body1.id, this.body2.id, this.point1.copy(), this.point2.copy(), this.normalImpulse];
     }
 
     sameContact(array) {
@@ -200,10 +200,9 @@ const DistanceConstraint = class extends Constraint {
         var velocity2 = this.body2.getVelocityAtPosition(this.point2);
         var relVel = this.normal.dot(velocity2.subtract(velocity1));
 
-        var lambda = (relVel + this.bias * Math.abs(error) * Math.sign(relVel)) * this.denominator * this.constructor.impulseRelaxation;
-        this.impulse = this.normal.scale(lambda);
-        this.integratedImpulse.addInPlace(this.impulse);
-
+        var lambda = (relVel + this.bias * Math.abs(error) * Math.sign(relVel)) * this.denominator;
+        this.impulse = this.normal.scale(lambda * this.constructor.impulseRelaxation);
+        this.normalImpulse += lambda * this.constructor.impulseRelaxation;
 
         return true;
     }
@@ -273,7 +272,7 @@ const DistanceConstraint = class extends Constraint {
         json.denominator = this.denominator;
         json.solved = this.solved;
 
-        json.integratedImpulse = this.integratedImpulse.toJSON();
+        json.normalImpulse = this.normalImpulse;
         json.deltaLength = this.deltaLength;
 
         return json;
@@ -294,7 +293,7 @@ const DistanceConstraint = class extends Constraint {
         distanceConstraint.slop = json.slop;
         distanceConstraint.denominator = json.denominator;
         distanceConstraint.solved = json.solved;
-        distanceConstraint.integratedImpulse = Vector3.fromJSON(json.integratedImpulse);
+        distanceConstraint.normalImpulse = json.normalImpulse;
         distanceConstraint.deltaLength = json.deltaLength;
         return distanceConstraint;
     }

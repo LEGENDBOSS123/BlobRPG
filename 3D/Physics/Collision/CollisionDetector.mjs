@@ -214,8 +214,8 @@ const CollisionDetector = class {
                             const a_body = a.global.body;
                             const b_body = b.global.body;
 
-                            contact.integratedImpulse = value[5];
-                            contact.impulse = contact.integratedImpulse.copy();
+                            contact.normalImpulse = value[5];
+                            contact.impulse = contact.normal.scale(contact.normalImpulse);
                             contact.applyForces();
 
                             tmpVec1.setXYZ(1 - a_body.linearDamping.x, 1 - a_body.linearDamping.y, 1 - a_body.linearDamping.z);

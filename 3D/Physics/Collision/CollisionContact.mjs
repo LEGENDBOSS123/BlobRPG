@@ -7,9 +7,9 @@ import Material from "./Material.mjs";
 
 const CollisionContact = class extends Constraint {
     static name = "COLLISIONCONTACT";
-    static penetrationRelaxation = 0.75;
-    static impulseRelaxation = 0.9;
-    static bias = 0.00001;
+    static penetrationRelaxation = 0.8;
+    static impulseRelaxation = 0.4;
+    static bias = 0.00004;
 
     constructor(options) {
         super(options);
@@ -34,7 +34,8 @@ const CollisionContact = class extends Constraint {
         this.slop = options?.slop ?? 0.01;
         this.restitutionBias = 0;
 
-        this.integratedImpulse = new Vector3();
+        this.normalImpulse = 0;
+        this.tangentialImpulse = new Vector3();
         this.bias = 0;
 
         this.denominator = 0;
@@ -43,7 +44,7 @@ const CollisionContact = class extends Constraint {
     }
 
     getCachedArray() {
-        return [this.body1.id, this.body2.id, this.pointA.copy(), this.pointB.copy(), this.normal.copy(), this.integratedImpulse];
+        return [this.body1.id, this.body2.id, this.pointA.copy(), this.pointB.copy(), this.normal.copy(), this.normalImpulse];
     }
 
     sameContact(array) {
@@ -89,7 +90,7 @@ const CollisionContact = class extends Constraint {
         this.velocity = this.body1.getVelocityAtPosition(this.pointA).subtractInPlace(this.body2.getVelocityAtPosition(this.pointB));
         var impactSpeed = this.velocity.dot(this.normal);
         this.restitutionBias = 0;
-        if (impactSpeed < 1) {
+        if (impactSpeed < 0) {
             this.restitutionBias = -impactSpeed * this.material.restitution;
         }
         var tangential = this.velocity.projectOntoPlane(this.normal);
@@ -100,7 +101,6 @@ const CollisionContact = class extends Constraint {
 
         this.bias = this.pointA.subtract(this.pointB).dot(this.normal) * this.constructor.bias;
 
-
         var cross_n1 = radius1.cross(this.normal);
         var rotationalEffects1 = cross_n1.dot(globalBody1.inverseMomentOfInertia.multiplyVector3(cross_n1));
 
@@ -110,10 +110,10 @@ const CollisionContact = class extends Constraint {
         rotationalEffects1 = Number.isFinite(rotationalEffects1) ? rotationalEffects1 : 0;
         rotationalEffects2 = Number.isFinite(rotationalEffects2) ? rotationalEffects2 : 0;
 
-        var cross_t1 = radius1.cross(tangentialNorm);
+        var cross_t1 = radius1.cross(tangential);
         var rotationalEffects1Fric = cross_t1.dot(globalBody1.inverseMomentOfInertia.multiplyVector3(cross_t1));
 
-        var cross_t2 = radius2.cross(tangentialNorm);
+        var cross_t2 = radius2.cross(tangential);
         var rotationalEffects2Fric = cross_t2.dot(globalBody2.inverseMomentOfInertia.multiplyVector3(cross_t2));
         rotationalEffects1Fric = Number.isFinite(rotationalEffects1Fric) ? rotationalEffects1Fric : 0;
         rotationalEffects2Fric = Number.isFinite(rotationalEffects2Fric) ? rotationalEffects2Fric : 0;
@@ -159,18 +159,20 @@ const CollisionContact = class extends Constraint {
         var tangentialNorm = tangential.normalize();
 
 
-        var impulse = (-impactSpeed + this.restitutionBias + this.bias) * this.denominator * this.constructor.impulseRelaxation;
+        var impulse = -(impactSpeed - this.restitutionBias + this.bias) * this.denominator;
+        impulse = Math.max(0, this.normalImpulse + impulse) - this.normalImpulse;
 
+        
         var friction = -tangential.magnitude() * this.denominatorFric;
-        var maxFriction = Math.min(Math.abs(friction), Math.abs(impulse) * this.material.friction);
-        friction = Math.min(maxFriction, Math.max(-maxFriction, tangentialNorm.dot(this.integratedImpulse) + friction) - tangentialNorm.dot(this.integratedImpulse));
+        var old = this.tangentialImpulse.dot(tangentialNorm);
+        const maxFriction = this.normalImpulse * this.material.friction;
+        const frictionImpulse = Math.max(-maxFriction, Math.min(maxFriction, friction + old)) - old;
 
-        impulse = Math.max(0, this.normal.dot(this.integratedImpulse) + impulse) - this.normal.dot(this.integratedImpulse);
+        this.tangentialImpulse.addInPlace(tangentialNorm.scale(frictionImpulse * this.constructor.impulseRelaxation));
+        
+        this.impulse = this.normal.scale(impulse).addInPlace(tangentialNorm.scale(frictionImpulse)).scaleInPlace(this.constructor.impulseRelaxation);
 
-
-        this.impulse = tangentialNorm.scale(friction).addInPlace(this.normal.scale(impulse));
-
-        this.integratedImpulse.addInPlace(this.impulse);
+        this.normalImpulse += impulse * this.constructor.impulseRelaxation;
         return true;
     }
 
@@ -218,7 +220,7 @@ const CollisionContact = class extends Constraint {
         c.slop = this.slop;
         c.restitutionBias = this.restitutionBias;
         c.bias = this.bias;
-        c.integratedImpulse = this.integratedImpulse.copy();
+        c.normalImpulse = this.normalImpulse;
 
         c.denominator = this.denominator
         c.denominatorFric = this.denominatorFric;
@@ -240,7 +242,7 @@ const CollisionContact = class extends Constraint {
             slop: this.slop,
             bias: this.bias,
             restitutionBias: this.restitutionBias,
-            integratedImpulse: this.integratedImpulse.toJSON(),
+            normalImpulse: this.normalImpulse,
             denominator: this.denominator,
             denominatorFric: this.denominatorFric
         }
@@ -260,7 +262,7 @@ const CollisionContact = class extends Constraint {
         c.combinedMaterial = Material.fromJSON(json.combinedMaterial);
         c.slop = json.slop;
         c.restitutionBias = json.restitutionBias;
-        c.integratedImpulse = Vector3.fromJSON(json.integratedImpulse);
+        c.normalImpulse = json.normalImpulse;
         c.denominator = json.denominator;
         c.denominatorFric = json.denominatorFric;
         return c;
@@ -276,7 +278,7 @@ const CollisionContact = class extends Constraint {
         super.destroy();
         this.body1 = null;
         this.body2 = null;
-        this.integratedImpulse = null;
+        this.normalImpulse = null;
         this.material = null;
     }
 };

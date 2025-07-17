@@ -138,7 +138,7 @@ var Player = class extends Entity {
         }.bind(this);
 
         this.jumpPostCollision = function (contact) {
-            if (contact.ignore || contact.integratedImpulse.isZero() || contact.impulse.isZero()) {
+            if (contact.ignore || contact.normalImpulse == 0) {
                 return;
             }
             if (contact.body1.maxParent == this.composite) {

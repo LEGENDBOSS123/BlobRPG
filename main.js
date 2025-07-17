@@ -66,7 +66,7 @@ var gameEngine = new GameEngine(
             canvas: document.getElementById('canvas'),
         },
         gameCamera: {
-            pullback: 4,
+            pullback: 8,
             maxPullback: 16,
             minPullback: 2
         },
@@ -336,8 +336,8 @@ settings.load();
 
 
 gameEngine.world.setSubsteps(4);
-gameEngine.world.setVelocityIterations(32);
-gameEngine.world.setPenetrationIterations(32);
+gameEngine.world.setVelocityIterations(16);
+gameEngine.world.setPenetrationIterations(16);
 
 var gravity = -0.35;
 
@@ -358,34 +358,33 @@ gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
 
-const friction = 0.333;
-for (var i = 0; i < 1; i++) {
-    const box = new Box({
-        width: 10,
-        height: 2,
-        depth: 10,
-        global: {
-            body: {
-                position: new Vector3(10 + 4, 16 + i * 3, 4),
-                acceleration: new Vector3(0, gravity, 0),
-            }
-        },
-        local: {
-            body: {
-                mass: 4
-            }
-        },
-    });
-    box.setFriction(friction);
-    box.setRestitution(0);
-    box.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
+const friction = 0.2;
+let box = new Box({
+    width: 10,
+    height: 2,
+    depth: 10,
+    global: {
+        body: {
+            position: new Vector3(10 + 4, 16 + 0 * 3, 4),
+            acceleration: new Vector3(0, gravity, 0),
+        }
+    },
+    local: {
+        body: {
+            mass: 4
+        }
+    },
+});
+box.setFriction(friction);
+box.setRestitution(0);
+box.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
 
-    box.setMeshAndAddToScene({}, gameEngine);
-    gameEngine.world.addComposite(box);
-}
+box.setMeshAndAddToScene({}, gameEngine);
+gameEngine.world.addComposite(box);
 
 for (var i = 0; i < 1; i++) {
-    const box = new Box({
+
+    box = new Box({
         width: 8,
         height: 2,
         depth: 8,
@@ -407,9 +406,7 @@ for (var i = 0; i < 1; i++) {
 
     box.setMeshAndAddToScene({}, gameEngine);
     gameEngine.world.addComposite(box);
-}
-for (var i = 0; i < 1; i++) {
-    const box = new Box({
+    box = new Box({
         width: 6,
         height: 2,
         depth: 6,
@@ -431,9 +428,7 @@ for (var i = 0; i < 1; i++) {
 
     box.setMeshAndAddToScene({}, gameEngine);
     gameEngine.world.addComposite(box);
-}
-for (var i = 0; i < 1; i++) {
-    const box = new Box({
+    box = new Box({
         width: 4,
         height: 2,
         depth: 4,
@@ -458,14 +453,15 @@ for (var i = 0; i < 1; i++) {
 }
 
 
+
 for (var i = 0; i < 0; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(-20, 20 + i *0.01, i*0.01),
+        position: new Vector3(-20*0, 20 + i * 3, 0*i * 0.01),
         radius: 1,
     })
-    slime.sphere.setFriction(friction)
+    slime.sphere.setRestitution(1)
     slime.setMeshAndAddToScene({}, gameEngine);
     gameEngine.entitySystem.register(slime);
     slime.addToWorld(gameEngine.world);
@@ -762,49 +758,49 @@ gameEngine.timer.schedule(gameEngine.fpsStepper);
 gameEngine.toastManager.createToast({ duration: 1000, type: 0, message: "Map Loaded" })
 
 
-var infoModal = new Modal({
-    content: document.createElement('p'),
-    resizable: false,
-    fullscreenable: false,
-    draggable: false,
-    closeable: true,
-    title: "Instructions"
-});
-infoModal.createHTML({
-    container: document.body,
-    width: 400,
-    height: 200,
-    centered: true
-});
-infoModal.content.innerHTML = "Press [E] to open inventory, and [Escape] to open settings<br>Go to the shop to buy a sword or an apple.<br>Make sure you avoid the slimes.<br>Good Luck!";
-infoModal.content.style = `padding: 20px; text-align: center; font-size: 20px;`;
+// var infoModal = new Modal({
+//     content: document.createElement('p'),
+//     resizable: false,
+//     fullscreenable: false,
+//     draggable: false,
+//     closeable: true,
+//     title: "Instructions"
+// });
+// infoModal.createHTML({
+//     container: document.body,
+//     width: 400,
+//     height: 200,
+//     centered: true
+// });
+// infoModal.content.innerHTML = "Press [E] to open inventory, and [Escape] to open settings<br>Go to the shop to buy a sword or an apple.<br>Make sure you avoid the slimes.<br>Good Luck!";
+// infoModal.content.style = `padding: 20px; text-align: center; font-size: 20px;`;
 
-setTimeout(function () {
-    infoModal.close();
-}, 4000);
-var winInterv = setInterval(function () {
-    var done = true;
-    var first = true;
-    for (var i in gameEngine.entitySystem.all) {
-        if (first) {
-            first = false;
-            continue;
-        }
+// setTimeout(function () {
+//     infoModal.close();
+// }, 4000);
+// var winInterv = setInterval(function () {
+//     var done = true;
+//     var first = true;
+//     for (var i in gameEngine.entitySystem.all) {
+//         if (first) {
+//             first = false;
+//             continue;
+//         }
 
-        if (gameEngine.entitySystem.all[i].health > 0) {
-            done = false;
-        }
-    }
-    if (done || player.health <= 0) {
-        infoModal.content.innerHTML = "You Win!";
-        if (player.health <= 0) {
-            infoModal.content.innerHTML = "You Lose!";
-        }
-        infoModal.open();
-        clearInterval(winInterv);
-    }
+//         if (gameEngine.entitySystem.all[i].health > 0) {
+//             done = false;
+//         }
+//     }
+//     if (done || player.health <= 0) {
+//         infoModal.content.innerHTML = "You Win!";
+//         if (player.health <= 0) {
+//             infoModal.content.innerHTML = "You Lose!";
+//         }
+//         infoModal.open();
+//         clearInterval(winInterv);
+//     }
 
-}, 100);
+// }, 100);
 
 function render() {
     stats.begin();
