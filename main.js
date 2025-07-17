@@ -358,7 +358,7 @@ gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
 
-const friction = 0.2;
+const friction = 0.5;
 let box = new Box({
     width: 10,
     height: 2,
@@ -434,7 +434,7 @@ for (var i = 0; i < 1; i++) {
         depth: 4,
         global: {
             body: {
-                position: new Vector3(10 + 4, 390 + i * 3, 4),
+                position: new Vector3(10 + 4, 120 + i * 3, 4),
                 acceleration: new Vector3(0, gravity, 0),
             }
         },
