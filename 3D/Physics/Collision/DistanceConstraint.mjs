@@ -5,7 +5,7 @@ import Quaternion from "../Math3D/Quaternion.mjs";
 const DistanceConstraint = class extends Constraint {
     static name = "DISTANCECONSTRAINT";
 
-    static penetrationRelaxation = 0.8;
+    static penetrationRelaxation = 0.6;
     static impulseRelaxation = 0.4;
     static bias = 0.00004;
     
