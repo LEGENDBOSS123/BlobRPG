@@ -6,8 +6,8 @@ const DistanceConstraint = class extends Constraint {
     static name = "DISTANCECONSTRAINT";
 
     static penetrationRelaxation = 0.75;
-    static impulseRelaxation = 1.1;
-    static bias = 0;
+    static impulseRelaxation = 0.9;
+    static bias = 0.00001;
     
     constructor(options) {
 
