@@ -353,19 +353,19 @@ class BoxBox {
                     contact.normal = normal.copy();
                     collisionDetector.addContact(contact);
                 }
-                const simplex = collisionDetector.gjk(box1, box2, t1, t2);
-                if (simplex) {
-                    const epa = collisionDetector.epa(simplex, box1, box2, t1, t2);
-                    if (epa) {
-                        const contact = new CollisionContact();
-                        contact.body1 = box1;
-                        contact.body2 = box2;
-                        contact.pointA = epa.contacts[0][0].subtract(t1);
-                        contact.pointB = epa.contacts[0][1].subtract(t2);
-                        contact.normal = epa.normal.copy().scale(-1);
-                        collisionDetector.addContact(contact);
-                    }
-                }
+                // const simplex = collisionDetector.gjk(box1, box2, t1, t2);
+                // if (simplex) {
+                //     const epa = collisionDetector.epa(simplex, box1, box2, t1, t2);
+                //     if (epa) {
+                //         const contact = new CollisionContact();
+                //         contact.body1 = box1;
+                //         contact.body2 = box2;
+                //         contact.pointA = epa.contacts[0][0].subtract(t1);
+                //         contact.pointB = epa.contacts[0][1].subtract(t2);
+                //         contact.normal = epa.normal.copy().scale(-1);
+                //         collisionDetector.addContact(contact);
+                //     }
+                // }
 
                 return true;
             }

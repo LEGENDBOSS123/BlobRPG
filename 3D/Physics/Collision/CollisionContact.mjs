@@ -7,9 +7,9 @@ import Material from "./Material.mjs";
 
 const CollisionContact = class extends Constraint {
     static name = "COLLISIONCONTACT";
-    static penetrationRelaxation = 0.6;
-    static impulseRelaxation = 0.4;
-    static bias = 0.00004;
+    static penetrationRelaxation = 1;
+    static impulseRelaxation = 0.8;
+    static bias = 0.0000004;
 
     constructor(options) {
         super(options);
@@ -48,7 +48,7 @@ const CollisionContact = class extends Constraint {
     }
 
     sameContact(array) {
-        const TOLERANCE = 0.00001;
+        const TOLERANCE = 0.0002;
         if (array[0] == this.body1.id && array[1] == this.body2.id) {
             if (Math.abs(this.normal.dot(array[4]) - 1) < TOLERANCE && this.pointA.subtract(array[2]).magnitudeSquared() < TOLERANCE && this.pointB.subtract(array[3]).magnitudeSquared() < TOLERANCE) {
                 return true;
@@ -110,10 +110,10 @@ const CollisionContact = class extends Constraint {
         rotationalEffects1 = Number.isFinite(rotationalEffects1) ? rotationalEffects1 : 0;
         rotationalEffects2 = Number.isFinite(rotationalEffects2) ? rotationalEffects2 : 0;
 
-        var cross_t1 = radius1.cross(tangential);
+        var cross_t1 = radius1.cross(tangentialNorm);
         var rotationalEffects1Fric = cross_t1.dot(globalBody1.inverseMomentOfInertia.multiplyVector3(cross_t1));
 
-        var cross_t2 = radius2.cross(tangential);
+        var cross_t2 = radius2.cross(tangentialNorm);
         var rotationalEffects2Fric = cross_t2.dot(globalBody2.inverseMomentOfInertia.multiplyVector3(cross_t2));
         rotationalEffects1Fric = Number.isFinite(rotationalEffects1Fric) ? rotationalEffects1Fric : 0;
         rotationalEffects2Fric = Number.isFinite(rotationalEffects2Fric) ? rotationalEffects2Fric : 0;
@@ -167,12 +167,11 @@ const CollisionContact = class extends Constraint {
         var old = this.tangentialImpulse.dot(tangentialNorm);
         const maxFriction = this.normalImpulse * this.material.friction;
         const frictionImpulse = Math.max(-maxFriction, Math.min(maxFriction, friction + old)) - old;
-
-        this.tangentialImpulse.addInPlace(tangentialNorm.scale(frictionImpulse * this.constructor.impulseRelaxation));
         
-        this.impulse = this.normal.scale(impulse).addInPlace(tangentialNorm.scale(frictionImpulse)).scaleInPlace(this.constructor.impulseRelaxation);
-
+        this.tangentialImpulse.addInPlace(tangentialNorm.scale(frictionImpulse * this.constructor.impulseRelaxation));
         this.normalImpulse += impulse * this.constructor.impulseRelaxation;
+        this.impulse = this.normal.scale(impulse).addInPlace(tangentialNorm.scale(frictionImpulse)).scaleInPlace(this.constructor.impulseRelaxation);
+        
         return true;
     }
 

@@ -7,7 +7,7 @@ const DistanceConstraint = class extends Constraint {
 
     static penetrationRelaxation = 0.6;
     static impulseRelaxation = 0.4;
-    static bias = 0.00004;
+    static bias = 0.0000004;
     
     constructor(options) {
 
@@ -49,7 +49,7 @@ const DistanceConstraint = class extends Constraint {
     }
 
     sameContact(array) {
-        const TOLERANCE = 0.0001
+        const TOLERANCE = 0.0002;
         if (array[0] == this.body1.id && array[1] == this.body2.id) {
             if (this.point1.subtract(array[2]).magnitudeSquared() < TOLERANCE && this.point2.subtract(array[3]).magnitudeSquared() < TOLERANCE) {
                 return true;

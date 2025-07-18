@@ -360,9 +360,9 @@ player.addToWorld(gameEngine.world);
 
 const friction = 0.5;
 let box = new Box({
-    width: 10,
+    width: 4,
     height: 2,
-    depth: 10,
+    depth: 4,
     global: {
         body: {
             position: new Vector3(10 + 4, 16 + 0 * 3, 4),
@@ -385,34 +385,12 @@ gameEngine.world.addComposite(box);
 for (var i = 0; i < 1; i++) {
 
     box = new Box({
-        width: 8,
-        height: 2,
-        depth: 8,
-        global: {
-            body: {
-                position: new Vector3(10 + 4, 30 + i * 3, 4),
-                acceleration: new Vector3(0, gravity, 0),
-            }
-        },
-        local: {
-            body: {
-                mass: 4
-            }
-        },
-    });
-    box.setFriction(friction);
-    box.setRestitution(0);
-    box.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
-
-    box.setMeshAndAddToScene({}, gameEngine);
-    gameEngine.world.addComposite(box);
-    box = new Box({
         width: 6,
         height: 2,
         depth: 6,
         global: {
             body: {
-                position: new Vector3(10 + 4, 34 + i * 3, 4),
+                position: new Vector3(10 + 4, 30 + i * 2, 4),
                 acceleration: new Vector3(0, gravity, 0),
             }
         },
@@ -429,12 +407,34 @@ for (var i = 0; i < 1; i++) {
     box.setMeshAndAddToScene({}, gameEngine);
     gameEngine.world.addComposite(box);
     box = new Box({
-        width: 4,
+        width: 8,
         height: 2,
-        depth: 4,
+        depth: 8,
         global: {
             body: {
-                position: new Vector3(10 + 4, 120 + i * 3, 4),
+                position: new Vector3(10 + 4, 34 + i * 2, 4),
+                acceleration: new Vector3(0, gravity, 0),
+            }
+        },
+        local: {
+            body: {
+                mass: 4
+            }
+        },
+    });
+    box.setFriction(friction);
+    box.setRestitution(0);
+    box.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
+
+    box.setMeshAndAddToScene({}, gameEngine);
+    gameEngine.world.addComposite(box);
+    box = new Box({
+        width: 10,
+        height: 2,
+        depth: 10,
+        global: {
+            body: {
+                position: new Vector3(10 + 4, 90 + i * 2, 4),
                 acceleration: new Vector3(0, gravity, 0),
             }
         },
@@ -458,7 +458,7 @@ for (var i = 0; i < 0; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(-20*0, 20 + i * 3, 0*i * 0.01),
+        position: new Vector3(-20*0, 20 + i * 1, 0*i * 0.01),
         radius: 1,
     })
     slime.sphere.setRestitution(1)
