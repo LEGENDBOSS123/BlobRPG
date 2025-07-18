@@ -1,25 +1,26 @@
 import Item from "./Item.mjs";
 
-const LightSaber = class extends Item {
-    static modelPath = "lightsaber.glb"
-    static iconPath = "lightsaber.png"
+const WoodenSword = class extends Item {
+
+    static modelPath = "wooden_sword.glb";
+    static iconPath = "wooden_sword.png";
+
     constructor(options) {
         super(options);
-        this.description = "Thats a long lightsaber!";
-        this.stackable = false;
         this.maxStack = 1;
-        this.name = "Light Saber";
-
+        this.stackable = false;
+        this.description = "A not-so-sharp sword.";
+        this.name = "Wooden Sword";
         this.type = new Set([
             "weapon",
             "melee",
             "sword",
-            "light",
-            "saber"
-        ]);
-        this.length = 15;
-        this.damage = 50;
-        this.width = 0.5;
+            "wooden"
+        ])
+
+        this.damage = 10;
+        this.width = 0.2;
+        this.length = 2;
     }
 
     getToolTipHTML() {
@@ -35,10 +36,11 @@ const LightSaber = class extends Item {
     clone() {
         const cloned = super.clone();
         cloned.damage = this.damage;
+        cloned.length = this.length;
         cloned.width = this.width;
         cloned.length = this.length;
         return cloned;
     }
 }
 
-export default LightSaber;
+export default WoodenSword;

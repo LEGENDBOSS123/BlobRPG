@@ -29,12 +29,12 @@ import Settings from "./3D/Web/Settings/Settings.mjs";
 import Tooltip from "./3D/Web/Tooltip/Tooltip.mjs";
 import ShopInventory from "./3D/Web/ShopInventory/ShopInventory.mjs";
 import Item from "./3D/Item/Item.mjs";
-import Sword from "./3D/Item/Sword.mjs";
+import WoodenSword from "./3D/Item/WoodenSword.mjs";
 import Apple from "./3D/Item/Apple.mjs";
 import ShopOffer from "./3D/Web/ShopInventory/ShopOffer.mjs";
 import Toast from "./3D/Web/Toast/Toast.mjs";
 import Counter from "./3D/Web/Counter/Counter.mjs";
-import LongSword from "./3D/Item/LongSword.mjs";
+import IronSword from "./3D/Item/IronSword.mjs";
 import LightSaber from "./3D/Item/LightSaber.mjs";
 import Box from "./3D/Physics/Shapes/Box.mjs";
 import Composite from "./3D/Physics/Shapes/Composite.mjs";
@@ -362,11 +362,11 @@ const friction = 0.5;
 
 
 
-for (var i = 0; i < 20; i++) {
+for (var i = 0; i < 40; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(-20*1, 20 + i * 1, 1*i * 0.01),
+        position: new Vector3(-70 * 1, 20 + i * 0.1, 30 + 1 * i * 0.1),
         radius: 1,
     })
     slime.sphere.setRestitution(1)
@@ -398,32 +398,12 @@ toolTip.createHTML({
     height: 90
 });
 
-const sword = new Sword({
-    gameEngine: gameEngine,
-    name: "Sword",
-    iconPath: "./3D/Graphics/Assets/sword.png",
-    type: "weapon"
-});
+const woodenSword = new WoodenSword({ gameEngine: gameEngine });
 
 
-const longSword = new LongSword({
-    gameEngine: gameEngine,
-    name: "Long Sword",
-    iconPath: "./3D/Graphics/Assets/sword.png",
-    type: "weapon"
-});
-const lightSaber = new LightSaber({
-    gameEngine: gameEngine,
-    name: "Light Saber",
-    iconPath: "./3D/Graphics/Assets/sword.png",
-    type: "weapon"
-});
-const apple = new Apple({
-    gameEngine: gameEngine,
-    name: "Apple",
-    iconPath: "./3D/Graphics/Assets/apple.png",
-    type: "consumable"
-});
+const ironSword = new IronSword({ gameEngine: gameEngine });
+const lightSaber = new LightSaber({ gameEngine: gameEngine });
+const apple = new Apple({ gameEngine: gameEngine });
 
 var shopInventory = new ShopInventory({
     gameEngine: gameEngine,
@@ -475,7 +455,7 @@ shopInventory.close();
 shopInventory.items = [
     new ShopOffer({
         gameEngine: gameEngine,
-        item: sword.clone(),
+        item: woodenSword.clone(),
         price: 50
     }),
     new ShopOffer({
@@ -486,7 +466,7 @@ shopInventory.items = [
     }),
     new ShopOffer({
         gameEngine: gameEngine,
-        item: longSword.clone(),
+        item: ironSword.clone(),
         price: 150,
         quantity: 1
     }),

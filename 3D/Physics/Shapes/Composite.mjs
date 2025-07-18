@@ -362,7 +362,7 @@ const Composite = class extends WorldObject {
     addVelocityAndAngularVelocity(velocity, angularVelocity) {
         this.global.body.angularVelocity.addInPlace(angularVelocity);
         this.global.body.setVelocity(this.global.body.getVelocity().addInPlace(velocity).addInPlace(this.distanceToMaxParent.cross(angularVelocity)));
-        if(this.sleeping && velocity.magnitudeSquared() > 0.0001 || angularVelocity.magnitudeSquared() > 0.0001){
+        if (this.sleeping && velocity.magnitudeSquared() > 0.0001 || angularVelocity.magnitudeSquared() > 0.0001) {
             this.awakenAll();
         }
         for (const child of this.children) {
@@ -602,7 +602,11 @@ const Composite = class extends WorldObject {
         if (!this.mesh) {
             return;
         }
+
         if (this.mesh.instancedMeshInfo) {
+            if (!this.mesh.instancedMeshVisible) {
+                return;
+            }
             const index = this.mesh.instancedMeshInfo.getIndex(this.gameEngine);
             this.mesh.instancedIndex = index;
             const instancedMesh = this.mesh.instancedMeshInfo.instancedMesh;
@@ -616,6 +620,9 @@ const Composite = class extends WorldObject {
             dummy.updateMatrix();
 
             instancedMesh.setMatrixAt(index, dummy.matrix);
+            return;
+        }
+        if (!this.mesh.mesh) {
             return;
         }
         this.mesh.mesh.position.set(...this.global.body.position.lerp(last.global.body.position, 1 - lerp));

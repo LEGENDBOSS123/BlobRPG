@@ -98,12 +98,12 @@ const InventoryItem = class extends WebComponent {
             return this.createHTML();
         }
 
-        if (this.item.iconPath) {
+        if (this.item.constructor.iconPath) {
             if (this.iconElement.style.display != "block") {
                 this.iconElement.style.display = 'block';
             }
-            if (!this.iconElement.src || new URL(this.iconElement.src).href !== new URL(this.item.iconPath, document.baseURI).href) {
-                this.iconElement.src = this.item.iconPath;
+            if (!this.iconElement.src || new URL(this.iconElement.src).href !== this.gameEngine.graphicsEngine.textureLoader.resolvePath(this.item.constructor.iconPath)) {
+                this.iconElement.src = this.gameEngine.graphicsEngine.textureLoader.resolvePath(this.item.constructor.iconPath);
             }
 
         } else {

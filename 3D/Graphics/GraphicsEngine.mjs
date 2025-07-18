@@ -191,6 +191,9 @@ var GraphicsEngine = class extends GameEngineComponent {
     }
 
     createAnimations(model, animations) {
+        if(!animations){
+            return null;
+        }
         const mixer = new this.THREE.AnimationMixer(model);
         const actions = {};
         for (const animation of animations) {

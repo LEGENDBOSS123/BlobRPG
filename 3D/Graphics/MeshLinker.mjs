@@ -12,8 +12,17 @@ var MeshLinker = class {
             isMeshLink: true,
             instancedMeshInfo: null,
             instancedIndex: null,
+            instancedMeshVisible: true
         }
     }
+
+    createInstancedMeshData(meshInfo){
+        let meshdata = this.createMeshData(null, null);
+        meshdata.instancedMeshInfo = meshInfo;
+        return meshdata;
+    }
+
+
     addMesh(id, mesh) {
         this.meshes[id] = mesh;
         mesh.id = id;

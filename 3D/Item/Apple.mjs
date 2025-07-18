@@ -1,12 +1,21 @@
 import Item from "./Item.mjs";
 
 const Apple = class extends Item{
+    static iconPath = "apple.png"
     constructor(options){
         super(options);
-        this.heal = options?.heal ?? 25;
         this.maxStack = 32;
         this.stackable = true;
         this.description = "A healthy apple.";
+        this.name = "Apple"
+        this.type = new Set([
+            "food",
+            "apple",
+            "heal",
+            "fruit"
+        ])
+
+        this.heal = options?.heal ?? 25;
     }
 
     getToolTipHTML(){
@@ -23,14 +32,6 @@ const Apple = class extends Item{
         if(player.health > player.maxHealth){
             // player.health = player.maxHealth;
         }
-    }
-
-    getCooldown(){
-        return 0;
-    }
-
-    getCooldownRatio(){
-        return 0;
     }
 
     clone(){

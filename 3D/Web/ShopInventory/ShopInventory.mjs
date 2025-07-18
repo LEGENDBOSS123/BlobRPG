@@ -150,7 +150,7 @@ const ShopInventory = class extends Modal {
         const item = this.items[this.selectedIndex];
         this.itemInfoName.textContent = item.item.name;
         this.itemInfoQuantity.textContent = item.quantity == Infinity ? "" : "x" + item.quantity;
-        this.itemInfoImage.style.backgroundImage = `url(${item.item.iconPath})`;
+        this.itemInfoImage.style.backgroundImage = `url(${this.gameEngine.graphicsEngine.textureLoader.resolvePath(item.item.constructor.iconPath)})`;
         this.itemInfoPrice.textContent = "$" + item.price;
         this.itemInfoDescription.innerHTML = item.item.getToolTipHTML();
     }

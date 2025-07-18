@@ -52,12 +52,16 @@ const ModelPool = class extends GameEngineComponent {
 
     }
 
-    loadInstance(url, estimatedSize = 100, expandSize = null) {
+    loadInstance(url, estimatedSize = 100, expandSize = null, getOnlyInstancedMeshInfo = false) {
         const path = this.resolvePath(url);
 
         return new Promise(async function (resolve, reject) {
             if (this.models.has(path)) {
                 const mesh = this.models.get(path);
+                if (getOnlyInstancedMeshInfo) {
+                    resolve(mesh.instancedMeshInfo);
+                    return;
+                }
                 const newMesh = this.gameEngine.graphicsEngine.meshLinker.createMeshData(null, null);
                 newMesh.instancedMeshInfo = mesh.instancedMeshInfo;
                 resolve(newMesh);
@@ -65,7 +69,10 @@ const ModelPool = class extends GameEngineComponent {
             }
             if (this.cachedPromises.has(path)) {
                 const mesh = await this.cachedPromises.get(path);
-                // console.log(this.cachedPromises.get(path), mesh);
+                if (getOnlyInstancedMeshInfo) {
+                    resolve(mesh.instancedMeshInfo);
+                    return;
+                }
                 const newMesh = this.gameEngine.graphicsEngine.meshLinker.createMeshData(null, null);
                 newMesh.instancedMeshInfo = mesh.instancedMeshInfo;
                 resolve(newMesh);
@@ -132,15 +139,19 @@ const ModelPool = class extends GameEngineComponent {
                     }
                 }
                 this.models.set(path, mesh);
-                
+
                 return mesh;
             }.bind(this));
 
             this.cachedPromises.set(path, loadPromise);
-
-            resolve(await loadPromise);
+            const mesh = await loadPromise
+            if (getOnlyInstancedMeshInfo) {
+                resolve(mesh.instancedMeshInfo);
+                return;
+            }
+            resolve(mesh);
             return;
-        
+
         }.bind(this));
     }
 
