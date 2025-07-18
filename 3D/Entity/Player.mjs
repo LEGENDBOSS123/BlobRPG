@@ -86,6 +86,9 @@ var Player = class extends Entity {
         this.groundDetectDot = 0.8;
         this.wallDetectDot = 0.2;
 
+        this.itemMeshes = {};
+        this.latestItemId = 0;
+
         this.itemHeldBox = new Box({
             width: 1,
             height: 1,
@@ -103,13 +106,13 @@ var Player = class extends Entity {
             },
             isSensor: true
         });
+        this.selectedItemClass = null;
         this.itemHeldBox.setFriction(1);
         this.itemHeldBox.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
-
         this.itemHeldConstraint = new DistanceConstraint({
             body1: this.composite,
             body2: this.itemHeldBox,
-            anchor1: new Vector3(0, 0, 0),
+            anchor1: new Vector3(0, 1, 0),
             anchor2: new Vector3(0, 0, 0),
             restLength: 1
         });
@@ -133,7 +136,7 @@ var Player = class extends Entity {
                 }
                 var scale = 1;
                 const correctNormal = contact.normal.scale(side);
-                otherEntity.getMainShape().applyForce(correctNormal.scale(this.composite.toTrueVelocity(contact.velocity).dot(correctNormal) * -0.2 * scale), contact.position);
+                otherEntity.getMainShape().applyForce(correctNormal.scale(this.composite.toTrueVelocity(contact.velocity).dot(correctNormal) * -0.1 * scale), contact.position);
             }
         }.bind(this);
 
@@ -146,7 +149,7 @@ var Player = class extends Entity {
                     this.canJump = true;
                     if (contact.body2.isImmovable()) {
                         this.touchingGround = true;
-                        
+
                         this.groundVelocity = this.composite.toTrueVelocity(contact.velocity);
                     }
                 }
@@ -206,13 +209,38 @@ var Player = class extends Entity {
         this.keysVector = new Vector3();
     }
 
+    async addItemMesh(name, url) {
+        if (this.itemMeshes[name]) {
+            return;
+        }
+        if (!url) {
+            var geometry = new gameEngine.graphicsEngine.THREE.BoxGeometry(this.itemHeldBox.width, this.itemHeldBox.height, this.itemHeldBox.depth);
+            const mesh = new gameEngine.graphicsEngine.THREE.Mesh(geometry, new gameEngine.graphicsEngine.THREE.MeshPhongMaterial({ color: 0x00ff00 }));
+            gameEngine.graphicsEngine.makeShadows(mesh);
+            this.itemMeshes[name] = mesh;
+            return mesh;
+        }
+        const gltf = await this.gameEngine.graphicsEngine.load(url);
+        this.gameEngine.graphicsEngine.makeShadows(gltf.scene);
+        this.itemMeshes[name] = gltf.scene;
+        return this.itemMeshes[name];
+    }
+
+    removeAllItemMeshes() {
+        for (var name in this.itemMeshes) {
+            if (this.itemMeshes[name].parent) {
+                this.itemMeshes[name].parent.remove(this.itemMeshes[name]);
+            }
+        }
+    }
+
     takeDamage(damage) {
         const time = this.gameEngine.timer.getTime();
         if (time - this.lastDamageTime < this.invincibilityFramesDuration) {
             return;
         }
         this.lastDamageTime = time;
-        if(damage > this.health) {
+        if (damage > this.health) {
             damage = this.health;
         }
         this.health -= damage;
@@ -260,44 +288,20 @@ var Player = class extends Entity {
 
     addToWorld(world) {
         world.addComposite(this.composite);
+
         this.updateShapeID();
     }
 
     setMeshAndAddToScene(options) {
-        if (this.composite.mesh) {
-            return;
-        }
         this.itemHeldBox.setMeshAndAddToScene({}, this.gameEngine);
         this.itemHeldConstraint.setMeshAndAddToScene({
             color: 0xffffff
         }, this.gameEngine);
         this.itemHeldBox.mesh.mesh.visible = false;
         this.itemHeldConstraint.mesh.mesh.visible = false;
-        // gameEngine.graphicsEngine.load("roblox_default_character.glb").then(function (gltf) {
-        //     gltf.scene.scale.set(...(new Vector3(0.4, 0.4, 0.4).scale(this.sphere.radius * 1.95)));
-        //     gltf.scene.children[0].quaternion.copy(Quaternion.from(gltf.scene.children[0].quaternion).rotateByAngularVelocity(new Vector3(0, 2, 0)));
-        //     for (var e of gltf.scene.children) {
-        //         e.position.z -= 6.65;
-        //         e.position.x -= 2.805;
-        //         e.position.y -= 0.485;
-        //     }
-        //     gltf.scene.traverse(function (child) {
-        //         if (child.isMesh) {
-        //             child.castShadow = true;
-        //             child.receiveShadow = true;
-        //         }
-        //     })
-        //     var meshData = gameEngine.graphicsEngine.meshLinker.createMeshData(gltf.scene);
-        //     this.composite.mesh = meshData;
-        //     this.composite.addToScene(gameEngine);
-        // }.bind(this));
-        // this.sphere.setMeshAndAddToScene({}, gameEngine);
-        // this.sphere2.setMeshAndAddToScene({}, gameEngine);
-        // this.sphere3.setMeshAndAddToScene({}, gameEngine);
         for (const sphere of this.spheres) {
             sphere.setMeshAndAddToScene({}, gameEngine);
         }
-        // this.spheres[this.spheres.length - 1].mesh = this.gameEngine.graphicsEngine.meshLinker.createMeshData(new gameEngine.graphicsEngine.THREE.Mesh());
     }
 
     wasKeyJustPressed(key) {
@@ -369,27 +373,56 @@ var Player = class extends Entity {
                 this.damage = selectedItem.damage;
                 this.itemHeldBox.dimensionsChanged();
                 if (this.itemHeldBox.mesh) {
-                    const mesh = this.itemHeldBox.mesh.mesh;
-                    if (mesh.geometry.parameters.width != selectedItem.width || mesh.geometry.parameters.height != selectedItem.length || mesh.geometry.parameters.depth != selectedItem.width) {
+                    const mesh = this.itemHeldBox.mesh?.mesh;
+
+                    if (mesh && mesh.geometry?.parameters && (mesh.geometry.parameters.width != selectedItem.width || mesh.geometry.parameters.height != selectedItem.length || mesh.geometry.parameters.depth != selectedItem.width)) {
                         mesh.geometry = new gameEngine.graphicsEngine.THREE.BoxGeometry(selectedItem.width, selectedItem.length, selectedItem.width);
                     }
                 }
-                this.itemHeldConstraint.anchor2 = new Vector3(0, selectedItem.length / 2, 0);
+                this.itemHeldConstraint.anchor2 = new Vector3(0, -selectedItem.length / 2, 0);
+                this.itemHeldConstraint.mesh.mesh.visible = true;
                 if (this.itemHeldBox.id == -1) {
 
                     this.gameEngine.world.addComposite(this.itemHeldBox);
                     this.gameEngine.world.addConstraint(this.itemHeldConstraint);
                     this.itemHeldBox.global.body.setPosition(this.composite.global.body.position.copy());
-                    this.itemHeldBox.mesh.mesh.visible = true;
-                    this.itemHeldConstraint.mesh.mesh.visible = true;
+
+                }
+
+                if (this.selectedItemClass != selectedItem.constructor) {
+                    this.selectedItemClass = selectedItem.constructor;
+
+                    this.latestItemId++;
+                    const latestId = this.latestItemId;
+                    this.removeAllItemMeshes();
+                    if (this.itemMeshes[this.selectedItemClass]) {
+                        const parent = this.gameEngine.graphicsEngine.scene;
+                        this.itemHeldBox.mesh.mesh.parent?.remove(this.itemHeldBox.mesh.mesh);
+                        this.itemHeldBox.mesh.mesh = this.itemMeshes[this.selectedItemClass];
+                        parent.add(this.itemHeldBox.mesh.mesh);
+                        this.latestId++;
+                    }
+                    else {
+                        this.addItemMesh(this.selectedItemClass, selectedItem.modelPath).then((mesh) => {
+                            if (this.latestItemId == latestId) {
+                                const parent = this.gameEngine.graphicsEngine.scene;
+                                this.itemHeldBox.mesh.mesh.parent?.remove(this.itemHeldBox.mesh.mesh);
+                                this.itemHeldBox.mesh.mesh = mesh;
+                                parent.add(this.itemHeldBox.mesh.mesh);
+                                this.latestId++;
+                            }
+                        });
+                    }
                 }
             }
             else {
                 if (this.itemHeldBox.id != -1) {
                     this.gameEngine.world.removeComposite(this.itemHeldBox);
                     this.gameEngine.world.removeConstraint(this.itemHeldConstraint);
-                    this.itemHeldBox.mesh.mesh.visible = false;
+                    this.removeAllItemMeshes();
+                    this.latestItemId++;
                     this.itemHeldConstraint.mesh.mesh.visible = false;
+                    this.selectedItemClass = null;
                 }
             }
         }
@@ -397,8 +430,10 @@ var Player = class extends Entity {
             if (this.itemHeldBox.id != -1) {
                 this.gameEngine.world.removeComposite(this.itemHeldBox);
                 this.gameEngine.world.removeConstraint(this.itemHeldConstraint);
-                this.itemHeldBox.mesh.mesh.visible = false;
+                this.removeAllItemMeshes();
+                this.latestItemId++;
                 this.itemHeldConstraint.mesh.mesh.visible = false;
+                this.selectedItemClass = null;
             }
         }
 

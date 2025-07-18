@@ -28,7 +28,7 @@ class UFO extends Entity {
             }
         })
         this.composite.add(this.beamSensor);
-        this.damage = options?.damage ?? 20;
+        this.damage = options?.damage ?? 5;
         this.player = options?.player ?? null;
         this.targetPosition = null;
         this.targetRadius = 24;
@@ -77,7 +77,6 @@ class UFO extends Entity {
         for(var i in meshData.animations.actions){
             meshData.animations.actions[i].play();
         }
-        console.log(meshData.animations)
         this.composite.mesh = meshData;
         this.beamSensor.setMesh({
             color: 0xff0000

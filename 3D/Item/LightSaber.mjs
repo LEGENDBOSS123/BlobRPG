@@ -5,12 +5,13 @@ const LightSaber = class extends Item {
         super(options);
         this.damage = options?.damage ?? 50;
         this.width = 0.5;
-        this.length = 30;
+        this.length = 15;
         this.reloadTime = options?.cooldown ?? 0;
         this.maxReloadTime = options?.maxCooldown ?? 1;
         this.maxStack = 1;
         this.stackable = false;
         this.description = "Thats a long lightsaber!";
+        this.modelPath = "lightsaber.glb"
     }
 
     getToolTipHTML() {

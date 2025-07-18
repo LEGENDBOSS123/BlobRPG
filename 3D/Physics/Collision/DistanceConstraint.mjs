@@ -5,8 +5,8 @@ import Quaternion from "../Math3D/Quaternion.mjs";
 const DistanceConstraint = class extends Constraint {
     static name = "DISTANCECONSTRAINT";
 
-    static penetrationRelaxation = 0.6;
-    static impulseRelaxation = 0.4;
+    static penetrationRelaxation = 0.8;
+    static impulseRelaxation = 0.8;
     static bias = 0.0000004;
     
     constructor(options) {
@@ -45,7 +45,7 @@ const DistanceConstraint = class extends Constraint {
     }
 
     getCachedArray() {
-        return [this.body1.id, this.body2.id, this.point1.copy(), this.point2.copy(), this.normalImpulse];
+        return [this.body1.id, this.body2.id, this.point1.copy(), this.point2.copy(), this.normal.copy(),  this.normalImpulse];
     }
 
     sameContact(array) {
@@ -202,6 +202,7 @@ const DistanceConstraint = class extends Constraint {
 
         var lambda = (relVel + this.bias * Math.abs(error) * Math.sign(relVel)) * this.denominator;
         this.impulse = this.normal.scale(lambda * this.constructor.impulseRelaxation);
+        // console.log(this.impulse, this.normalImpulse, lambda, relVel, this.bias, deltaLength);
         this.normalImpulse += lambda * this.constructor.impulseRelaxation;
 
         return true;

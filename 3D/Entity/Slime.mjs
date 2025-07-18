@@ -135,7 +135,7 @@ var Slime = class extends HealthEntity {
     }
 
     addToScene(gameEngine) {
-        this.sphere.addToScene(gameEngine);
+        gameEngine.graphicsEngine.scene.add(this.sphere.mesh.instancedMeshInfo.instancedMesh);
         gameEngine.graphicsEngine.addToScene(this.healthSprite);
     }
 

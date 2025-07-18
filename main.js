@@ -359,125 +359,33 @@ player.addToWorld(gameEngine.world);
 
 
 const friction = 0.5;
-let box = new Box({
-    width: 4,
-    height: 2,
-    depth: 4,
-    global: {
-        body: {
-            position: new Vector3(10 + 4, 16 + 0 * 3, 4),
-            acceleration: new Vector3(0, gravity, 0),
-        }
-    },
-    local: {
-        body: {
-            mass: 4
-        }
-    },
-});
-box.setFriction(friction);
-box.setRestitution(0);
-box.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
-
-box.setMeshAndAddToScene({}, gameEngine);
-gameEngine.world.addComposite(box);
-
-for (var i = 0; i < 1; i++) {
-
-    box = new Box({
-        width: 6,
-        height: 2,
-        depth: 6,
-        global: {
-            body: {
-                position: new Vector3(10 + 4, 30 + i * 2, 4),
-                acceleration: new Vector3(0, gravity, 0),
-            }
-        },
-        local: {
-            body: {
-                mass: 4
-            }
-        },
-    });
-    box.setFriction(friction);
-    box.setRestitution(0);
-    box.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
-
-    box.setMeshAndAddToScene({}, gameEngine);
-    gameEngine.world.addComposite(box);
-    box = new Box({
-        width: 8,
-        height: 2,
-        depth: 8,
-        global: {
-            body: {
-                position: new Vector3(10 + 4, 34 + i * 2, 4),
-                acceleration: new Vector3(0, gravity, 0),
-            }
-        },
-        local: {
-            body: {
-                mass: 4
-            }
-        },
-    });
-    box.setFriction(friction);
-    box.setRestitution(0);
-    box.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
-
-    box.setMeshAndAddToScene({}, gameEngine);
-    gameEngine.world.addComposite(box);
-    box = new Box({
-        width: 10,
-        height: 2,
-        depth: 10,
-        global: {
-            body: {
-                position: new Vector3(10 + 4, 90 + i * 2, 4),
-                acceleration: new Vector3(0, gravity, 0),
-            }
-        },
-        local: {
-            body: {
-                mass: 4
-            }
-        },
-    });
-    box.setFriction(friction);
-    box.setRestitution(0);
-    box.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
-
-    box.setMeshAndAddToScene({}, gameEngine);
-    gameEngine.world.addComposite(box);
-}
 
 
 
-for (var i = 0; i < 0; i++) {
+for (var i = 0; i < 20; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(-20*0, 20 + i * 1, 0*i * 0.01),
+        position: new Vector3(-20*1, 20 + i * 1, 1*i * 0.01),
         radius: 1,
     })
     slime.sphere.setRestitution(1)
     slime.setMeshAndAddToScene({}, gameEngine);
     gameEngine.entitySystem.register(slime);
     slime.addToWorld(gameEngine.world);
-    // slime.getTargets = function () {
-    //     return [player.id];
-    // }
+    slime.getTargets = function () {
+        return [player.id];
+    }
 }
 
-// const ufo = new UFO({
-//     player: player,
-//     gameEngine: gameEngine
-// });
+const ufo = new UFO({
+    player: player,
+    gameEngine: gameEngine
+});
 
-// ufo.setMeshAndAddToScene({}, gameEngine);
-// gameEngine.entitySystem.register(ufo);
-// ufo.addToWorld(gameEngine.world);
+ufo.setMeshAndAddToScene({}, gameEngine);
+gameEngine.entitySystem.register(ufo);
+ufo.addToWorld(gameEngine.world);
 
 
 var toolTip = new Tooltip({
