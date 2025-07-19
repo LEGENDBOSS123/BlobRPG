@@ -9,7 +9,7 @@ var Slime = class extends HealthEntity {
     constructor(options) {
         super(options);
         this.gravity = options?.gravity ?? new Vector3(0, 0, 0);
-        this.damage = options?.damage ?? 10;
+        this.damage = options?.damage ?? 5;
         this.speed = options?.speed ?? 0.1;
         this.fireRate = options?.fireRate ?? 1;
         this.jumpPower = options?.jumpPower ?? 0.1;
@@ -53,8 +53,7 @@ var Slime = class extends HealthEntity {
                 return;
             }
             var e = targetEntity;
-            var damage = Math.floor(Math.random() * 5) + 1
-            e.takeDamage(damage);
+            e.takeDamage(this.damage);
 
         }.bind(this);
         this.spherePostCollision = function (contact) {

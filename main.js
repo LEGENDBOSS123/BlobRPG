@@ -41,6 +41,7 @@ import Composite from "./3D/Physics/Shapes/Composite.mjs";
 import ShopKeeper from "./3D/Entity/ShopKeeper.mjs";
 import Coin from "./3D/Entity/Coin.mjs";
 import UFO from "./3D/Entity/UFO.mjs";
+import BalloonCarry from "./3D/Entity/BalloonCarry.mjs";
 
 
 var stats = new Stats();
@@ -377,6 +378,35 @@ for (var i = 0; i < 40; i++) {
         return [player.id];
     }
 }
+
+for (let i = 0; i < 3; i = i + 1) {
+    var slime = new Slime({
+        gameEngine: gameEngine,
+        gravity: new Vector3(0, gravity, 0),
+        position: new Vector3(-70 * 1, 20 + i * 0.1, 30 + 1 * i * 0.1),
+        radius: 1,
+        speed: 0.4,
+        damage: 20
+    })
+    slime.sphere.setRestitution(1)
+    slime.setMeshAndAddToScene({}, gameEngine);
+    gameEngine.entitySystem.register(slime);
+    slime.addToWorld(gameEngine.world);
+    slime.getTargets = function () {
+        return [player.id];
+    }
+    const balloonCarry = new BalloonCarry({
+        gravity: new Vector3(0, gravity, 0),
+        position: new Vector3(30, 10, 0),
+        gameEngine: gameEngine,
+        size: 1.2,
+        carryingEntity: slime
+    })
+    balloonCarry.setMeshAndAddToScene({}, gameEngine);
+    gameEngine.entitySystem.register(balloonCarry);
+    balloonCarry.addToWorld(gameEngine.world);
+}
+
 
 const ufo = new UFO({
     player: player,

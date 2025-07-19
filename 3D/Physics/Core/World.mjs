@@ -75,6 +75,10 @@ const World = class {
 
     removeComposite(element, first = true) {
 
+        if (!this.all[element.id]) {
+            return;
+        }
+
         if (element.parent && first) {
             element.parent.children.splice(element.parent.children.indexOf(element), 1);
         }
@@ -89,11 +93,15 @@ const World = class {
     }
 
     removeConstraint(element) {
+        if (!this.all[element.id]) {
+            return;
+        }
+
         this.constraints.splice(this.constraints.indexOf(element), 1);
         this.remove(element);
     }
 
- 
+
     remove(element) {
         element.dispatchEvent("delete");
         element._mesh = element.mesh;
