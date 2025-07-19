@@ -236,7 +236,7 @@ var Slime = class extends HealthEntity {
             this.jumpCooldown -= 1;
             return;
         }
-        this.sphere.applyForce(direction);
+        this.sphere.setTrueVelocity(this.sphere.getTrueVelocity().addInPlace(direction));
         this.jumpCooldown -= 1;
 
     }

@@ -363,12 +363,14 @@ const friction = 0.5;
 
 
 
-for (var i = 0; i < 40; i++) {
+for (var i = 0; i < 10; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
         position: new Vector3(-70 * 1, 20 + i * 0.1, 30 + 1 * i * 0.1),
         radius: 1,
+        speed: 0.5,
+        jumpPower: 1
     })
     slime.sphere.setRestitution(1)
     slime.setMeshAndAddToScene({}, gameEngine);
@@ -385,8 +387,9 @@ for (let i = 0; i < 3; i = i + 1) {
         gravity: new Vector3(0, gravity, 0),
         position: new Vector3(-70 * 1, 20 + i * 0.1, 30 + 1 * i * 0.1),
         radius: 1,
-        speed: 0.4,
-        damage: 20
+        speed: 1.2,
+        damage: 10,
+        jumpPower: 1
     })
     slime.sphere.setRestitution(1)
     slime.setMeshAndAddToScene({}, gameEngine);

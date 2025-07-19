@@ -25,7 +25,7 @@ class BalloonCarry extends Entity {
         });
 
         this.carryingEntity = options.carryingEntity;
-
+        this.sphere.setRestitution(0);
 
         this.jointLength = options?.jointLength ?? 4
         this.joint = new DistanceConstraint({
@@ -82,11 +82,6 @@ class BalloonCarry extends Entity {
                 info.instancedMesh.setMatrixAt(mesh.instancedIndex, dummy.matrix);
             }
         }
-
-        const entityMass = this.carryingEntity.getMainShape().global.body.mass;
-        const ourMass = this.sphere.global.body.mass + entityMass;
-        const force = 1/0.4*(0.4-Math.min(this.sphere.global.body.getVelocity().magnitudeSquared(), 0.4))*this.sphere.global.body.acceleration.dot(new Vector3(0, -1, 0)) * 0.3 * this.sphere.world.deltaTimeSquared * ourMass;        
-        this.sphere.applyForce(new Vector3(0, force, 0));
     }
 
     destroy() {
@@ -104,7 +99,11 @@ class BalloonCarry extends Entity {
             this.destroy();
             return;
         }
-
+        const entityMass = this.carryingEntity.getMainShape().global.body.mass;
+        const ourMass = this.sphere.global.body.mass + entityMass;
+        var vel = 10;
+        const force = 1 / vel * (vel - Math.min(this.sphere.getTrueVelocity().magnitudeSquared(), vel)) * this.sphere.global.body.acceleration.dot(new Vector3(0, -1, 0)) * 0.45 * this.sphere.world.deltaTime * ourMass;
+        this.sphere.applyForce(new Vector3(0, force, 0));
 
     }
 
@@ -113,6 +112,9 @@ class BalloonCarry extends Entity {
     }
 
 }
+
+
+
 
 
 export default BalloonCarry;
