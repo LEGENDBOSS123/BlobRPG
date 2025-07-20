@@ -58,44 +58,10 @@ document.addEventListener('contextmenu', (event) => {
     event.preventDefault();
 });
 
-var gameEngine = new GameEngine(
-    {
-        graphicsEngine: {
-            window: window,
-            document: document,
-            container: document.body,
-            canvas: document.getElementById('canvas'),
-        },
-        gameCamera: {
-            pullback: 8,
-            maxPullback: 16,
-            minPullback: 2
-        },
-        cameraControls: {
-            speed: 1,
-            pullbackRate: 0.1,
-            rotateMethods: {
-                wheel: true,
-                shiftLock: true,
-                drag: true
-            },
-            rotateSensitivity: {
-                wheel: 0.01,
-                shiftLock: 0.01,
-                drag: 0.01
-            },
-            shiftLockCursor: document.getElementById('shiftlockcursor'),
-            window: window,
-            document: document,
-        },
-        particleSystem: {},
-        fps: 20
-    }
-);
+import gameEngine from "./initializeGameEngine.mjs";
 
 
 
-window.gameEngine = gameEngine;
 gameEngine.graphicsEngine.ambientLight.intensity = 3;
 gameEngine.graphicsEngine.setBackgroundImage("autumn_field_puresky_1k.hdr", true, false);
 gameEngine.graphicsEngine.setSunlightDirection(new Vector3(-2, -8, -5));
@@ -110,9 +76,6 @@ gameEngine.toastManager.createHTML({
     container: document.body,
     width: 300
 });
-
-
-
 
 gameEngine.cameraControls.addKeyBinds(
     {
