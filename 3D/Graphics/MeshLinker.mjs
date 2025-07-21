@@ -37,14 +37,19 @@ var MeshLinker = class {
     getByID(id) {
         return this.meshes[id];
     }
-    update(previousWorld, world, lerpAmount) {
+    update(gameEngine, previousWorld, world, lerpAmount) {
         for (var meshID in this.meshes) {
-            if (!world.getByID(meshID) || !previousWorld.all[meshID]) {
+            const object = gameEngine.getByID(meshID);
+            const physicsObject = object.physics;
+            if(!physicsObject){
                 continue;
             }
-            var composite = world.getByID(meshID);
-            var previousComposite = previousWorld.all[meshID];
-            composite.lerpMesh(previousComposite, lerpAmount, previousWorld);
+            if (!world.getByID(physicsObject.id) || !previousWorld.all[physicsObject.id]) {
+                continue;
+            }
+            var composite = physicsObject;
+            var previousComposite = previousWorld.all[physicsObject.id];
+            object.lerpMesh(previousComposite, lerpAmount, previousWorld);
         }
     }
 };

@@ -29,10 +29,14 @@ import Vector3 from "./Physics/Math3D/Vector3.mjs";
 
 const GameEngine = class {
 
+    static maxID = 0;
     /**
      * @param {GameEngineOptions} options
      */
     constructor(options) {
+
+        this.all = {};
+
         this.entitySystem = new EntitySystem(options?.graphicsEngine);
         this.graphicsEngine = new GraphicsEngine(options?.graphicsEngine);
         this.timer = new Timer(options?.timer);
@@ -58,6 +62,21 @@ const GameEngine = class {
         this.fpsStepper = new Timer.Interval(1000 / this.fps);
     }
 
+
+    addGameObject(gameObject) {
+        gameObject.gameEngine = this;
+        gameObject.id = GameEngine.maxID++;
+        this.all[gameObject.id] = gameObject;
+        gameObject.mesh = gameObject._mesh;
+        gameObject._mesh = null;
+    }
+
+    getByID(id) {
+        return this.all[id] || null;
+    }
+
+
+
     /**
      * Steps the physics world
      */
@@ -75,7 +94,7 @@ const GameEngine = class {
     }
 
     updateGraphicsEngine() {
-        this.graphicsEngine.update(this.previousWorld || this.world, this.world, this.fpsStepper.getLerpAmount());
+        this.graphicsEngine.update(this, this.previousWorld || this.world, this.world, this.fpsStepper.getLerpAmount());
     }
     updateEntitiesStep() {
         this.entitySystem.updateStep(this);

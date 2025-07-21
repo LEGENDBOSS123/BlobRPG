@@ -62,6 +62,7 @@ import gameEngine from "./initializeGameEngine.mjs";
 
 
 
+
 gameEngine.graphicsEngine.ambientLight.intensity = 3;
 gameEngine.graphicsEngine.setBackgroundImage("autumn_field_puresky_1k.hdr", true, false);
 gameEngine.graphicsEngine.setSunlightDirection(new Vector3(-2, -8, -5));
@@ -305,6 +306,7 @@ gameEngine.world.setPenetrationIterations(16);
 
 var gravity = -0.35;
 
+console.log(gameEngine)
 var player = new Player({
     radius: 0.5,
     height: 3,
@@ -315,9 +317,10 @@ var player = new Player({
     jumpSpeed: 1,
     gravity: new Vector3(0, gravity, 0),
     mass: 1,
-    gameEngine: gameEngine,
+    gameEngine: gameEngine
 });
 player.setMeshAndAddToScene({}, gameEngine);
+player.addToGameEngine(gameEngine);
 gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
@@ -326,7 +329,7 @@ const friction = 0.5;
 
 
 
-for (var i = 0; i < 10; i++) {
+for (var i = 0; i < 1; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
@@ -338,13 +341,14 @@ for (var i = 0; i < 10; i++) {
     slime.sphere.setRestitution(1)
     slime.setMeshAndAddToScene({}, gameEngine);
     gameEngine.entitySystem.register(slime);
+    slime.addToGameEngine(gameEngine);
     slime.addToWorld(gameEngine.world);
     slime.getTargets = function () {
         return [player.id];
     }
 }
 
-for (let i = 0; i < 3; i = i + 1) {
+for (let i = 0; i < 30; i = i + 1) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
@@ -357,6 +361,7 @@ for (let i = 0; i < 3; i = i + 1) {
     slime.sphere.setRestitution(1)
     slime.setMeshAndAddToScene({}, gameEngine);
     gameEngine.entitySystem.register(slime);
+    slime.addToGameEngine(gameEngine);
     slime.addToWorld(gameEngine.world);
     slime.getTargets = function () {
         return [player.id];
@@ -370,18 +375,19 @@ for (let i = 0; i < 3; i = i + 1) {
     })
     balloonCarry.setMeshAndAddToScene({}, gameEngine);
     gameEngine.entitySystem.register(balloonCarry);
+    balloonCarry.addToGameEngine(gameEngine);
     balloonCarry.addToWorld(gameEngine.world);
 }
 
 
-const ufo = new UFO({
-    player: player,
-    gameEngine: gameEngine
-});
+// const ufo = new UFO({
+//     player: player,
+//     gameEngine: gameEngine
+// });
 
-ufo.setMeshAndAddToScene({}, gameEngine);
-gameEngine.entitySystem.register(ufo);
-ufo.addToWorld(gameEngine.world);
+// ufo.setMeshAndAddToScene({}, gameEngine);
+// gameEngine.entitySystem.register(ufo);
+// ufo.addToWorld(gameEngine.world);
 
 
 var toolTip = new Tooltip({
@@ -623,6 +629,7 @@ for (var entity of map.entities) {
     else {
         entity.setMeshAndAddToScene({}, gameEngine);
     }
+    entity.addToGameEngine(gameEngine);
     gameEngine.entitySystem.register(entity);
     entity.addToWorld(gameEngine.world);
 
@@ -630,12 +637,12 @@ for (var entity of map.entities) {
         entity.getTargets = function () {
             return [player.id];
         }
-        entity.setGravity(new Vector3(0, gravity, 0),);
+        entity.setGravity(new Vector3(0, gravity, 0));
     }
 }
 gameEngine.graphicsEngine.addToScene(map.gltf.scene)
 
-
+top.g = gameEngine
 
 gameEngine.timer.schedule(gameEngine.fpsStepper);
 
@@ -718,7 +725,7 @@ function render() {
     gameEngine.updateGraphicsEngine();
     gameEngine.updateEntities();
     gameEngine.graphicsEngine.updateModelPool();
-    gameEngine.updateGameCamera(Vector3.from(player.getMainShape()?.mesh?.mesh?.position ?? player.getMainShape().global.body.position.copy()));
+    gameEngine.updateGameCamera(Vector3.from(player.getMainShape()?.mesh?.mesh?.position ?? player.getMainShape().physics.global.body.position.copy()));
     gameEngine.graphicsEngine.render();
     gameEngine.timer.step();
     requestAnimationFrame(render);

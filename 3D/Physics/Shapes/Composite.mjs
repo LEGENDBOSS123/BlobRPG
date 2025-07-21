@@ -346,6 +346,10 @@ const Composite = class extends WorldObject {
         this.local.body.angularVelocity = angularVelocity.copy();
     }
 
+    createMesh(options, gameEngine) {
+        return null;
+    }
+
     getCenterOfMass(skip = false) {
         if (!this.children.length) {
             return this.global.body.position.copy();
@@ -598,38 +602,7 @@ const Composite = class extends WorldObject {
         }
     }
 
-    lerpMesh(last, lerp, previousWorld) {
-        if (!this.mesh) {
-            return;
-        }
-
-        if (this.mesh.instancedMeshInfo) {
-            if (!this.mesh.instancedMeshVisible) {
-                return;
-            }
-            const index = this.mesh.instancedMeshInfo.getIndex(this.gameEngine);
-            this.mesh.instancedIndex = index;
-            const instancedMesh = this.mesh.instancedMeshInfo.instancedMesh;
-            const dummy = this.mesh.instancedMeshInfo.dummy;
-
-            dummy.position.set(...this.global.body.position.lerp(last.global.body.position, 1 - lerp));
-            const quat = this.global.body.rotation.slerp(last.global.body.rotation, 1 - lerp);
-            dummy.quaternion.set(...[quat.x, quat.y, quat.z, quat.w]);
-            dummy.scale.set(1, 1, 1);
-
-            dummy.updateMatrix();
-
-            instancedMesh.setMatrixAt(index, dummy.matrix);
-            return;
-        }
-        if (!this.mesh.mesh) {
-            return;
-        }
-        this.mesh.mesh.position.set(...this.global.body.position.lerp(last.global.body.position, 1 - lerp));
-        const quat = this.global.body.rotation.slerp(last.global.body.rotation, 1 - lerp);
-        this.mesh.mesh.quaternion.set(...[quat.x, quat.y, quat.z, quat.w]);
-    }
-
+    
     toJSON() {
         const composite = super.toJSON();
         composite.parent = this.parent?.id ?? null;

@@ -42,16 +42,12 @@ const Sphere = class extends Composite {
         return this.local.body.momentOfInertia;
     }
 
-    setMesh(options, gameEngine) {
+    createMesh(options, gameEngine) {
         var geometry = options?.geometry ?? new gameEngine.graphicsEngine.THREE.SphereGeometry(this.radius, 32, 32);
-        this.mesh = gameEngine.graphicsEngine.meshLinker.createMeshData(new gameEngine.graphicsEngine.THREE.Mesh(geometry, options?.material ?? new gameEngine.graphicsEngine.THREE.MeshPhongMaterial({ color: 0x00ff00, wireframe: true })));
-        this.mesh.mesh.castShadow = true;
-        this.mesh.mesh.receiveShadow = true;
-    }
-
-    setMeshAndAddToScene(options, gameEngine) {
-        this.setMesh(options, gameEngine);
-        this.addToScene(gameEngine);
+        var mesh = gameEngine.graphicsEngine.meshLinker.createMeshData(new gameEngine.graphicsEngine.THREE.Mesh(geometry, options?.material ?? new gameEngine.graphicsEngine.THREE.MeshPhongMaterial({ color: 0x00ff00, wireframe: true })));
+        mesh.mesh.castShadow = true;
+        mesh.mesh.receiveShadow = true;
+        return mesh;
     }
 
     fromMesh(mesh, gameEngine) {

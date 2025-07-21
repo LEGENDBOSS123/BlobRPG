@@ -2,6 +2,7 @@ import Composite from "../Physics/Shapes/Composite.mjs";
 import Vector3 from "../Physics/Math3D/Vector3.mjs";
 import Entity from "./Entity.mjs";
 import Quaternion from "../Physics/Math3D/Quaternion.mjs";
+import GameObject from "../GameObject.mjs";
 
 var ShopKeeper = class extends Entity {
     constructor(options) {
@@ -13,6 +14,15 @@ var ShopKeeper = class extends Entity {
                 }
             }
         });
+
+        this.mainGameObject = new GameObject({
+            physics: this.composite,
+        })
+
+        this.gameObjects.push(
+            this.mainGameObject
+        )
+
         this.size = 0.5;
 
         this.updateShapeID(this.composite);
@@ -24,33 +34,36 @@ var ShopKeeper = class extends Entity {
         this.playerNearLast = false;
     }
 
+    addToScene(scene) {
+        for (var i of this.gameObjects) {
+            if (i.mesh) {
+                scene.add(i.mesh.mesh);
+            }
+        }
+    }
 
-    setMeshAndAddToScene(options, gameEngine) {
+    async setMeshAndAddToScene(options, gameEngine) {
 
-        gameEngine.graphicsEngine.load("animatedrigged.glb").then(function (gltf) {
-            gltf.scene.traverse(function (child) {
-                if (child.isMesh) {
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                }
-            });
-            gltf.scene.scale.set(this.size, this.size, this.size);
+        const gltf = await gameEngine.graphicsEngine.load("animatedrigged.glb")
+        gameEngine.graphicsEngine.makeShadows(gltf.scene);
+        gltf.scene.scale.set(this.size, this.size, this.size);
 
-            var meshData = gameEngine.graphicsEngine.meshLinker.createMeshData(gltf.scene,
-                gameEngine.graphicsEngine.createAnimations(gltf.scene, gltf.animations));
-            this.composite.mesh = meshData;
-            this.composite.addToScene(gameEngine);
-            this.playAnimation(this.composite, "IdleAnimation");
-            const actions = this.composite.mesh.animations.actions;
-            actions["WaveAnimation"].setLoop(gameEngine.graphicsEngine.THREE.LoopOnce, 1);
-            actions["WaveAnimation"].clampWhenFinished = true;
-            actions["WaveAnimation"].getMixer().addEventListener('finished', (event) => {
-                if(event.action != actions["WaveAnimation"]){
-                    return;
-                }
-                this.playAnimation(this.composite, "IdleAnimation", 1, false);
-            });
-        }.bind(this));
+        var meshData = gameEngine.graphicsEngine.meshLinker.createMeshData(gltf.scene, gameEngine.graphicsEngine.createAnimations(gltf.scene, gltf.animations));
+        this.mainGameObject.mesh = meshData;
+        
+        this.playAnimation(this.composite, "IdleAnimation");
+        const actions = this.mainGameObject.mesh.animations.actions;
+        actions["WaveAnimation"].setLoop(gameEngine.graphicsEngine.THREE.LoopOnce, 1);
+        actions["WaveAnimation"].clampWhenFinished = true;
+        actions["WaveAnimation"].getMixer().addEventListener('finished', (event) => {
+            if (event.action != actions["WaveAnimation"]) {
+                return;
+            }
+            this.playAnimation(this.mainGameObject, "IdleAnimation", 1, false);
+        });
+
+        this.addToScene(gameEngine.graphicsEngine.scene);
+
 
     }
 
@@ -66,7 +79,7 @@ var ShopKeeper = class extends Entity {
             if (!entity.isPlayer) {
                 continue;
             }
-            const distance = this.composite.global.body.position.distanceSquared(entity.getMainShape().global.body.position);
+            const distance = this.composite.global.body.position.distanceSquared(entity.getMainShape().physics.global.body.position);
             if (distance < closestDistance) {
                 closestDistance = distance;
             }
@@ -78,10 +91,10 @@ var ShopKeeper = class extends Entity {
             this.playerNear = false;
         }
         if (this.playerNear && !this.playerNearLast) {
-            this.playAnimation(this.composite, "WaveAnimation", 1, false);
+            this.playAnimation(this.mainGameObject, "WaveAnimation", 1, false);
         }
-        else if(this.currentAnimation?._clip.name != "WaveAnimation"){
-            this.playAnimation(this.composite, "IdleAnimation", 1, false);
+        else if (this.currentAnimation?._clip.name != "WaveAnimation") {
+            this.playAnimation(this.mainGameObject, "IdleAnimation", 1, false);
         }
         this.playerNearLast = this.playerNear;
     }
@@ -111,7 +124,7 @@ var ShopKeeper = class extends Entity {
     }
 
     getMainShape() {
-        return this.composite;
+        return this.mainGameObject;
     }
 }
 

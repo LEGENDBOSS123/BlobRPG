@@ -9,6 +9,7 @@ import Slime from "./Slime.mjs";
 import TextParticle from "../Graphics/Particle/TextParticle.mjs";
 import Particle from "../Graphics/Particle/Particle.mjs";
 import ItemMeshManager from "../Item/ItemMeshManager.mjs";
+import GameObject from "../GameObject.mjs";
 var Player = class extends Entity {
     constructor(options) {
         super(options);
@@ -35,9 +36,14 @@ var Player = class extends Entity {
                 }
             }
         });
+        this.gameObjects.push(
+            new GameObject({
+                physics: this.composite,
+            })
+        );
 
         this.lastDamageTime = 0;
-        this.invincibilityFramesDuration = 100;
+        this.invincibilityFramesDuration = 300;
 
         this.cash = options?.cash ?? 100000;
         this.hotbar = options?.hotbar ?? Array(9).fill(null);
@@ -51,6 +57,7 @@ var Player = class extends Entity {
         this.height = options?.height ?? 3;
         this.spheres = new Array(this.height);
         for (var i = 0; i < this.height; i++) {
+            const go = new GameObject();
             this.spheres[i] = new Sphere({
                 radius: this.radius,
                 local: {
@@ -63,7 +70,11 @@ var Player = class extends Entity {
             this.composite.add(this.spheres[i]);
             this.spheres[i].collisionMask = this.spheres[i].setBitMask(0, "P", true);
 
+            go.physics = this.spheres[i];
+            this.gameObjects.push(go);
         }
+
+        this.mainGameObject = this.gameObjects.at(-1);
 
         this.damage = 1;
 
@@ -117,6 +128,14 @@ var Player = class extends Entity {
             restLength: 1
         });
 
+        this.boxGameObject = new GameObject();
+        this.constraintGameObject = new GameObject();
+        this.boxGameObject.physics = this.itemHeldBox;
+        this.constraintGameObject.physics = this.itemHeldConstraint;
+
+        this.gameObjects.push(this.boxGameObject);
+        this.gameObjects.push(this.constraintGameObject);
+
         this.itemHeldPostCollision = function (contact) {
             var other = null;
             var side = 1;
@@ -136,7 +155,7 @@ var Player = class extends Entity {
                 }
                 var scale = 1;
                 const correctNormal = contact.normal.scale(side);
-                otherEntity.getMainShape().applyForce(correctNormal.scale(this.composite.toTrueVelocity(contact.velocity).dot(correctNormal) * -0.1 * scale), contact.position);
+                otherEntity.getMainShape().physics.applyForce(correctNormal.scale(this.composite.toTrueVelocity(contact.velocity).dot(correctNormal) * -0.1 * scale), contact.position);
             }
         }.bind(this);
 
@@ -221,7 +240,7 @@ var Player = class extends Entity {
         }
         this.health -= damage;
         this.gameEngine.particleSystem.addParticle(new TextParticle({
-            position: this.getMainShape().global.body.position.add(new Vector3(0, 1, 0)),
+            position: this.getMainShape().physics.global.body.position.add(new Vector3(0, 1, 0)),
             text: "-" + damage,
             velocity: new Vector3(0, 0.003, 0),
             duration: 1500,
@@ -256,9 +275,10 @@ var Player = class extends Entity {
     }
 
     addToScene(scene) {
-        this.composite.addToScene(scene);
-        for (const sphere of this.spheres) {
-            sphere.addToScene(scene);
+        for (var i of this.gameObjects) {
+            if (i.mesh) {
+                scene.add(i.mesh.mesh);
+            }
         }
     }
 
@@ -268,16 +288,15 @@ var Player = class extends Entity {
         this.updateShapeID();
     }
 
-    setMeshAndAddToScene(options) {
-        this.itemHeldBox.mesh = this.gameEngine.graphicsEngine.meshLinker.createMeshData();
-        this.itemHeldConstraint.setMeshAndAddToScene({
-            color: 0xffffff
-        }, this.gameEngine);
-        this.itemHeldBox.mesh.visible = false;
-        this.itemHeldConstraint.mesh.mesh.visible = false;
-        for (const sphere of this.spheres) {
-            sphere.setMeshAndAddToScene({}, gameEngine);
+    setMeshAndAddToScene(options, gameEngine) {
+        for (var i of this.gameObjects) {
+            i.mesh = i.physics.createMesh({}, gameEngine);
+            i.addToScene(gameEngine);
         }
+        this.constraintGameObject.mesh.mesh.visible = false;
+        this.boxGameObject.mesh.mesh.visible = false;
+
+
     }
 
     wasKeyJustPressed(key) {
@@ -348,21 +367,12 @@ var Player = class extends Entity {
                 this.itemHeldBox.depth = selectedItem.width;
                 this.damage = selectedItem.damage;
                 this.itemHeldBox.dimensionsChanged();
-                // if (this.itemHeldBox.mesh) {
-                //     const mesh = this.itemHeldBox.mesh?.mesh;
-
-                //     if (mesh && mesh.geometry?.parameters && (mesh.geometry.parameters.width != selectedItem.width || mesh.geometry.parameters.height != selectedItem.length || mesh.geometry.parameters.depth != selectedItem.width)) {
-                //         mesh.geometry = new gameEngine.graphicsEngine.THREE.BoxGeometry(selectedItem.width, selectedItem.length, selectedItem.width);
-                //     }
-                // }
                 this.itemHeldConstraint.anchor2 = new Vector3(0, -selectedItem.length / 2, 0);
-                this.itemHeldConstraint.mesh.mesh.visible = true;
+                this.constraintGameObject.mesh.mesh.visible = true;
                 if (this.itemHeldBox.id == -1) {
-
                     this.gameEngine.world.addComposite(this.itemHeldBox);
                     this.gameEngine.world.addConstraint(this.itemHeldConstraint);
                     this.itemHeldBox.global.body.setPosition(this.composite.global.body.position.copy());
-
                 }
 
                 if (this.selectedItemClass != selectedItem.constructor) {
@@ -372,21 +382,25 @@ var Player = class extends Entity {
                     const latestId = this.latestItemId;
 
                     if (ItemMeshManager.has(selectedItem.constructor)) {
-                        if (this.itemHeldBox.mesh?.mesh?.parent) {
-                            this.itemHeldBox.mesh.mesh.parent.remove(this.itemHeldBox.mesh.mesh);
+                        if (this.boxGameObject.mesh?.mesh?.parent) {
+                            this.boxGameObject.mesh.mesh.parent.remove(this.boxGameObject.mesh.mesh);
+                            this.constraintGameObject.mesh.mesh.parent.remove(this.constraintGameObject.mesh.mesh);
                         }
-                        this.itemHeldBox.mesh.mesh = ItemMeshManager.get(selectedItem.constructor, this.gameEngine);
-                        this.gameEngine.graphicsEngine.scene.add(this.itemHeldBox.mesh.mesh);
+                        this.boxGameObject.mesh.mesh = ItemMeshManager.get(selectedItem.constructor, this.gameEngine);
+                        this.gameEngine.graphicsEngine.scene.add(this.boxGameObject.mesh.mesh);
+                        this.gameEngine.graphicsEngine.scene.add(this.constraintGameObject.mesh.mesh);
                         this.latestId++;
                     }
                     else {
                         ItemMeshManager.loadItem(selectedItem.constructor, this.gameEngine).then(function (mesh) {
                             if (this.latestItemId == latestId) {
-                                if (this.itemHeldBox.mesh?.mesh?.parent) {
-                                    this.itemHeldBox.mesh.mesh.parent.remove(this.itemHeldBox.mesh.mesh);
+                                if (this.boxGameObject.mesh?.mesh?.parent) {
+                                    this.boxGameObject.mesh.mesh.parent.remove(this.boxGameObject.mesh.mesh);
+                                    this.constraintGameObject.mesh.mesh.parent.remove(this.constraintGameObject.mesh.mesh);
                                 }
-                                this.itemHeldBox.mesh.mesh = mesh;
-                                this.gameEngine.graphicsEngine.scene.add(this.itemHeldBox.mesh.mesh);
+                                this.boxGameObject.mesh.mesh = mesh;
+                                this.gameEngine.graphicsEngine.scene.add(this.boxGameObject.mesh.mesh);
+                                this.gameEngine.graphicsEngine.scene.add(this.constraintGameObject.mesh.mesh);
                                 this.latestId++;
                             }
                         }.bind(this));
@@ -397,11 +411,11 @@ var Player = class extends Entity {
                 if (this.itemHeldBox.id != -1) {
                     this.gameEngine.world.removeComposite(this.itemHeldBox);
                     this.gameEngine.world.removeConstraint(this.itemHeldConstraint);
-                    if (this.itemHeldBox.mesh?.mesh?.parent) {
-                        this.itemHeldBox.mesh.mesh.parent.remove(this.itemHeldBox.mesh.mesh);
+                    if (this.boxGameObject.mesh?.mesh?.parent) {
+                        this.boxGameObject.mesh.mesh.parent.remove(this.boxGameObject.mesh.mesh);
+                        this.constraintGameObject.mesh.mesh.parent.remove(this.constraintGameObject.mesh.mesh);
                     }
                     this.latestItemId++;
-                    this.itemHeldConstraint.mesh.mesh.visible = false;
                     this.selectedItemClass = null;
                 }
             }
@@ -410,11 +424,11 @@ var Player = class extends Entity {
             if (this.itemHeldBox.id != -1) {
                 this.gameEngine.world.removeComposite(this.itemHeldBox);
                 this.gameEngine.world.removeConstraint(this.itemHeldConstraint);
-                if (this.itemHeldBox.mesh?.mesh?.parent) {
-                    this.itemHeldBox.mesh.mesh.parent.remove(this.itemHeldBox.mesh.mesh);
+                if (this.boxGameObject.mesh?.mesh?.parent) {
+                    this.boxGameObject.mesh.mesh.parent.remove(this.boxGameObject.mesh.mesh);
+                    this.constraintGameObject.mesh.mesh.parent.remove(this.constraintGameObject.mesh.mesh);
                 }
                 this.latestItemId++;
-                this.itemHeldConstraint.mesh.mesh.visible = false;
                 this.selectedItemClass = null;
             }
         }
@@ -510,7 +524,7 @@ var Player = class extends Entity {
     }
 
     getMainShape() {
-        return this.spheres[this.spheres.length - 1];
+        return this.mainGameObject;
     }
 }
 

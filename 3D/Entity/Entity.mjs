@@ -11,8 +11,14 @@ var Entity = class extends GameEngineComponent {
         this.name = options?.name ?? "";
         this.currentAnimation = null;
         this.usesInstancing = options?.usesInstancing ?? false;
+        this.gameObjects = [];
     }
 
+    addToGameEngine(gameEngine) {
+        for(var i of this.gameObjects){
+            gameEngine.addGameObject(i);
+        }
+    }
 
     playAnimation(shape, name, crossFadeDuration = 0, warp = false) {
         if (!shape.mesh || !shape.mesh.animations) {

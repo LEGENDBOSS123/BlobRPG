@@ -172,11 +172,11 @@ var GraphicsEngine = class extends GameEngineComponent {
         return this.screenWidth / this.screenHeight;
     }
 
-    update(previousWorld, world, lerpAmount) {
+    update(gameEngine, previousWorld, world, lerpAmount) {
         if (!this.startTime) {
             this.startTime = performance.now();
         }
-        this.meshLinker.update(previousWorld, world, lerpAmount);
+        this.meshLinker.update(gameEngine, previousWorld, world, lerpAmount);
     }
     render() {
         for (const mixer of this.mixers) {

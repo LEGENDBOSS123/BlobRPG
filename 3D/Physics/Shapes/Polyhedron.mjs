@@ -100,7 +100,7 @@ const Polyhedron = class extends Composite {
         return this.global.hitbox;
     }
 
-    setMesh(options, gameEngine) {
+    createMesh(options, gameEngine) {
         var geometry = new gameEngine.graphicsEngine.THREE.BufferGeometry();
         var positions = new Float32Array(this.faces.length * 9);
         var normals = new Float32Array(this.faces.length * 9);
@@ -144,12 +144,10 @@ const Polyhedron = class extends Composite {
         geometry.computeVertexNormals();
 
         var material = options?.material ?? new gameEngine.graphicsEngine.THREE.MeshPhongMaterial({ color: options?.color ?? 0x00ff00, wireframe: false, side: gameEngine.graphicsEngine.THREE.DoubleSide });
-        this.mesh = gameEngine.graphicsEngine.meshLinker.createMeshData(new gameEngine.graphicsEngine.THREE.Mesh(geometry, material));
-    }
-
-    setMeshAndAddToScene(options, gameEngine) {
-        this.setMesh(options, gameEngine);
-        this.addToScene(gameEngine);
+        const mesh = gameEngine.graphicsEngine.meshLinker.createMeshData(new gameEngine.graphicsEngine.THREE.Mesh(geometry, material));
+        mesh.mesh.castShadow = true;
+        mesh.mesh.receiveShadow = true;
+        return mesh;
     }
 
     fromMesh(mesh, gameEngine) {

@@ -13,7 +13,6 @@ const WorldObject = class {
         this.toBeRemoved = options?.toBeRemoved ?? false;
         this.world = options?.world ?? null;
         this.gameEngine = options?.gameEngine ?? null;
-        this._mesh = options?.mesh ?? null;
     }
 
     addEventListener(event, callback) {
@@ -46,80 +45,9 @@ const WorldObject = class {
         }
     }
 
-    setMesh(options, gameEngine) {
-        return null;
-    }
+    
 
-    setMeshAndAddToScene(options, gameEngine) {
-        return null;
-    }
-
-    addToScene(gameEngine) {
-        if (!this.mesh) {
-            return null;
-        }
-        if (this.mesh.isMeshLink) {
-            if(this.mesh.instancedMeshInfo){
-                return  gameEngine.graphicsEngine.scene.add(this.mesh.instancedMeshInfo.instancedMesh);
-            }
-            gameEngine.graphicsEngine.scene.add(this.mesh.mesh);
-            return;
-        }
-        gameEngine.graphicsEngine.scene.add(this.mesh);
-    }
-
-    lerpMesh(last, lerp) {
-        return null;
-    }
-
-    set mesh(value) {
-        if (this.id == -1 || !value) {
-            this._mesh = value;
-            return;
-        }
-        this.gameEngine.graphicsEngine.meshLinker.addMesh(this.id, value);
-    }
-
-    get mesh() {
-        if (this.id == -1) {
-            return this._mesh;
-        }
-        return this.gameEngine.graphicsEngine.meshLinker.getByID(this.id) || this._mesh;
-    }
-
-    disposeMesh() {
-        var mesh = this.mesh?.mesh || this._mesh || null;
-        if(!mesh){
-            return;
-        }
-        if(mesh.instancedMeshInfo){
-            return;
-        }
-        mesh.traverse((child) => {
-            if (child.isMesh) {
-                if (child.geometry) {
-                    child.geometry.dispose();
-                }
-
-                if (child.material) {
-                    if (Array.isArray(child.material)) {
-                        child.material.forEach((mat) => mat.dispose());
-                    } else {
-                        child.material.dispose();
-                    }
-                }
-
-                if (child.material?.map) {
-                    child.material.map.dispose();
-                }
-            }
-        });
-
-        if (mesh.parent) {
-            mesh.parent.remove(mesh);
-        }
-    }
-
+    
     toJSON() {
         var json = {};
         json.id = this.id;

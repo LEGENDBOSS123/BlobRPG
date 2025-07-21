@@ -8,7 +8,7 @@ const DistanceConstraint = class extends Constraint {
     static penetrationRelaxation = 0.8;
     static impulseRelaxation = 0.8;
     static bias = 0.0000004;
-    
+
     constructor(options) {
 
         super(options);
@@ -45,7 +45,7 @@ const DistanceConstraint = class extends Constraint {
     }
 
     getCachedArray() {
-        return [this.body1.id, this.body2.id, this.point1.copy(), this.point2.copy(), this.normal.copy(),  this.normalImpulse];
+        return [this.body1.id, this.body2.id, this.point1.copy(), this.point2.copy(), this.normal.copy(), this.normalImpulse];
     }
 
     sameContact(array) {
@@ -112,24 +112,6 @@ const DistanceConstraint = class extends Constraint {
         return [point1, point2];
     }
 
-    lerpMesh(last, lerp, previousWorld) {
-        var lastbody1 = previousWorld.all[last?.body1];
-        var lastbody2 = previousWorld.all[last?.body2];
-
-        if (!lastbody1 || !lastbody2 || !this.body1 || !this.body2) {
-            return null;
-        }
-        var lastPoints = [Vector3.fromJSON(lastbody1.global.body.position).add(Quaternion.fromJSON(lastbody1.global.body.rotation).multiplyVector3(last.anchor1)),
-        Vector3.fromJSON(lastbody2.global.body.position).add(Quaternion.fromJSON(lastbody2.global.body.rotation).multiplyVector3(last.anchor2))
-        ]
-        var points = this.getPoints();
-        var lerped = [
-            lastPoints[0].lerp(points[0], lerp),
-            lastPoints[1].lerp(points[1], lerp)
-        ];
-        this.mesh.mesh.geometry.setFromPoints(lerped);
-        this.mesh.mesh.geometry.attributes.position.needsUpdate = true;
-    }
 
     presolve() {
         this.point1 = this.body1.global.body.position.add(this.body1.global.body.rotation.multiplyVector3(this.anchor1));
@@ -208,18 +190,13 @@ const DistanceConstraint = class extends Constraint {
         return true;
     }
 
-    setMesh(options, gameEngine) {
+    createMesh(options, gameEngine) {
         var geometry = new gameEngine.graphicsEngine.THREE.BufferGeometry().setFromPoints(this.getPoints());
         var material = new gameEngine.graphicsEngine.THREE.LineBasicMaterial({ color: options?.color ?? 0xff0000 });
         material.side = gameEngine.graphicsEngine.THREE.DoubleSide;
         var line = new gameEngine.graphicsEngine.THREE.Line(geometry, material);
         line.frustumCulled = false;
-        this.mesh = gameEngine.graphicsEngine.meshLinker.createMeshData(line);
-    }
-
-    setMeshAndAddToScene(options, gameEngine) {
-        this.setMesh(options, gameEngine);
-        this.addToScene(gameEngine);
+        return gameEngine.graphicsEngine.meshLinker.createMeshData(line);
     }
 
     applyForces() {

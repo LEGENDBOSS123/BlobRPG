@@ -2,6 +2,7 @@ import Entity from "./Entity.mjs";
 import Vector3 from "../Physics/Math3D/Vector3.mjs";
 import Sphere from "../Physics/Shapes/Sphere.mjs";
 import Composite from "../Physics/Shapes/Composite.mjs";
+import GameObject from "../GameObject.mjs";
 
 const Coin = class extends Entity {
     constructor(options) {
@@ -20,6 +21,8 @@ const Coin = class extends Entity {
                 }
             }
         });
+        this.mainGameObject = new GameObject({ physics: this.sphere });
+        this.gameObjects.push(this.mainGameObject);
         this.value = options?.value ?? 10;
         this.isCoin = true;
         this.collected = options?.collected ?? false;
@@ -54,9 +57,10 @@ const Coin = class extends Entity {
         this.updateShapeID(this.sphere);
     }
 
-    addToScene(scene) {
-        this.sphere.addToScene(scene);
+    addToScene(gameEngine) {
+        this.mainGameObject.addToScene(gameEngine);
     }
+
     addToWorld(world) {
         world.addComposite(this.sphere);
         this.updateShapeID();
@@ -64,8 +68,7 @@ const Coin = class extends Entity {
 
     async setMesh(options, gameEngine) {
         const mesh = await gameEngine.graphicsEngine.modelPool.loadInstance("coin.glb");
-        this.sphere.mesh = mesh;
-
+        this.mainGameObject.mesh = mesh;
     }
 
     async setMeshAndAddToScene(options, gameEngine) {
@@ -74,8 +77,8 @@ const Coin = class extends Entity {
     }
 
     update(gameEngine) {
-        if (this.sphere.mesh) {
-            const mesh = this.sphere.mesh;
+        if (this.mainGameObject.mesh) {
+            const mesh = this.mainGameObject.mesh;
             const info = mesh.instancedMeshInfo;
 
             if (Number.isFinite(mesh.instancedIndex)) {
@@ -88,15 +91,15 @@ const Coin = class extends Entity {
                 dummy.scale.set(this.sphere.radius, this.sphere.radius, this.sphere.radius);
                 if (this.collected) {
                     var timePassed = Math.max(0, (this.gameEngine.timer.getTime() - this.timeCollected) * 0.001) / 0.2;
-                   
+
                     const scale = this.sphere.radius * Math.max(0, 1 - timePassed);
 
                     dummy.scale.set(scale, scale, scale);
                     if (timePassed >= 1) {
-                        this.sphere.disposeMesh();
+                        this.mainGameObject.disposeMesh();
                         this.gameEngine.entitySystem.remove(this);
                         this.sphere.world.removeComposite(this.sphere);
-                        this.sphere.destroy();
+                        this.mainGameObject.destroy();
                     }
                 }
 
@@ -112,7 +115,7 @@ const Coin = class extends Entity {
     }
 
     getMainShape() {
-        return this.sphere;
+        return this.mainGameObject;
     }
 
     fromMesh(mesh, gameEngine) {

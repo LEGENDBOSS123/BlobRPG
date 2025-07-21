@@ -66,8 +66,7 @@ const World = class {
     add(element) {
         element.id = (this.maxID++);
         element.gameEngine = this.gameEngine;
-        element.mesh = element._mesh;
-        element._mesh = null;
+
         element.world = this;
         this.all[element.id] = element;
         return element;
@@ -104,8 +103,6 @@ const World = class {
 
     remove(element) {
         element.dispatchEvent("delete");
-        element._mesh = element.mesh;
-        this.gameEngine.graphicsEngine.meshLinker.removeMesh(element.id);
         delete this.all[element.id];
         element.id = -1;
     }
