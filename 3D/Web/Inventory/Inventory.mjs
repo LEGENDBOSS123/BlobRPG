@@ -1,6 +1,7 @@
 import InventorySlot from "./InventorySlot.mjs";
 import Modal from "../Modal/Modal.mjs";
 import WebComponent from "../WebComponent.mjs";
+import InventoryItem from "./InventoryItem.mjs";
 
 const Inventory = class extends WebComponent {
 
@@ -188,6 +189,28 @@ const Inventory = class extends WebComponent {
             }
         }
         return -1;
+    }
+
+    getIndexForNewItem(item) {
+        const s = {
+            item: new InventoryItem({
+                item: item
+            })
+        }
+        for (var row = 0; row < this.rows; row++) {
+            for (var column = 0; column < this.columns; column++) {
+                var slot = this.getSlot(column, row);
+                if (slot.item) {
+                    if(slot.canMergeWith(s)){
+                        return {
+                            x: column,
+                            y: row
+                        };
+                    }
+                }
+            }
+        }
+        return this.emptyIndex();
     }
 
     static createHTML() {

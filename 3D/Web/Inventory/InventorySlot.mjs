@@ -49,7 +49,7 @@ const InventorySlot = class extends WebComponent {
         if (!slot.item) {
             return false;
         }
-        if (this.item.item.quantity == this.item.item.maxStack || slot.item.item.quantity == slot.item.item.maxStack) {
+        if (this.item.item.quantity >= this.item.item.maxStack || slot.item.item.quantity >= slot.item.item.maxStack) {
             return false;
         }
         return this.item.canMergeWith(slot.item);

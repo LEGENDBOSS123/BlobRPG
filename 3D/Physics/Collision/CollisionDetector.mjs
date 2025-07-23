@@ -52,7 +52,7 @@ const CollisionDetector = class {
         this.GJKBinarySearchDepth = options?.GJKBinarySearchDepth ?? 2;
         this.maxParents = new Set();
         this.cachedContacts = new Map();
-        this.warmStarting = true;
+        this.warmStarting = false;
         this.handleFunc = function (x, y) {
             this.addPair(this.world.getByID(x), this.world.getByID(y));
         }.bind(this);
@@ -205,7 +205,6 @@ const CollisionDetector = class {
                     continue;
                 }
                 const cachedBody1 = this.cachedContacts.get(contact.body1.id);
-                let found = false;
                 if (cachedBody1) {
                     for (const value of cachedBody1) {
                         if (contact.sameContact(value)) {
@@ -229,7 +228,6 @@ const CollisionDetector = class {
 
                             a.addVelocityAndAngularVelocity(v1, a1);
                             b.addVelocityAndAngularVelocity(v2, a2);
-                            found = true;
                             break;
                         }
                     }

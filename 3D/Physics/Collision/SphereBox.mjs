@@ -7,7 +7,8 @@ class SphereBox {
         let spherePos = null;
         let closestPoint = null;
         let inside = false;
-
+        let t1;
+        let t2;
         var t = maxT;
         for (var i = -1; i < collisionDetector.binarySearchDepth; i++) {
             t = (i == collisionDetector.binarySearchDepth - 1) ? maxT : minT + (maxT - minT) * 0.333333;
@@ -15,6 +16,8 @@ class SphereBox {
 
             spherePos = sphere.global.body.previousPosition.lerp(sphere.global.body.position, t);
             let boxPos = box.global.body.previousPosition.lerp(box.global.body.position, t);
+            t1 = spherePos.subtract(sphere.global.body.position);
+            t2 = boxPos.subtract(box.global.body.position);
             let relativePos = box.global.body.rotation.conjugate().multiplyVector3(spherePos.subtract(boxPos));
             closestPoint = null;
             inside = false;
@@ -43,8 +46,8 @@ class SphereBox {
 
         const contact = new CollisionContact();
 
-        contact.pointB = box.translateLocalToWorld(closestPoint);
-        contact.normal = spherePos.subtract(contact.pointB).normalizeInPlace();
+        contact.pointB = box.translateLocalToWorld(closestPoint).subtract(t2);
+        contact.normal = spherePos.subtract(contact.pointB.add(t2)).normalizeInPlace();
         if (contact.normal.isZero()) {
             contact.normal = new Vector3(1, 0, 0);
         }

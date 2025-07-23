@@ -8,7 +8,9 @@ import Material from "./Material.mjs";
 const CollisionContact = class extends Constraint {
     static name = "COLLISIONCONTACT";
     static penetrationRelaxation = 0.8;
-    static impulseRelaxation = 0.8;
+    static impulseRelaxation = 1.1;
+    static frictionRelaxation = 0.25;
+    static slop = 0.01;
     static bias = 0.0000004;
 
     constructor(options) {
@@ -31,7 +33,6 @@ const CollisionContact = class extends Constraint {
 
         this.material = options?.combinedMaterial;
 
-        this.slop = options?.slop ?? 0.01;
         this.restitutionBias = 0;
 
         this.normalImpulse = 0;
@@ -74,7 +75,7 @@ const CollisionContact = class extends Constraint {
         const wB = this.body2.maxParent.getEffectiveTotalInverseMass(this.normal);
         const totalInverse = wA + wB;
 
-        const correction = this.normal.scale(Math.min(penetration + this.slop, 0) / totalInverse * this.constructor.penetrationRelaxation);
+        const correction = this.normal.scale(Math.min(penetration + this.constructor.slop, 0) / totalInverse * this.constructor.penetrationRelaxation);
         if (wA > 0) {
             this.body1.maxParent.translation.subtractInPlace(correction.scale(wA));
         }
@@ -154,24 +155,26 @@ const CollisionContact = class extends Constraint {
 
         this.velocity = this.body1.getVelocityAtPosition(this.pointA).subtractInPlace(this.body2.getVelocityAtPosition(this.pointB));
         var impactSpeed = this.velocity.dot(this.normal);
-
         var tangential = this.velocity.projectOntoPlane(this.normal);
         var tangentialNorm = tangential.normalize();
 
 
         var impulse = -(impactSpeed - this.restitutionBias + this.bias) * this.denominator;
         impulse = Math.max(0, this.normalImpulse + impulse) - this.normalImpulse;
+        this.normalImpulse += impulse * this.constructor.impulseRelaxation;
 
-        
+
         var friction = -tangential.magnitude() * this.denominatorFric;
         var old = this.tangentialImpulse.dot(tangentialNorm);
         const maxFriction = this.normalImpulse * this.material.friction;
         const frictionImpulse = Math.max(-maxFriction, Math.min(maxFriction, friction + old)) - old;
-        
-        this.tangentialImpulse.addInPlace(tangentialNorm.scale(frictionImpulse * this.constructor.impulseRelaxation));
-        this.normalImpulse += impulse * this.constructor.impulseRelaxation;
-        this.impulse = this.normal.scale(impulse).addInPlace(tangentialNorm.scale(frictionImpulse)).scaleInPlace(this.constructor.impulseRelaxation);
-        
+
+        var impulseNormal = this.normal.scale(impulse * this.constructor.impulseRelaxation);
+        var impulseTangential = tangentialNorm.scale(frictionImpulse * this.constructor.frictionRelaxation);
+
+        this.tangentialImpulse.addInPlace(impulseTangential);
+        this.impulse = impulseNormal.add(impulseTangential);
+
         return true;
     }
 
@@ -216,7 +219,6 @@ const CollisionContact = class extends Constraint {
 
         c.material = this.material.copy();
 
-        c.slop = this.slop;
         c.restitutionBias = this.restitutionBias;
         c.bias = this.bias;
         c.normalImpulse = this.normalImpulse;
@@ -238,7 +240,6 @@ const CollisionContact = class extends Constraint {
             velocity: this.velocity.toJSON(),
             solved: this.solved,
             combinedMaterial: this.combinedMaterial.toJSON(),
-            slop: this.slop,
             bias: this.bias,
             restitutionBias: this.restitutionBias,
             normalImpulse: this.normalImpulse,
@@ -259,7 +260,6 @@ const CollisionContact = class extends Constraint {
         c.solved = json.solved;
         c.bias = json.bias;
         c.combinedMaterial = Material.fromJSON(json.combinedMaterial);
-        c.slop = json.slop;
         c.restitutionBias = json.restitutionBias;
         c.normalImpulse = json.normalImpulse;
         c.denominator = json.denominator;

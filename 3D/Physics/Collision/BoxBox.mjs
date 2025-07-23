@@ -2,222 +2,23 @@ import CollisionContact from "./CollisionContact.mjs";
 import Vector3 from "../Math3D/Vector3.mjs";
 
 class BoxBox {
-    // static handle(collisionDetector, box1, box2, minT, maxT) {
-    //     let t1;
-    //     let t2;
-    //     let simplex;
 
-
-    //     var t = maxT;
-    //     for (var i = -1; i < collisionDetector.GJKBinarySearchDepth; i++) {
-    //         t = (i == collisionDetector.GJKBinarySearchDepth - 1) ? maxT : minT + (maxT - minT) * 0.333333;
-    //         let box1Pos = box1.global.body.previousPosition.lerp(box1.global.body.position, t);
-    //         let box2Pos = box2.global.body.previousPosition.lerp(box2.global.body.position, t);
-
-    //         t1 = box1Pos.subtract(box1.global.body.position);
-    //         t2 = box2Pos.subtract(box2.global.body.position);
-
-    //         simplex = collisionDetector.gjk(box1, box2, t1, t2);
-
-    //         let result = 1;
-    //         if (simplex) {
-    //             result = -1;
-    //         }
-
-    //         if (result > 0) {
-    //             minT = t;
-    //             if (i == collisionDetector.GJKBinarySearchDepth - 1) {
-    //                 return false;
-    //             }
-    //         } else {
-    //             maxT = t;
-    //         }
-    //     }
-
-
-    //     if (!simplex) {
-    //         return false;
-    //     }
-    //     const contacts = collisionDetector.epa(simplex, box1, box2, t1, t2);
-    //     if (!contacts) {
-    //         return false;
-    //     }
-    //     for (const contact of contacts.contacts) {
-    //         const c = new CollisionContact();
-    //         c.pointA = contact[0].copy();
-    //         c.pointB = contact[1].copy();
-    //         c.normal = contacts.normal.scale(-1);
-    //         if (c.normal.isZero()) {
-    //             c.normal = new Vector3(1, 0, 0);
-    //         }
-    //         c.body1 = box1;
-    //         c.body2 = box2;
-    //         collisionDetector.addContact(c);
-    //     }
-    //     return true;
-    // }
-
-
-    // static handle(collisionDetector, box1, box2, minT, maxT) {
-
-    //     var t = maxT;
-    //     let contactsAdded = 0;
-    //     for (var i = -1; i < collisionDetector.GJKBinarySearchDepth; i++) {
-    //         t = (i == collisionDetector.GJKBinarySearchDepth - 1) ? maxT : minT + (maxT - minT) * 0.333333;
-
-    //         let globalInside = false;
-    //         let breakOut = false;
-    //         let box1Pos = box1.global.body.previousPosition.lerp(box1.global.body.position, t);
-    //         let box2Pos = box2.global.body.previousPosition.lerp(box2.global.body.position, t);
-    //         for (var x = -0.5; x <= 0.5; x += 1) {
-    //             for (var y = -0.5; y <= 0.5; y += 1) {
-    //                 for (var z = -0.5; z <= 0.5; z += 1) {
-    //                     let vec = box1.global.body.rotation.multiplyVector3(new Vector3(x * box1.width, y * box1.height, z * box1.depth)).addInPlace(box1Pos);
-    //                     const relativePoint = box2.global.body.rotation.conjugate().multiplyVector3(vec.subtract(box2Pos));
-    //                     const clampedPoint = collisionDetector.clampPointToAABB(relativePoint, box2);
-    //                     let inside = clampedPoint.equals(relativePoint);
-    //                     if (inside) {
-
-    //                         globalInside = true;
-    //                         if (i == collisionDetector.GJKBinarySearchDepth - 1) {
-    //                             let closestPoint = collisionDetector.closestPointToAABB(relativePoint, box2, clampedPoint);
-    //                             const contact = new CollisionContact();
-    //                             contact.body1 = box1;
-    //                             contact.body2 = box2;
-    //                             contact.pointA = vec;
-    //                             contact.pointB = box2.translateLocalToWorld(closestPoint);
-    //                             contact.normal = contact.pointB.subtract(contact.pointA).normalizeInPlace();
-    //                             if (contact.normal.isZero()) {
-    //                                 contact.normal = new Vector3(1, 0, 0);
-    //                             }
-    //                             collisionDetector.addContact(contact);
-    //                             contactsAdded++;
-    //                         }
-    //                         else {
-    //                             breakOut = true;
-    //                             break;
-    //                         }
-    //                     }
-    //                     if (breakOut) {
-    //                         break;
-    //                     }
-    //                 }
-    //                 if (breakOut) {
-    //                     break;
-    //                 }
-    //             }
-    //         }
-    //         if (!breakOut) {
-    //             for (var x = -0.5; x <= 0.5; x += 1) {
-    //                 for (var y = -0.5; y <= 0.5; y += 1) {
-    //                     for (var z = -0.5; z <= 0.5; z += 1) {
-    //                         let vec = box2.global.body.rotation.multiplyVector3(new Vector3(x * box2.width, y * box2.height, z * box2.depth)).addInPlace(box2Pos);
-    //                         const relativePoint = box1.global.body.rotation.conjugate().multiplyVector3(vec.subtract(box1Pos));
-    //                         const clampedPoint = collisionDetector.clampPointToAABB(relativePoint, box1);
-    //                         let inside = clampedPoint.equals(relativePoint);
-
-    //                         if (inside) {
-    //                             globalInside = true;
-
-
-    //                             if (i == collisionDetector.GJKBinarySearchDepth - 1) {
-    //                                 let closestPoint = collisionDetector.closestPointToAABB(relativePoint, box1, clampedPoint);
-    //                                 const contact = new CollisionContact();
-    //                                 contact.body1 = box1;
-    //                                 contact.body2 = box2;
-    //                                 contact.pointA = box1.translateLocalToWorld(closestPoint);
-    //                                 contact.pointB = vec;
-    //                                 contact.normal = contact.pointB.subtract(contact.pointA).normalizeInPlace();
-    //                                 if (contact.normal.isZero()) {
-    //                                     contact.normal = new Vector3(1, 0, 0);
-    //                                 }
-    //                                 collisionDetector.addContact(contact);
-    //                                 contactsAdded++;
-    //                             }
-    //                             else {
-    //                                 breakOut = true;
-    //                                 break;
-    //                             }
-    //                         }
-    //                     }
-    //                     if (breakOut) {
-    //                         break;
-    //                     }
-    //                 }
-    //                 if (breakOut) {
-    //                     break;
-    //                 }
-    //             }
-    //         }
-    //         if ((i == collisionDetector.GJKBinarySearchDepth - 1 || !breakOut) && contactsAdded < 5) {
-    //             let t1 = box1Pos.subtract(box1.global.body.position);
-    //             let t2 = box2Pos.subtract(box2.global.body.position);
-    //             let simplex = collisionDetector.gjk(box1, box2, t1, t2);
-    //             if (simplex) {
-    //                 globalInside = true;
-    //                 const epa = collisionDetector.epa(simplex, box1, box2, t1, t2);
-    //                 if (epa && i == collisionDetector.GJKBinarySearchDepth - 1) {
-
-    //                     for (const contact of epa.contacts) {
-    //                         const c = new CollisionContact();
-    //                         c.body1 = box1;
-    //                         c.body2 = box2;
-    //                         c.pointA = contact[0];
-    //                         c.pointB = contact[1];
-    //                         c.normal = epa.normal.scale(-1);
-    //                         if (c.normal.isZero()) {
-    //                             c.normal = new Vector3(1, 0, 0);
-    //                         }
-    //                         collisionDetector.addContact(c);
-    //                     }
-    //                 }
-    //             }
-
-    //         }
-
-
-
-
-    //         let result = 1;
-    //         if (globalInside) {
-    //             result = -1;
-    //         }
-
-
-
-
-    //         if (result > 0) {
-    //             minT = t;
-    //             if (i == collisionDetector.GJKBinarySearchDepth - 1) {
-    //                 return false;
-    //             }
-    //         } else {
-    //             maxT = t;
-    //         }
-    //     }
-
-    //     return true;
-    // }
-
-    isPointPenetrating() { }
-
-
-    static getContactPointsFaceFace(collisionDetector, axes, box1, box2, t1, t2, normal, overlap, type) {
+    static getContactPointsFaceFace(collisionDetector, axes, box1, box2, t1, t2, normal, overlap) {
         const points = [];
 
         for (let x = -1; x <= 1; x += 2) {
             for (let y = -1; y <= 1; y += 2) {
                 for (let z = -1; z <= 1; z += 2) {
-                    let box1Vert = axes[0].scale(x).addInPlace(axes[1].scale(y)).addInPlace(axes[2].scale(z)).addInPlace(box1.global.body.position);
+                    let box1Vert = axes[0].scale(x).addInPlace(axes[1].scale(y)).addInPlace(axes[2].scale(z)).addInPlace(box1.global.body.position.add(t1));
 
-                    let relativeVert = box2.global.body.rotation.conjugate().multiplyVector3(box1Vert.subtract(box2.global.body.position));
+                    let relativeVert = box2.global.body.rotation.conjugate().multiplyVector3(box1Vert.subtract(box2.global.body.position.add(t2)));
 
                     const clampedVert = collisionDetector.clampPointToAABB(relativeVert, box2);
                     let inside = clampedVert.equals(relativeVert);
                     if (inside) {
                         relativeVert.addInPlace(box2.global.body.rotation.conjugate().multiplyVector3(normal).scale(overlap));
                         let closestVert = collisionDetector.closestPointToAABB(relativeVert, box2);
-                        points.push([box1Vert, box2.translateLocalToWorld(closestVert)]);
+                        points.push({ pointA: box1Vert, pointB: box2.translateLocalToWorld(closestVert) });
                     }
 
                 }
@@ -228,16 +29,16 @@ class BoxBox {
         for (let x = -1; x <= 1; x += 2) {
             for (let y = -1; y <= 1; y += 2) {
                 for (let z = -1; z <= 1; z += 2) {
-                    let box2Vert = axes[3].scale(x).addInPlace(axes[4].scale(y)).addInPlace(axes[5].scale(z)).addInPlace(box2.global.body.position);
+                    let box2Vert = axes[3].scale(x).addInPlace(axes[4].scale(y)).addInPlace(axes[5].scale(z)).addInPlace(box2.global.body.position.add(t2));
 
-                    let relativeVert = box1.global.body.rotation.conjugate().multiplyVector3(box2Vert.subtract(box1.global.body.position));
+                    let relativeVert = box1.global.body.rotation.conjugate().multiplyVector3(box2Vert.subtract(box1.global.body.position.add(t1)));
 
                     const clampedVert = collisionDetector.clampPointToAABB(relativeVert, box1);
                     let inside = clampedVert.equals(relativeVert);
                     if (inside) {
                         relativeVert.addInPlace(box1.global.body.rotation.conjugate().multiplyVector3(normal).scale(-overlap));
                         let closestVert = collisionDetector.closestPointToAABB(relativeVert, box1);
-                        points.push([box1.translateLocalToWorld(closestVert), box2Vert]);
+                        points.push({ pointA: box1.translateLocalToWorld(closestVert), pointB: box2Vert });
                     }
                 }
             }
@@ -245,21 +46,10 @@ class BoxBox {
         return points;
     }
 
-    static getContactPoints(collisionDetector, axes, box1, box2, t1, t2, normal, overlap, type) {
-        return this.getContactPointsFaceFace(collisionDetector, axes, box1, box2, t1, t2, normal, overlap, type);
-        switch (type) {
-            case this.FACE:
-                return this.getContactPointsFaceFace(collisionDetector, axes, box1, box2, t1, t2, normal, overlap, type);
-                break;
-            case this.EDGE:
-                return [];
-        }
-
-    }
 
     static FACE = 0;
     static EDGE = 1;
-    static EDGE_FACE = 2;
+
 
     static handle(collisionDetector, box1, box2, minT, maxT) {
 
@@ -295,6 +85,7 @@ class BoxBox {
                 }
             }
         }
+        let type = this.constructor.FACE;
 
         for (var i = -1; i < collisionDetector.GJKBinarySearchDepth; i++) {
             t = (i == collisionDetector.GJKBinarySearchDepth - 1) ? maxT : minT + (maxT - minT) * 0.5;
@@ -302,7 +93,6 @@ class BoxBox {
             let globalInside = true;
             let minOverlap = Infinity;
             let normal = null;
-            let contactType = this.EDGE;
             let box1Pos = box1.global.body.previousPosition.lerp(box1.global.body.position, t);
             let box2Pos = box2.global.body.previousPosition.lerp(box2.global.body.position, t);
 
@@ -311,10 +101,10 @@ class BoxBox {
             let relative = box1Pos.subtract(box2Pos);
             for (let i = 0; i < testAxes.length; i++) {
                 const axis = testAxes[i];
-                const min1 = axis.dot(box1.supportFunction(axis.scale(-1)).addInPlace(t1));
-                const max1 = axis.dot(box1.supportFunction(axis).addInPlace(t1));
-                const min2 = axis.dot(box2.supportFunction(axis.scale(-1)).addInPlace(t2));
-                const max2 = axis.dot(box2.supportFunction(axis).addInPlace(t2));
+                const min1 = axis.dot(box1.supportFunction(axis.scale(-1)).add(t1));
+                const max1 = axis.dot(box1.supportFunction(axis).add(t1));
+                const min2 = axis.dot(box2.supportFunction(axis.scale(-1)).add(t2));
+                const max2 = axis.dot(box2.supportFunction(axis).add(t2));
 
                 if (max1 >= min2 && max2 >= min1) {
                     const overlap = Math.min(max1, max2) - Math.max(min1, min2);
@@ -322,10 +112,10 @@ class BoxBox {
                         minOverlap = overlap;
                         normal = axis;
                         if (i < 6) {
-                            contactType = this.FACE;
+                            type = this.constructor.FACE
                         }
                         else {
-                            contactType = this.EDGE;
+                            type = this.constructor.EDGE
                         }
                         if (normal.dot(relative) < 0) {
                             normal.scaleInPlace(-1);
@@ -342,30 +132,18 @@ class BoxBox {
                 if (!globalInside) {
                     return false;
                 }
-
-                let points = this.getContactPoints(collisionDetector, testAxes, box1, box2, t1, t2, normal, minOverlap, contactType);
+                let points = this.getContactPointsFaceFace(collisionDetector, testAxes, box1, box2, t1, t2, normal, minOverlap);
                 for (const p of points) {
                     const contact = new CollisionContact();
                     contact.body1 = box1;
                     contact.body2 = box2;
-                    contact.pointA = p[0];
-                    contact.pointB = p[1];
+
+
+                    contact.pointA = p.pointA.subtract(t1);
+                    contact.pointB = p.pointB.subtract(t2);
                     contact.normal = normal.copy();
                     collisionDetector.addContact(contact);
                 }
-                // const simplex = collisionDetector.gjk(box1, box2, t1, t2);
-                // if (simplex) {
-                //     const epa = collisionDetector.epa(simplex, box1, box2, t1, t2);
-                //     if (epa) {
-                //         const contact = new CollisionContact();
-                //         contact.body1 = box1;
-                //         contact.body2 = box2;
-                //         contact.pointA = epa.contacts[0][0].subtract(t1);
-                //         contact.pointB = epa.contacts[0][1].subtract(t2);
-                //         contact.normal = epa.normal.copy().scale(-1);
-                //         collisionDetector.addContact(contact);
-                //     }
-                // }
 
                 return true;
             }

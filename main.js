@@ -44,6 +44,10 @@ import UFO from "./3D/Entity/UFO.mjs";
 import BalloonCarry from "./3D/Entity/BalloonCarry.mjs";
 
 
+import gameEngineConfig from "./3D/config/gameEngine.config.mjs";
+import defaultKeyBinds from "./3D/config/defaultKeyBinds.config.mjs";
+import GameObject from "./3D/GameObject.mjs";
+
 var stats = new Stats();
 var stats2 = new Stats();
 
@@ -58,8 +62,22 @@ document.addEventListener('contextmenu', (event) => {
     event.preventDefault();
 });
 
-import gameEngine from "./initializeGameEngine.mjs";
+var gameEngine = new GameEngine(gameEngineConfig);
 
+
+top.unloadScene = function(){
+    top.cons = gameEngine.world.removeAllConstraints();
+    top.comp = gameEngine.world.removeAllComposites();
+}
+
+top.loadScene = function(){
+    for (const comp of top.comp) {
+        gameEngine.world.addComposite(comp);
+    }
+    for (const cons of top.cons) {
+        gameEngine.world.addConstraint(cons);
+    }
+}
 
 
 
@@ -67,8 +85,6 @@ gameEngine.graphicsEngine.ambientLight.intensity = 3;
 gameEngine.graphicsEngine.setBackgroundImage("autumn_field_puresky_1k.hdr", true, false);
 gameEngine.graphicsEngine.setSunlightDirection(new Vector3(-2, -8, -5));
 gameEngine.graphicsEngine.setSunlightBrightness(1);
-gameEngine.graphicsEngine.renderDistance = 1600;
-gameEngine.graphicsEngine.cameraFar = 2000;
 gameEngine.cameraControls.renderDomElement = gameEngine.graphicsEngine.canvas;
 gameEngine.cameraControls.setupEventListeners();
 
@@ -79,21 +95,7 @@ gameEngine.toastManager.createHTML({
 });
 
 gameEngine.cameraControls.addKeyBinds(
-    {
-        ArrowUp: "forward",
-        KeyW: "forward",
-        ArrowDown: "backward",
-        KeyS: "backward",
-        ArrowLeft: "left",
-        KeyA: "left",
-        ArrowRight: "right",
-        KeyD: "right",
-        Space: "up",
-        ShiftLeft: "down",
-        ShiftRight: "down",
-        KeyO: "zoomOut",
-        KeyI: "zoomIn"
-    }
+    defaultKeyBinds
 );
 
 gameEngine.soundManager.addSounds({
@@ -306,7 +308,6 @@ gameEngine.world.setPenetrationIterations(16);
 
 var gravity = -0.35;
 
-console.log(gameEngine)
 var player = new Player({
     radius: 0.5,
     height: 3,
@@ -325,11 +326,10 @@ gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine.world);
 
 
-const friction = 0.5;
+const friction = 0.3;
 
 
-
-for (var i = 0; i < 1; i++) {
+for (var i = 0; i < 0; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
@@ -348,7 +348,7 @@ for (var i = 0; i < 1; i++) {
     }
 }
 
-for (let i = 0; i < 30; i = i + 1) {
+for (let i = 0; i < 0; i = i + 1) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
@@ -560,8 +560,10 @@ var map = await gameEngine.loadMap("lawn.glb", {
     "Slime": Slime
 });
 var damageTimeStamp = 0;
-for (const obj of map.objects) {
+for (const gameObject of map.objects) {
+    const obj = gameObject.physics;
     gameEngine.world.addComposite(obj);
+    gameEngine.addGameObject(gameObject);
     if (obj.name.toLowerCase().includes("death")) {
         obj.addEventListener("collision", function (contact) {
             var player = null;
@@ -599,7 +601,7 @@ for (const obj of map.objects) {
             if (!player) {
                 return;
             }
-            player.setSpawnPoint(player.getMainShape().global.body.position, true);
+            player.setSpawnPoint(player.getMainShape().physics.global.body.position, true);
         })
     }
     if (obj.name.toLowerCase().includes("shop")) {

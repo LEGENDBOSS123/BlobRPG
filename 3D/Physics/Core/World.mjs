@@ -53,6 +53,7 @@ const World = class {
         for (const child of composite.children) {
             this.addComposite(child);
         }
+        composite.updateBeforeCollisionAll();
     }
 
     addConstraint(element) {
@@ -98,6 +99,25 @@ const World = class {
 
         this.constraints.splice(this.constraints.indexOf(element), 1);
         this.remove(element);
+    }
+
+    removeAllConstraints(){
+        for (const constraint of this.constraints) {
+            this.remove(constraint);
+        }
+        var temp = this.constraints;
+        this.constraints = [];
+        return temp;
+    }
+
+    removeAllComposites(){
+        for (const composite of this.composites) {
+            this.spatialHash.removeHitbox(composite.id);
+            this.remove(composite);
+        }
+        var temp = this.composites;
+        this.composites = [];
+        return temp;
     }
 
 

@@ -19,7 +19,6 @@ import GameEngineComponent from "../GameEngineComponent.mjs";
  * @property {object} [camera] - Options for the Three.js PerspectiveCamera.
  * @property {number} [camera.fov=90] - Field of view for the camera in degrees.
  * @property {number} [camera.near=0.1] - Near clipping plane for the camera.
- * @property {number} [camera.far] - Far clipping plane for the camera (defaults to `renderDistance`).
  * @property {number} [renderDistance=4096] - The maximum distance for rendering objects.
  * @property {number} [fogRatio=0.9] - The ratio for fog density relative to render distance.
  */
@@ -65,7 +64,7 @@ var GraphicsEngine = class extends GameEngineComponent {
 
         this.scene = new this.THREE.Scene();
         this.renderDistance = options?.renderDistance ?? 4096;
-        this.camera = new this.THREE.PerspectiveCamera(options?.camera?.fov ?? 90, this.aspectRatio(), options?.camera?.near ?? 0.1, options?.cameraFar ?? options?.camera?.far ?? this.renderDistance);
+        this.camera = new this.THREE.PerspectiveCamera(options?.camera?.fov ?? 90, this.aspectRatio(), options?.camera?.near ?? 0.1, this.renderDistance);
         this.fog = new this.THREE.Fog(0xFFFFFF);
         this.fogRatio = options?.fogRatio ?? 0.9;
         this.scene.fog = this.fog;
@@ -96,7 +95,7 @@ var GraphicsEngine = class extends GameEngineComponent {
 
 
         this.lights = [];
-        this.shadowBias = -0.0001;
+        this.shadowBias = -0.0002;
         this.setupLights();
 
         this.updateScreenSize();
@@ -262,15 +261,15 @@ var GraphicsEngine = class extends GameEngineComponent {
         this.scene.add(this.ambientLight);
         this.lights.push(this.ambientLight);
 
-        var range = 64;
+        var range = 128;
 
         this.sunlight = new this.THREE.DirectionalLight(0xffffff, 1);
         this.sunlight.direction = new this.THREE.Vector3(0, -1, 0);
         this.sunlight.castShadow = true;
         this.sunlight.shadow.mapSize.width = 2048;
         this.sunlight.shadow.mapSize.height = 2048;
-        this.sunlight.shadow.camera.near = 0.1;
-        this.sunlight.shadow.camera.far = 2048;
+        this.sunlight.shadow.camera.near = 1;
+        this.sunlight.shadow.camera.far = 1024;
         this.sunlight.shadow.camera.left = -range;
         this.sunlight.shadow.camera.right = range;
         this.sunlight.shadow.camera.top = range;

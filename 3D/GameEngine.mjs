@@ -13,6 +13,7 @@ import SimpleCameraControls from "./SimpleCameraControls.mjs";
 import SoundManager from "./Sounds/SoundManager.mjs";
 import ToastManager from "./Web/Toast/ToastManager.mjs";
 import Vector3 from "./Physics/Math3D/Vector3.mjs";
+import GameObject from "./GameObject.mjs";
 /**
  * @typedef {object} GameEngineOptions
  * @property {object} [graphicsEngine] - Options for the GraphicsEngine.
@@ -163,11 +164,13 @@ const GameEngine = class {
                                 name: child.name,
                                 gameEngine: this,
                             }).fromMesh(child, this);
-                            obj.mesh = this.graphicsEngine.meshLinker.createMeshData(child);
-                            obj.mesh.mesh.isPhysicsObject = true;
+                            
+                            var mesh = this.graphicsEngine.meshLinker.createMeshData(child);
+                            mesh.mesh.isPhysicsObject = true;
+                            var go = new GameObject({physics: obj, mesh: mesh});
                             obj.setLocalFlag(Composite.FLAGS.STATIC, true);
                             obj.setRestitution(0);
-                            map.objects.push(obj);
+                            map.objects.push(go);
                         }
                     }
 

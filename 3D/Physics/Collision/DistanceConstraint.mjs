@@ -7,6 +7,7 @@ const DistanceConstraint = class extends Constraint {
 
     static penetrationRelaxation = 0.8;
     static impulseRelaxation = 0.8;
+    static slop = 0.01;
     static bias = 0.0000004;
 
     constructor(options) {
@@ -29,7 +30,6 @@ const DistanceConstraint = class extends Constraint {
         this.anchor1 = options?.anchor1 ?? new Vector3();
         this.anchor2 = options?.anchor2 ?? new Vector3();
 
-        this.slop = options?.slop ?? 0.01;
         this.bias = 0;
 
         this.normalImpulse = 0;
@@ -94,7 +94,7 @@ const DistanceConstraint = class extends Constraint {
         const wB = this.body2.maxParent.getEffectiveTotalInverseMass(normal);
         const totalInverse = wA + wB;
 
-        const correction = normal.scale(-(error - Math.sign(error) * this.slop) / totalInverse * this.constructor.penetrationRelaxation);
+        const correction = normal.scale(-(error - Math.sign(error) * this.constructor.slop) / totalInverse * this.constructor.penetrationRelaxation);
         if (wA > 0) {
             this.body1.maxParent.translation.subtractInPlace(correction.scale(wA));
         }
@@ -268,7 +268,6 @@ const DistanceConstraint = class extends Constraint {
         distanceConstraint.lowerBound = json.upperBound;
         distanceConstraint.upperBound = json.upperBound;
         distanceConstraint.bias = json.bias;
-        distanceConstraint.slop = json.slop;
         distanceConstraint.denominator = json.denominator;
         distanceConstraint.solved = json.solved;
         distanceConstraint.normalImpulse = json.normalImpulse;

@@ -6,9 +6,9 @@ import Vector3 from "./Physics/Math3D/Vector3.mjs";
 class GameObject extends GameEngineComponent {
     constructor(options) {
         super(options);
+        this.id = -1;
         this.mesh = options?.mesh ?? null;
         this.physics = options?.physics ?? null;
-        this.id = -1;
     }
 
     set mesh(value) {
