@@ -63,11 +63,16 @@ var GraphicsEngine = class extends GameEngineComponent {
         this.meshLinker = new MeshLinker();
 
         this.scene = new this.THREE.Scene();
+        this.scenes = { "main": this.scene, "": new this.THREE.Scene() };
         this.renderDistance = options?.renderDistance ?? 4096;
         this.camera = new this.THREE.PerspectiveCamera(options?.camera?.fov ?? 90, this.aspectRatio(), options?.camera?.near ?? 0.1, this.renderDistance);
         this.fog = new this.THREE.Fog(0xFFFFFF);
         this.fogRatio = options?.fogRatio ?? 0.9;
         this.scene.fog = this.fog;
+
+        this.backgroundTexture = null;
+        this.backgroundEnvironmentTexture = null;
+
         this.scene.add(this.camera);
 
         this.textureLoader = new AutoTextureLoader();
@@ -114,6 +119,37 @@ var GraphicsEngine = class extends GameEngineComponent {
             this.mousePosition.y = -(event.clientY / this.screenHeight) * 2 + 1;
         }.bind(this));
 
+    }
+
+    createScene(name) {
+        if (this.scenes[name]) {
+            return this.scenes[name];
+        }
+        this.scenes[name] = new this.THREE.Scene();
+        return this.scenes[name];
+    }
+
+    swapScene(name) {
+        if (this.scenes[name]) {
+            this.scene = this.scenes[name];
+            this.scene.fog = this.fog;
+            this.scene.add(this.camera);
+            for (var light of this.lights) {
+                this.scene.add(light);
+            }
+            if (!this.scene.background) {
+                this.scene.background = this.backgroundTexture;
+            }
+            if (!this.scene.environment) {
+                this.scene.environment = this.backgroundEnvironmentTexture;
+            }
+            this.updateScene();
+        }
+    }
+
+    updateScene() {
+        this.renderPass.scene = this.scene;
+        this.n8aoPass.scene = this.scene;
     }
 
     parseRaycastResult(raycast) {
@@ -190,7 +226,7 @@ var GraphicsEngine = class extends GameEngineComponent {
     }
 
     createAnimations(model, animations) {
-        if(!animations){
+        if (!animations) {
             return null;
         }
         const mixer = new this.THREE.AnimationMixer(model);
@@ -244,10 +280,12 @@ var GraphicsEngine = class extends GameEngineComponent {
 
             if (setBackground) {
                 this.scene.background = texture;
+                this.backgroundTexture = texture;
             }
 
             if (setEnvironment) {
                 this.scene.environment = texture;
+                this.backgroundEnvironmentTexture = texture;
             }
 
             texture.dispose();
@@ -299,8 +337,11 @@ var GraphicsEngine = class extends GameEngineComponent {
     }
 
 
-    addToScene(object) {
-        this.scene.add(object);
+    addToScene(object, name = "main") {
+        if (!this.scenes[name]) {
+            this.createScene(name);
+        }
+        this.scenes[name].add(object);
     }
 
     makeShadows(mesh) {

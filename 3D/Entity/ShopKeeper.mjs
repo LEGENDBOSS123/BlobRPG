@@ -34,11 +34,9 @@ var ShopKeeper = class extends Entity {
         this.playerNearLast = false;
     }
 
-    addToScene(scene) {
+    addToScene(gameEngine) {
         for (var i of this.gameObjects) {
-            if (i.mesh) {
-                scene.add(i.mesh.mesh);
-            }
+            i.addToScene(gameEngine);
         }
     }
 
@@ -62,13 +60,15 @@ var ShopKeeper = class extends Entity {
             this.playAnimation(this.mainGameObject, "IdleAnimation", 1, false);
         });
 
-        this.addToScene(gameEngine.graphicsEngine.scene);
+        this.addToScene(gameEngine);
 
 
     }
 
-    addToWorld(world) {
-        world.addComposite(this.composite);
+    addToWorld(gameEngine) {
+        for(var go of this.gameObjects){
+            go.addToWorld(gameEngine);
+        }
         this.updateShapeID();
     }
 

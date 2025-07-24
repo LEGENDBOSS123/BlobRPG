@@ -61,8 +61,10 @@ const Coin = class extends Entity {
         this.mainGameObject.addToScene(gameEngine);
     }
 
-    addToWorld(world) {
-        world.addComposite(this.sphere);
+    addToWorld(gameEngine) {
+        for(var go of this.gameObjects){
+            go.addToWorld(gameEngine);
+        }
         this.updateShapeID();
     }
 

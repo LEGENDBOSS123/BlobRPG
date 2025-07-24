@@ -52,15 +52,9 @@ class BalloonCarry extends Entity {
 
     }
 
-    addToScene(scene) {
+    addToScene(gameEngine) {
         for (var i of this.gameObjects) {
-            if (i.mesh) {
-                if(i.mesh.instancedMeshInfo){
-                    scene.add(i.mesh.instancedMeshInfo.instancedMesh);
-                    continue;
-                }
-                scene.add(i.mesh.mesh);
-            }
+            i.addToScene(gameEngine);
         }
     }
 
@@ -73,12 +67,14 @@ class BalloonCarry extends Entity {
 
     async setMeshAndAddToScene(options, gameEngine) {
         await this.setMesh(options, gameEngine);
-        this.addToScene(gameEngine.graphicsEngine.scene);
+        this.addToScene(gameEngine);
     }
 
-    addToWorld(world) {
-        world.addComposite(this.sphere);
-        world.addConstraint(this.joint);
+    addToWorld(gameEngine) {
+
+        for (var go of this.gameObjects) {
+            go.addToWorld(gameEngine);
+        }
         this.updateShapeID(this.sphere);
     }
 

@@ -37,6 +37,8 @@ const GameEngine = class {
     constructor(options) {
 
         this.all = {};
+        this.scenes = {};
+        this.activeScene = "main";
 
         this.entitySystem = new EntitySystem(options?.graphicsEngine);
         this.graphicsEngine = new GraphicsEngine(options?.graphicsEngine);
@@ -63,13 +65,49 @@ const GameEngine = class {
         this.fpsStepper = new Timer.Interval(1000 / this.fps);
     }
 
+    addToScene(object, scene = "main") {
+        this.graphicsEngine.addToScene(object, scene);
+    }
 
-    addGameObject(gameObject) {
+    removeScene(scene) {
+
+    }
+
+    removeAllScenes() {
+        this.activeScene = "";
+        this.graphicsEngine.swapScene("");
+        this.world.removeAllConstraints();
+        this.world.removeAllComposites();
+    }
+
+    loadScene(sceneName) {
+        if (!this.scenes[sceneName]) {
+            return;
+        }
+        this.activeScene = sceneName;
+        this.graphicsEngine.swapScene(sceneName);
+        for(var i in this.all){
+            const gameObject = this.all[i];
+            if(gameObject.scene == sceneName){
+                gameObject.addToWorld(this);
+            }
+        }
+    }
+
+    addGameObject(gameObject, scene = "main") {
         gameObject.gameEngine = this;
         gameObject.id = GameEngine.maxID++;
         this.all[gameObject.id] = gameObject;
         gameObject.mesh = gameObject._mesh;
         gameObject._mesh = null;
+
+        if (!this.scenes[scene]) {
+            this.scenes[scene] = {};
+            this.graphicsEngine.createScene(scene);
+        }
+
+        this.scenes[scene][gameObject.id] = gameObject;
+
     }
 
     getByID(id) {
@@ -164,10 +202,10 @@ const GameEngine = class {
                                 name: child.name,
                                 gameEngine: this,
                             }).fromMesh(child, this);
-                            
+
                             var mesh = this.graphicsEngine.meshLinker.createMeshData(child);
                             mesh.mesh.isPhysicsObject = true;
-                            var go = new GameObject({physics: obj, mesh: mesh});
+                            var go = new GameObject({ physics: obj, mesh: mesh });
                             obj.setLocalFlag(Composite.FLAGS.STATIC, true);
                             obj.setRestitution(0);
                             map.objects.push(go);

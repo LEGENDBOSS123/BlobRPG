@@ -92,9 +92,8 @@ var Slime = class extends HealthEntity {
                 }
             }
         }.bind(this);
-        // this.onDelete = function (x) {
-        //     console.log("e", x)
-        // }.bind(this);
+        this.onDelete = function (x) {
+        }.bind(this);
         this.sphere.addEventListener("collision", this.spherePostCollision);
         this.sphere.addEventListener("delete", this.onDelete);
         this.updateShapeID(this.sphere);
@@ -144,9 +143,11 @@ var Slime = class extends HealthEntity {
         gameEngine.graphicsEngine.addToScene(this.healthSprite);
     }
 
-    addToWorld(world) {
-        world.addComposite(this.sphere);
-        this.updateShapeID(this.sphere);
+    addToWorld(gameEngine) {
+        for(var go of this.gameObjects){
+            go.addToWorld(gameEngine);
+        }
+        this.updateShapeID();
     }
 
     async setMesh(options, gameEngine) {

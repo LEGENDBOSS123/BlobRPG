@@ -65,20 +65,6 @@ document.addEventListener('contextmenu', (event) => {
 var gameEngine = new GameEngine(gameEngineConfig);
 
 
-top.unloadScene = function(){
-    top.cons = gameEngine.world.removeAllConstraints();
-    top.comp = gameEngine.world.removeAllComposites();
-}
-
-top.loadScene = function(){
-    for (const comp of top.comp) {
-        gameEngine.world.addComposite(comp);
-    }
-    for (const cons of top.cons) {
-        gameEngine.world.addConstraint(cons);
-    }
-}
-
 
 
 gameEngine.graphicsEngine.ambientLight.intensity = 3;
@@ -323,13 +309,13 @@ var player = new Player({
 player.setMeshAndAddToScene({}, gameEngine);
 player.addToGameEngine(gameEngine);
 gameEngine.entitySystem.register(player);
-player.addToWorld(gameEngine.world);
+player.addToWorld(gameEngine);
 
 
 const friction = 0.3;
 
 
-for (var i = 0; i < 0; i++) {
+for (var i = 0; i < 100; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
@@ -342,7 +328,7 @@ for (var i = 0; i < 0; i++) {
     slime.setMeshAndAddToScene({}, gameEngine);
     gameEngine.entitySystem.register(slime);
     slime.addToGameEngine(gameEngine);
-    slime.addToWorld(gameEngine.world);
+    slime.addToWorld(gameEngine);
     slime.getTargets = function () {
         return [player.id];
     }
@@ -362,7 +348,7 @@ for (let i = 0; i < 0; i = i + 1) {
     slime.setMeshAndAddToScene({}, gameEngine);
     gameEngine.entitySystem.register(slime);
     slime.addToGameEngine(gameEngine);
-    slime.addToWorld(gameEngine.world);
+    slime.addToWorld(gameEngine);
     slime.getTargets = function () {
         return [player.id];
     }
@@ -376,18 +362,19 @@ for (let i = 0; i < 0; i = i + 1) {
     balloonCarry.setMeshAndAddToScene({}, gameEngine);
     gameEngine.entitySystem.register(balloonCarry);
     balloonCarry.addToGameEngine(gameEngine);
-    balloonCarry.addToWorld(gameEngine.world);
+    balloonCarry.addToWorld(gameEngine);
 }
 
 
-// const ufo = new UFO({
-//     player: player,
-//     gameEngine: gameEngine
-// });
+const ufo = new UFO({
+    player: player,
+    gameEngine: gameEngine
+});
 
-// ufo.setMeshAndAddToScene({}, gameEngine);
-// gameEngine.entitySystem.register(ufo);
-// ufo.addToWorld(gameEngine.world);
+ufo.setMeshAndAddToScene({}, gameEngine);
+gameEngine.entitySystem.register(ufo);
+ufo.addToWorld(gameEngine);
+ufo.addToGameEngine(gameEngine);
 
 
 var toolTip = new Tooltip({
@@ -452,7 +439,7 @@ shopInventory.purchaseCallback = function (item, quantity) {
     return quantity;
 };
 
-shopInventory.close();
+// shopInventory.close();
 
 shopInventory.items = [
     new ShopOffer({
@@ -633,7 +620,7 @@ for (var entity of map.entities) {
     }
     entity.addToGameEngine(gameEngine);
     gameEngine.entitySystem.register(entity);
-    entity.addToWorld(gameEngine.world);
+    entity.addToWorld(gameEngine);
 
     if (entity instanceof Slime) {
         entity.getTargets = function () {

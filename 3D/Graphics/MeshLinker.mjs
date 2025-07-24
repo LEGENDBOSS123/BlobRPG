@@ -12,7 +12,8 @@ var MeshLinker = class {
             isMeshLink: true,
             instancedMeshInfo: null,
             instancedIndex: null,
-            instancedMeshVisible: true
+            instancedMeshVisible: true,
+            wasInScene: false
         }
     }
 

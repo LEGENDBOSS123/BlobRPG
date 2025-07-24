@@ -27,6 +27,7 @@ var Particle = class {
         this.spriteMaterial = null;
         this.sprite = null;
         this.scene = null;
+        this.sceneName = options?.sceneName ?? "main"
         this.createdCanvasTexture = false;
     }
 

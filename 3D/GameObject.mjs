@@ -9,6 +9,7 @@ class GameObject extends GameEngineComponent {
         this.id = -1;
         this.mesh = options?.mesh ?? null;
         this.physics = options?.physics ?? null;
+        this.scene = options?.scene ?? "main";
     }
 
     set mesh(value) {
@@ -74,16 +75,23 @@ class GameObject extends GameEngineComponent {
         }
         if (this.mesh.isMeshLink) {
             if (this.mesh.instancedMeshInfo) {
-                return gameEngine.graphicsEngine.scene.add(this.mesh.instancedMeshInfo.instancedMesh);
+                return gameEngine.addToScene(this.mesh.instancedMeshInfo.instancedMesh, this.scene);
             }
-            gameEngine.graphicsEngine.scene.add(this.mesh.mesh);
+            gameEngine.addToScene(this.mesh.mesh, this.scene);
             return;
         }
-        gameEngine.graphicsEngine.scene.add(this.mesh);
+        gameEngine.addToScene(this.mesh, this.scene);
     }
 
-    addToWorld(world) {
-
+    addToWorld(gameEngine) {
+        if(!this.physics || gameEngine.activeScene != this.scene){
+            return;
+        }
+        if(this.physics instanceof Constraint){
+            gameEngine.world.addConstraint(this.physics);
+            return;
+        }
+        gameEngine.world.addComposite(this.physics);
     }
 
     lerpMesh(last, lerp, previousWorld) {

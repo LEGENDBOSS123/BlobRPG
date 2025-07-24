@@ -274,27 +274,27 @@ var Player = class extends Entity {
         localStorage["playerStartPoint"] = JSON.stringify(v.toJSON());
     }
 
-    addToScene(scene) {
+    addToScene(gameEngine) {
         for (var i of this.gameObjects) {
-            if (i.mesh) {
-                scene.add(i.mesh.mesh);
-            }
+            i.addToScene(gameEngine);
         }
     }
 
-    addToWorld(world) {
-        world.addComposite(this.composite);
-
+    addToWorld(gameEngine) {
+        for (var go of this.gameObjects) {
+            go.addToWorld(gameEngine);
+        }
         this.updateShapeID();
     }
 
     setMeshAndAddToScene(options, gameEngine) {
         for (var i of this.gameObjects) {
             i.mesh = i.physics.createMesh({}, gameEngine);
-            i.addToScene(gameEngine);
         }
         this.constraintGameObject.mesh.mesh.visible = false;
         this.boxGameObject.mesh.mesh.visible = false;
+
+        this.addToScene(gameEngine);
 
 
     }
@@ -370,8 +370,8 @@ var Player = class extends Entity {
                 this.itemHeldConstraint.anchor2 = new Vector3(0, -selectedItem.length / 2, 0);
                 this.constraintGameObject.mesh.mesh.visible = true;
                 if (this.itemHeldBox.id == -1) {
-                    this.gameEngine.world.addComposite(this.itemHeldBox);
-                    this.gameEngine.world.addConstraint(this.itemHeldConstraint);
+                    this.boxGameObject.addToWorld(this.gameEngine);
+                    this.constraintGameObject.addToWorld(this.gameEngine);
                     this.itemHeldBox.global.body.setPosition(this.composite.global.body.position.copy());
                 }
 
@@ -383,24 +383,26 @@ var Player = class extends Entity {
 
                     if (ItemMeshManager.has(selectedItem.constructor)) {
                         if (this.boxGameObject.mesh?.mesh?.parent) {
-                            this.boxGameObject.mesh.mesh.parent.remove(this.boxGameObject.mesh.mesh);
-                            this.constraintGameObject.mesh.mesh.parent.remove(this.constraintGameObject.mesh.mesh);
+                            this.boxGameObject.mesh.mesh.removeFromParent();
+                            this.constraintGameObject.mesh.mesh.removeFromParent();
                         }
                         this.boxGameObject.mesh.mesh = ItemMeshManager.get(selectedItem.constructor, this.gameEngine);
-                        this.gameEngine.graphicsEngine.scene.add(this.boxGameObject.mesh.mesh);
-                        this.gameEngine.graphicsEngine.scene.add(this.constraintGameObject.mesh.mesh);
+                        this.boxGameObject.addToScene(this.gameEngine);
+                        this.constraintGameObject.addToScene(this.gameEngine);
+                        this.boxGameObject.addToWorld(this.gameEngine);
+                        this.constraintGameObject.addToWorld(this.gameEngine);
                         this.latestId++;
                     }
                     else {
                         ItemMeshManager.loadItem(selectedItem.constructor, this.gameEngine).then(function (mesh) {
                             if (this.latestItemId == latestId) {
                                 if (this.boxGameObject.mesh?.mesh?.parent) {
-                                    this.boxGameObject.mesh.mesh.parent.remove(this.boxGameObject.mesh.mesh);
-                                    this.constraintGameObject.mesh.mesh.parent.remove(this.constraintGameObject.mesh.mesh);
+                                    this.boxGameObject.mesh.mesh.removeFromParent();
+                                    this.constraintGameObject.mesh.mesh.removeFromParent();
                                 }
                                 this.boxGameObject.mesh.mesh = mesh;
-                                this.gameEngine.graphicsEngine.scene.add(this.boxGameObject.mesh.mesh);
-                                this.gameEngine.graphicsEngine.scene.add(this.constraintGameObject.mesh.mesh);
+                                this.boxGameObject.addToScene(this.gameEngine);
+                                this.constraintGameObject.addToScene(this.gameEngine);
                                 this.latestId++;
                             }
                         }.bind(this));
@@ -409,11 +411,11 @@ var Player = class extends Entity {
             }
             else {
                 if (this.itemHeldBox.id != -1) {
-                    this.gameEngine.world.removeComposite(this.itemHeldBox);
-                    this.gameEngine.world.removeConstraint(this.itemHeldConstraint);
+                    // this.gameEngine.world.removeComposite(this.itemHeldBox);
+                    // this.gameEngine.world.removeConstraint(this.itemHeldConstraint);
                     if (this.boxGameObject.mesh?.mesh?.parent) {
-                        this.boxGameObject.mesh.mesh.parent.remove(this.boxGameObject.mesh.mesh);
-                        this.constraintGameObject.mesh.mesh.parent.remove(this.constraintGameObject.mesh.mesh);
+                        this.boxGameObject.mesh.mesh.removeFromParent();
+                        this.constraintGameObject.mesh.mesh.removeFromParent();
                     }
                     this.latestItemId++;
                     this.selectedItemClass = null;
@@ -422,8 +424,8 @@ var Player = class extends Entity {
         }
         else {
             if (this.itemHeldBox.id != -1) {
-                this.gameEngine.world.removeComposite(this.itemHeldBox);
-                this.gameEngine.world.removeConstraint(this.itemHeldConstraint);
+                // this.gameEngine.world.removeComposite(this.itemHeldBox);
+                // this.gameEngine.world.removeConstraint(this.itemHeldConstraint);
                 if (this.boxGameObject.mesh?.mesh?.parent) {
                     this.boxGameObject.mesh.mesh.parent.remove(this.boxGameObject.mesh.mesh);
                     this.constraintGameObject.mesh.mesh.parent.remove(this.constraintGameObject.mesh.mesh);
