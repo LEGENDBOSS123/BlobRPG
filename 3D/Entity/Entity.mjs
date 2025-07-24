@@ -42,10 +42,10 @@ var Entity = class extends GameEngineComponent {
         if (!this.oldShape) {
             this.oldShape = shape;
         }
-        if (!this.entitySystem || shape.maxParent.id == -1) {
+        if (!this.entitySystem) {
             return;
         }
-        if (this.entitySystem.shapeLookup.has(this.oldShape.maxParent) && this.oldShape.maxParent.id == shape.maxParent.id) {
+        if (this.entitySystem.shapeLookup.has(this.oldShape.maxParent) && this.oldShape.maxParent == shape.maxParent) {
             return;
         }
         if (this.entitySystem.shapeLookup.has(this.oldShape.maxParent)) {

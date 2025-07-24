@@ -300,7 +300,7 @@ var player = new Player({
     tiltable: false,
     moveStrength: 0.5,
     airMoveStrength: 0.25,
-    moveSpeed: 0.5*4,
+    moveSpeed: 0.5 * 4,
     jumpSpeed: 1,
     gravity: new Vector3(0, gravity, 0),
     mass: 1,
@@ -313,17 +313,18 @@ player.addToWorld(gameEngine);
 
 
 top.doThing = function () {
-    gameEngine.removeAllScenes();
+    
     for (const go of player.gameObjects) {
         go.scene = "dirt_arena";
         go.addToScene(gameEngine);
     }
     player.getMainShape().physics.maxParent.setPosition(new Vector3(0, 2, 0));
     player.getMainShape().physics.maxParent.global.body.setVelocity(new Vector3())
+
     gameEngine.loadScene("dirt_arena");
 }
 top.doThing2 = function () {
-    gameEngine.removeAllScenes();
+
     for (const go of player.gameObjects) {
         go.scene = "main";
         go.addToScene(gameEngine);
@@ -353,6 +354,32 @@ for (var i = 0; i < 1; i++) {
         return [player.id];
     }
 }
+
+
+for (var i = 0; i < 2; i++) {
+    let slime = new Slime({
+        gameEngine: gameEngine,
+        gravity: new Vector3(0, gravity, 0),
+        position: new Vector3(0 * 1, 20 + i * 0.1, 0 + 1 * i * 0.1),
+        radius: 1,
+        speed: 0.5,
+        jumpPower: 1
+    })
+    slime.sphere.setRestitution(1)
+    slime.setMeshAndAddToScene({}, gameEngine);
+    for (const go of slime.gameObjects) {
+        go.scene = "dirt_arena";
+        go.addToScene(gameEngine)
+    }
+
+    gameEngine.entitySystem.register(slime);
+    slime.addToGameEngine(gameEngine);
+    slime.addToWorld(gameEngine);
+    slime.getTargets = function () {
+        return [player.id];
+    }
+}
+
 
 
 for (let i = 0; i < 0; i = i + 1) {
@@ -818,5 +845,6 @@ function render() {
     stats.end();
 }
 
+gameEngine.loadScene("main");
 
 render();

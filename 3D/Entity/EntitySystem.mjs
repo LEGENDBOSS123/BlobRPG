@@ -6,8 +6,7 @@ var EntitySystem = class extends GameEngineComponent{
         super(options);
         this.maxID = 0;
         this.all = {};
-        this.shapeLookup = new WeakMap();
-       
+        this.shapeLookup = new WeakMap();  
     }
 
 

@@ -6,7 +6,7 @@ var ParticleSystem = class {
     }
 
     addParticle(particle){
-        if(this.particles.size > this.maxParticles || this.gameEngine.activeScene != particle.sceneName){
+        if(this.particles.size > this.maxParticles){
             return;
         }
         particle.startTime = this.gameEngine.timer.getTime();

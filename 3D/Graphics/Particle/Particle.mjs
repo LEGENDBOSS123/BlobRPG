@@ -26,13 +26,13 @@ var Particle = class {
         this.texture = null;
         this.spriteMaterial = null;
         this.sprite = null;
-        this.scene = null;
-        this.sceneName = options?.sceneName ?? "main"
+        this.gameEngine = null;
+        this.sceneName = options?.sceneName ?? "";
         this.createdCanvasTexture = false;
     }
 
     createCanvasTexture() {
-        this.canvas.canvas = new OffscreenCanvas(0,0);
+        this.canvas.canvas = new OffscreenCanvas(0, 0);
         this.canvas.ctx = this.canvas.canvas.getContext('2d');
         this.canvas.canvas.width = this.canvas.width;
         this.canvas.canvas.height = this.canvas.height;
@@ -41,15 +41,15 @@ var Particle = class {
     }
 
     updateCanvas(time) {
-        if(this.createdCanvasTexture){
+        if (this.createdCanvasTexture) {
             return;
         }
         var canvas = this.canvas.canvas;
         var ctx = this.canvas.ctx;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         ctx.beginPath();
-        ctx.arc(canvas.width/2, canvas.height/2, Math.min(canvas.width/2, canvas.height/2), 0, Math.PI * 2);
+        ctx.arc(canvas.width / 2, canvas.height / 2, Math.min(canvas.width / 2, canvas.height / 2), 0, Math.PI * 2);
         ctx.fillStyle = this.color;
         ctx.fill();
         ctx.stroke();
@@ -62,12 +62,17 @@ var Particle = class {
         this.spriteMaterial = new THREE.SpriteMaterial({ map: this.texture });
         this.sprite = new THREE.Sprite(this.spriteMaterial);
         this.sprite.scale.set(this.canvas.canvas.width / this.canvas.canvas.height * this.size, this.size, 1);
-        this.scene = gameEngine.graphicsEngine.scene;
-        this.scene.add(this.sprite);
+        this.gameEngine = gameEngine;
+        if(!this.sceneName){
+            this.sceneName = gameEngine.activeScene;
+        }
+        console.log(this.gameEngine, this.sprite, this.sceneName)
+        this.gameEngine.graphicsEngine.addToScene(this.sprite, this.sceneName);
     }
 
     disposeMesh() {
-        this.scene.remove(this.sprite);
+        this.gameEngine = null;
+        this.sprite.removeFromParent();
         this.spriteMaterial.map.dispose();
         this.spriteMaterial.dispose();
         this.spriteMaterial.map = null;
@@ -76,7 +81,6 @@ var Particle = class {
         this.texture = null;
         this.spriteMaterial = null;
         this.sprite = null;
-        this.scene = null;
         this.canvas = {
             ctx: null,
             canvas: null
@@ -95,7 +99,7 @@ var Particle = class {
         var position = this.position.add(dampedVelocity).addInPlace(this.acceleration.scale(time * time * 0.5));
         var sway = this.swayStrength * Math.sin(time * this.swaySpeed);
         this.updateCanvas(time);
-        if(this.fadeOutSpeed > 0 || this.fadeInSpeed > 0) {
+        if (this.fadeOutSpeed > 0 || this.fadeInSpeed > 0) {
             var ratio = Math.max(0, Math.min(1, time / this.duration));
             var opacity = 1;
             if (ratio < this.fadeInSpeed) {
@@ -106,7 +110,7 @@ var Particle = class {
             this.spriteMaterial.opacity = opacity;
         }
         var size = 1;
-        if(this.shrinkSpeed > 0 || this.growthSpeed > 0) {
+        if (this.shrinkSpeed > 0 || this.growthSpeed > 0) {
             var ratio = Math.max(0, Math.min(1, time / this.duration));
             if (ratio < this.growthSpeed) {
                 size = ratio / this.growthSpeed;

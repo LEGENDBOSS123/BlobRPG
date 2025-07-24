@@ -110,8 +110,8 @@ class BalloonCarry extends Entity {
     }
 
     updateStep() {
-        if (this.carryingEntity.getMainShape().physics.id == -1 || this.joint.id == -1) {
-            this.destroy();
+        if (this.carryingEntity.getMainShape().id == -1 || this.joint.id == -1) {
+            // this.destroy();
             return;
         }
         const entityMass = this.carryingEntity.getMainShape().physics.global.body.mass;

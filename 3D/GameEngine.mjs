@@ -88,12 +88,16 @@ const GameEngine = class {
         if (!this.scenes[sceneName]) {
             return;
         }
+        this.removeAllScenes();
         this.activeScene = sceneName;
         this.graphicsEngine.swapScene(sceneName);
         for(var i in this.all){
             const gameObject = this.all[i];
             if(gameObject.scene == sceneName){
                 gameObject.addToWorld(this);
+                if(gameObject.mesh?.instancedMeshInfo){
+                    gameObject.addToScene(this);
+                }
             }
         }
     }
