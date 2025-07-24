@@ -40,6 +40,9 @@ var Slime = class extends HealthEntity {
         this.mainGameObject.physics = this.sphere;
         this.gameObjects.push(this.mainGameObject);
 
+        this.healthGameObject = new GameObject();
+        this.gameObjects.push(this.healthGameObject);
+
         this.sphere.radius = options?.radius ?? 0.5;
         this.sphere.setRestitution(1);
         this.sphere.setFriction(0);
@@ -139,8 +142,10 @@ var Slime = class extends HealthEntity {
     }
 
     addToScene(gameEngine) {
-        gameEngine.graphicsEngine.scene.add(this.mainGameObject.mesh.instancedMeshInfo.instancedMesh);
-        gameEngine.graphicsEngine.addToScene(this.healthSprite);
+        for (var i of this.gameObjects) {
+            i.addToScene(gameEngine);
+        }
+        this.healthGameObject.addToScene(gameEngine);
     }
 
     addToWorld(gameEngine) {
@@ -154,6 +159,7 @@ var Slime = class extends HealthEntity {
         const mesh = await gameEngine.graphicsEngine.modelPool.loadInstance("slime.glb", 100);
         this.mainGameObject.mesh = mesh;
         this.makeHealthSprite(new Vector3(2, 0.3, 0).scale(this.sphere.radius), new Vector3(0, 1.3, 0).scale(this.sphere.radius));
+        this.healthGameObject.mesh = gameEngine.graphicsEngine.meshLinker.createMeshData(this.healthSprite);
     }
 
     async setMeshAndAddToScene(options, gameEngine) {

@@ -66,6 +66,10 @@ const GameEngine = class {
     }
 
     addToScene(object, scene = "main") {
+        if(!this.scenes[scene]){
+            this.scenes[scene] = {};
+            this.graphicsEngine.createScene(scene);
+        }
         this.graphicsEngine.addToScene(object, scene);
     }
 

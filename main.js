@@ -300,7 +300,7 @@ var player = new Player({
     tiltable: false,
     moveStrength: 0.5,
     airMoveStrength: 0.25,
-    moveSpeed: 0.5,
+    moveSpeed: 0.5*4,
     jumpSpeed: 1,
     gravity: new Vector3(0, gravity, 0),
     mass: 1,
@@ -312,14 +312,34 @@ gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine);
 
 
+top.doThing = function () {
+    gameEngine.removeAllScenes();
+    for (const go of player.gameObjects) {
+        go.scene = "dirt_arena";
+        go.addToScene(gameEngine);
+    }
+    player.getMainShape().physics.maxParent.setPosition(new Vector3(0, 2, 0));
+    player.getMainShape().physics.maxParent.global.body.setVelocity(new Vector3())
+    gameEngine.loadScene("dirt_arena");
+}
+top.doThing2 = function () {
+    gameEngine.removeAllScenes();
+    for (const go of player.gameObjects) {
+        go.scene = "main";
+        go.addToScene(gameEngine);
+    }
+    gameEngine.loadScene("main");
+}
+
+
 const friction = 0.3;
 
 
-for (var i = 0; i < 100; i++) {
+for (var i = 0; i < 1; i++) {
     var slime = new Slime({
         gameEngine: gameEngine,
         gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(-70 * 1, 20 + i * 0.1, 30 + 1 * i * 0.1),
+        position: new Vector3(0 * 1, 20 + i * 0.1, 0 + 1 * i * 0.1),
         radius: 1,
         speed: 0.5,
         jumpPower: 1
@@ -333,6 +353,7 @@ for (var i = 0; i < 100; i++) {
         return [player.id];
     }
 }
+
 
 for (let i = 0; i < 0; i = i + 1) {
     var slime = new Slime({
@@ -487,6 +508,7 @@ inventory.createHTML({
 
 inventory.modal.hide();
 
+
 var hotbar = new Hotbar({
     rows: 1,
     columns: 9,
@@ -499,12 +521,9 @@ var hotbar = new Hotbar({
 });
 player.hotbarElement = hotbar;
 player.inventoryElement = inventory;
-
 document.addEventListener("click", function (e) {
     player.useSelectedItem();
 })
-
-
 hotbar.createHTML({
     container: document.body,
     overflow: false,
@@ -512,13 +531,10 @@ hotbar.createHTML({
     height: 70.2337,
     gap: "4px"
 });
-
 var setHotbarPosition = function () {
     hotbar.modal.center();
     hotbar.modal.html.style.top = `${hotbar.modal.html.parentElement.clientHeight - hotbar.modal.html.offsetHeight - 25}px`;
 }
-
-
 setHotbarPosition();
 
 document.addEventListener("keydown", function (e) {
@@ -548,6 +564,7 @@ var map = await gameEngine.loadMap("lawn.glb", {
 });
 var damageTimeStamp = 0;
 for (const gameObject of map.objects) {
+    gameObject.scene = "main";
     const obj = gameObject.physics;
     gameEngine.world.addComposite(obj);
     gameEngine.addGameObject(gameObject);
@@ -608,20 +625,11 @@ for (const gameObject of map.objects) {
         })
     }
 }
-for (var mesh of map.meshes) {
-    //gameEngine.graphicsEngine.addToScene(mesh);
-}
 for (var entity of map.entities) {
-    if (entity.usesInstancing) {
-        entity.setMeshAndAddToScene({}, gameEngine);
-    }
-    else {
-        entity.setMeshAndAddToScene({}, gameEngine);
-    }
+    entity.setMeshAndAddToScene({}, gameEngine);
     entity.addToGameEngine(gameEngine);
     gameEngine.entitySystem.register(entity);
     entity.addToWorld(gameEngine);
-
     if (entity instanceof Slime) {
         entity.getTargets = function () {
             return [player.id];
@@ -629,13 +637,101 @@ for (var entity of map.entities) {
         entity.setGravity(new Vector3(0, gravity, 0));
     }
 }
-gameEngine.graphicsEngine.addToScene(map.gltf.scene)
+gameEngine.graphicsEngine.addToScene(map.gltf.scene, "main");
+
+
+//2
+var map = await gameEngine.loadMap("dirt_arena.glb", {
+    "ShopKeeper": ShopKeeper,
+    "Coin": Coin,
+    "Slime": Slime
+});
+var damageTimeStamp = 0;
+for (const gameObject of map.objects) {
+    const obj = gameObject.physics;
+    gameObject.scene = "dirt_arena";
+    gameEngine.world.addComposite(obj);
+    gameEngine.addGameObject(gameObject);
+    if (obj.name.toLowerCase().includes("death")) {
+        obj.addEventListener("collision", function (contact) {
+            var player = null;
+            if (gameEngine.entitySystem.getEntityFromShape(contact.body1) instanceof Player) {
+                player = gameEngine.entitySystem.getEntityFromShape(contact.body1);
+            }
+            else if (gameEngine.entitySystem.getEntityFromShape(contact.body2) instanceof Player) {
+                player = gameEngine.entitySystem.getEntityFromShape(contact.body2);
+            }
+
+            if (!player) {
+                return;
+            }
+            player.takeDamage(player.health)
+            if (performance.now() - damageTimeStamp > 100) {
+                gameEngine.soundManager.play("damage");
+                damageTimeStamp = performance.now();
+            }
+        });
+    }
+    if (obj.name.toLowerCase().includes("start")) {
+        player.setStartPoint(obj.global.body.position, true);
+        player.respawn();
+    }
+    if (obj.name.toLowerCase().includes("start") || obj.name.toLowerCase().includes("checkpoint")) {
+        obj.addEventListener("collision", function (contact) {
+            var player = null;
+            if (gameEngine.entitySystem.getEntityFromShape(contact.body1) instanceof Player) {
+                player = gameEngine.entitySystem.getEntityFromShape(contact.body1);
+            }
+            else if (gameEngine.entitySystem.getEntityFromShape(contact.body2) instanceof Player) {
+                player = gameEngine.entitySystem.getEntityFromShape(contact.body2);
+            }
+
+            if (!player) {
+                return;
+            }
+            player.setSpawnPoint(player.getMainShape().physics.global.body.position, true);
+        })
+    }
+    if (obj.name.toLowerCase().includes("shop")) {
+        obj.addEventListener("collision", function (contact) {
+            var player = null;
+            if (gameEngine.entitySystem.getEntityFromShape(contact.body1) instanceof Player) {
+                player = gameEngine.entitySystem.getEntityFromShape(contact.body1);
+            }
+            else if (gameEngine.entitySystem.getEntityFromShape(contact.body2) instanceof Player) {
+                player = gameEngine.entitySystem.getEntityFromShape(contact.body2);
+            }
+
+            if (!player) {
+                return;
+            }
+            shopInventory.open();
+        })
+    }
+}
+for (var entity of map.entities) {
+    entity.setMeshAndAddToScene({}, gameEngine);
+    entity.addToGameEngine(gameEngine);
+    gameEngine.entitySystem.register(entity);
+    entity.addToWorld(gameEngine);
+    if (entity instanceof Slime) {
+        entity.getTargets = function () {
+            return [player.id];
+        }
+        entity.setGravity(new Vector3(0, gravity, 0));
+    }
+}
+gameEngine.graphicsEngine.addToScene(map.gltf.scene, "dirt_arena");
+
 
 top.g = gameEngine
 
 gameEngine.timer.schedule(gameEngine.fpsStepper);
 
 gameEngine.toastManager.createToast({ duration: 1000, type: 0, message: "Map Loaded" })
+
+
+
 
 
 // var infoModal = new Modal({

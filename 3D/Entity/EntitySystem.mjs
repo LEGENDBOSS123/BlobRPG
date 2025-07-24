@@ -4,9 +4,9 @@ import GameEngineComponent from "../GameEngineComponent.mjs";
 var EntitySystem = class extends GameEngineComponent{
     constructor(options) {
         super(options);
-        this.maxID = options?.maxID ?? 0;
-        this.all = options?.all ?? {};
-        this.shapeLookup = options?.shapeLookup ?? {};
+        this.maxID = 0;
+        this.all = {};
+        this.shapeLookup = new WeakMap();
        
     }
 
@@ -26,12 +26,11 @@ var EntitySystem = class extends GameEngineComponent{
 
     remove(entity) {
         delete this.all[entity.id];
-        delete this.shapeLookup[entity.oldShape.maxParent.id];
+        this.shapeLookup.delete(entity.oldShape.maxParent);
     }
 
     getEntityFromShape(shape) {
-        var id = shape.maxParent.id;
-        return this.shapeLookup[id];
+        return this.shapeLookup.get(shape.maxParent);
     }
 
     updateStep(gameEngine){

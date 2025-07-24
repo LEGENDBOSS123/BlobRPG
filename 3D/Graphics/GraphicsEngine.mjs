@@ -133,9 +133,16 @@ var GraphicsEngine = class extends GameEngineComponent {
         if (this.scenes[name]) {
             this.scene = this.scenes[name];
             this.scene.fog = this.fog;
+            this.camera.removeFromParent();
             this.scene.add(this.camera);
             for (var light of this.lights) {
+                light.removeFromParent();
                 this.scene.add(light);
+
+                if(light.target){
+                    light.target.removeFromParent();
+                    this.scene.add(light.target);
+                }
             }
             if (!this.scene.background) {
                 this.scene.background = this.backgroundTexture;
@@ -341,6 +348,10 @@ var GraphicsEngine = class extends GameEngineComponent {
         if (!this.scenes[name]) {
             this.createScene(name);
         }
+        if(!object){
+            return;
+        }
+        object.removeFromParent();
         this.scenes[name].add(object);
     }
 

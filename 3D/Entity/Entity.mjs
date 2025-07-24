@@ -15,7 +15,7 @@ var Entity = class extends GameEngineComponent {
     }
 
     addToGameEngine(gameEngine) {
-        for(var i of this.gameObjects){
+        for (var i of this.gameObjects) {
             gameEngine.addGameObject(i);
         }
     }
@@ -45,13 +45,13 @@ var Entity = class extends GameEngineComponent {
         if (!this.entitySystem || shape.maxParent.id == -1) {
             return;
         }
-        if (this.entitySystem.shapeLookup[this.oldShape.maxParent.id] && this.oldShape.maxParent.id == shape.maxParent.id) {
+        if (this.entitySystem.shapeLookup.has(this.oldShape.maxParent) && this.oldShape.maxParent.id == shape.maxParent.id) {
             return;
         }
-        if (this.entitySystem.shapeLookup[this.oldShape.maxParent.id]) {
-            delete this.entitySystem.shapeLookup[this.oldShape.maxParent.id];
+        if (this.entitySystem.shapeLookup.has(this.oldShape.maxParent)) {
+            this.entitySystem.shapeLookup.delete(this.oldShape.maxParent);
         }
-        this.entitySystem.shapeLookup[shape.maxParent.id] = this;
+        this.entitySystem.shapeLookup.set(shape.maxParent, this);
         this.oldShape = shape;
     }
 

@@ -411,8 +411,8 @@ var Player = class extends Entity {
             }
             else {
                 if (this.itemHeldBox.id != -1) {
-                    // this.gameEngine.world.removeComposite(this.itemHeldBox);
-                    // this.gameEngine.world.removeConstraint(this.itemHeldConstraint);
+                    this.gameEngine.world.removeComposite(this.itemHeldBox);
+                    this.gameEngine.world.removeConstraint(this.itemHeldConstraint);
                     if (this.boxGameObject.mesh?.mesh?.parent) {
                         this.boxGameObject.mesh.mesh.removeFromParent();
                         this.constraintGameObject.mesh.mesh.removeFromParent();
@@ -424,8 +424,8 @@ var Player = class extends Entity {
         }
         else {
             if (this.itemHeldBox.id != -1) {
-                // this.gameEngine.world.removeComposite(this.itemHeldBox);
-                // this.gameEngine.world.removeConstraint(this.itemHeldConstraint);
+                this.gameEngine.world.removeComposite(this.itemHeldBox);
+                this.gameEngine.world.removeConstraint(this.itemHeldConstraint);
                 if (this.boxGameObject.mesh?.mesh?.parent) {
                     this.boxGameObject.mesh.mesh.parent.remove(this.boxGameObject.mesh.mesh);
                     this.constraintGameObject.mesh.mesh.parent.remove(this.constraintGameObject.mesh.mesh);
