@@ -313,23 +313,33 @@ player.addToWorld(gameEngine);
 
 
 top.doThing = function () {
-    
-    for (const go of player.gameObjects) {
-        go.scene = "dirt_arena";
-        go.addToScene(gameEngine);
-    }
-    player.getMainShape().physics.maxParent.setPosition(new Vector3(0, 2, 0));
-    player.getMainShape().physics.maxParent.global.body.setVelocity(new Vector3())
+    this.document.getElementById("canvas-blink").classList.add("black");
+    this.setTimeout(function () {
+        this.document.getElementById("canvas-blink").classList.remove("black");
+    }, 100)
+    this.setTimeout(function () {
+        for (const go of player.gameObjects) {
+            go.scene = "dirt_arena";
+            go.addToScene(gameEngine);
+        }
+        player.getMainShape().physics.maxParent.setPosition(new Vector3(0, 2, 0));
+        player.getMainShape().physics.maxParent.global.body.setVelocity(new Vector3())
 
-    gameEngine.loadScene("dirt_arena");
+        gameEngine.loadScene("dirt_arena");
+    }, 50)
 }
 top.doThing2 = function () {
-
-    for (const go of player.gameObjects) {
-        go.scene = "main";
-        go.addToScene(gameEngine);
-    }
-    gameEngine.loadScene("main");
+    this.document.getElementById("canvas-blink").classList.add("black");
+    this.setTimeout(function () {
+        this.document.getElementById("canvas-blink").classList.remove("black");
+    }, 100)
+    this.setTimeout(function () {
+        for (const go of player.gameObjects) {
+            go.scene = "main";
+            go.addToScene(gameEngine);
+        }
+        gameEngine.loadScene("main");
+    }, 50);
 }
 
 
