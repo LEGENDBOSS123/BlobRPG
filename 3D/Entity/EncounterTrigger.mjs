@@ -1,4 +1,5 @@
 import Vector3 from "../Physics/Math3D/Vector3.mjs";
+import BalloonCarry from "./BalloonCarry.mjs";
 import BattleEnemy from "./BattleEnemy.mjs";
 import BattleManager from "./BattleManager.mjs";
 import Entity from "./Entity.mjs";
@@ -9,9 +10,9 @@ class EncounterTrigger extends Entity {
     static canvasBlinkElement = "canvas-blink";
     constructor(options) {
         super(options);
-        this.encounters = ["Slime"];
-        this.encounterProbabilities = [1];
-        this.encounterChance = 1;
+        this.encounters = ["Slime", "BalloonSlime"];
+        this.encounterProbabilities = [0.5, 0.5];
+        this.encounterChance = 0.1;
         this.isEncounterTrigger = true;
         this.gameObjects = [];
         this.scene = "dirt_arena";
@@ -94,24 +95,60 @@ class EncounterTrigger extends Entity {
         for (const e of enemies) {
             let enemy = [];
             switch (e) {
-                case "Slime":
-                    let slime = new Slime({
-                        gameEngine: this.gameEngine,
-                        gravity: new Vector3(0, this.gameEngine.gravity, 0),
-                        position: new Vector3(0, 0, 0),
-                        radius: 1,
-                        speed: 0.5,
-                        jumpPower: 1,
-                        gameEngine: this.gameEngine
-                    });
-                    slime.sphere.setRestitution(1)
-                    
-                    slime.getTargets = function () {
-                        return [players[0].id];
+                case "Slime": {
+
+                    for (var i = 0; i < 6; i++) {
+                        let slime = new Slime({
+                            gameEngine: this.gameEngine,
+                            gravity: new Vector3(0, this.gameEngine.gravity, 0),
+                            position: new Vector3(0, 0, 0),
+                            radius: 1,
+                            speed: 0.5,
+                            jumpPower: 1,
+                            gameEngine: this.gameEngine
+                        });
+                        slime.sphere.setRestitution(1)
+
+                        slime.getTargets = function () {
+                            return [players[0].id];
+                        }
+                        enemy.push(slime);
                     }
-                    enemy = [slime];
                     break;
+                }
+                case "BalloonSlime": {
+                    for (var i = 0; i < 2; i++) {
+                        let slime = new Slime({
+                            gameEngine: this.gameEngine,
+                            gravity: new Vector3(0, this.gameEngine.gravity, 0),
+                            position: new Vector3(0, 0, 0),
+                            radius: 1,
+                            speed: 0.5,
+                            jumpPower: 1,
+                            gameEngine: this.gameEngine
+                        });
+                        slime.sphere.setRestitution(1);
+
+                        slime.getTargets = function () {
+                            return [players[0].id];
+                        }
+
+                        let balloonCarry = new BalloonCarry({
+                            gameEngine: this.gameEngine,
+                            gravity: new Vector3(0, this.gameEngine.gravity, 0),
+                            size: 1,
+                            position: new Vector3(0, 6, 0),
+                            gameEngine: this.gameEngine,
+                            carryingEntity: slime
+                        })
+
+                        enemy.push(slime);
+                        enemy.push(balloonCarry);
+                    }
+                    break;
+                }
             }
+            console.log(enemy);
             for (const enem of enemy) {
                 const be = new BattleEnemy({
                     enemy: enem,

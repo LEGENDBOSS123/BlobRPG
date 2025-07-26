@@ -52,6 +52,10 @@ class BalloonCarry extends Entity {
 
     }
 
+    isAlive(){
+        return false;
+    }
+
     addToScene(gameEngine) {
         for (var i of this.gameObjects) {
             i.addMeshToScene(gameEngine);
@@ -101,11 +105,8 @@ class BalloonCarry extends Entity {
 
     destroy() {
         this.entitySystem.remove(this);
-        this.joint.disposeMesh();
-        this.sphere.world.removeComposite(this.sphere);
-        this.joint.world.removeConstraint(this.joint);
-        this.sphere.destroy();
-        this.joint.destroy();
+        this.mainGameObject.destroy();
+        this.jointGameObject.destroy();
         this.carryingEntity = null;
     }
 
