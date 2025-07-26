@@ -70,6 +70,15 @@ var Entity = class extends GameEngineComponent {
     update(gameEngine) {
 
     }
+
+    destroy(){
+        for(const go of this.gameObjects){
+            go.destroy();
+        }
+        this.entitySystem.remove(this);
+        this.entitySystem = null;
+        super.destroy();
+    }
 }
 
 export default Entity;

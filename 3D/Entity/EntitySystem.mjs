@@ -25,7 +25,9 @@ var EntitySystem = class extends GameEngineComponent{
 
     remove(entity) {
         delete this.all[entity.id];
-        this.shapeLookup.delete(entity.oldShape.maxParent);
+        if(entity.oldShape?.maxParent){
+            this.shapeLookup.delete(entity.oldShape.maxParent);
+        }
     }
 
     getEntityFromShape(shape) {

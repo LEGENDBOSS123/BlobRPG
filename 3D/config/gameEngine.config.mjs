@@ -30,5 +30,6 @@ export default {
         document: document,
     },
     particleSystem: {},
-    fps: 20
+    fps: 20,
+    gravity: -0.35
 }

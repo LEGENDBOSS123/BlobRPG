@@ -36,7 +36,7 @@ var ShopKeeper = class extends Entity {
 
     addToScene(gameEngine) {
         for (var i of this.gameObjects) {
-            i.addToScene(gameEngine);
+            i.addMeshToScene(gameEngine);
         }
     }
 

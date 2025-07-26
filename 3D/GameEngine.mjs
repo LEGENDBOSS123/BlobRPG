@@ -63,18 +63,35 @@ const GameEngine = class {
 
         this.fps = options?.fps ?? 20;
         this.fpsStepper = new Timer.Interval(1000 / this.fps);
+
+        this.gravity = options?.gravity ?? 0.35;
     }
 
-    addToScene(object, scene = "main") {
-        if(!this.scenes[scene]){
+    addMeshToScene(mesh, scene = "main") {
+        if (!this.scenes[scene]) {
             this.scenes[scene] = {};
             this.graphicsEngine.createScene(scene);
         }
-        this.graphicsEngine.addToScene(object, scene);
+
+        this.graphicsEngine.addToScene(mesh, scene);
     }
 
-    removeScene(scene) {
+    addToScene(gameObject, scene) {
+        if (!scene) {
+            scene = gameObject.scene || "main";
+        }
+        const oldScene = gameObject.oldScene;
+        if (this.scenes[oldScene]?.[gameObject.id]) {
+            delete this.scenes[oldScene][gameObject.id];
+        }
+        gameObject.oldScene = scene;
+        gameObject.scene = scene;
+        if (!this.scenes[scene]) {
+            this.scenes[scene] = {};
+            this.graphicsEngine.createScene(scene);
+        }
 
+        this.scenes[scene][gameObject.id] = gameObject;
     }
 
     removeAllScenes() {
@@ -91,31 +108,32 @@ const GameEngine = class {
         this.removeAllScenes();
         this.activeScene = sceneName;
         this.graphicsEngine.swapScene(sceneName);
-        for(var i in this.all){
+        for (var i in this.all) {
             const gameObject = this.all[i];
-            if(gameObject.scene == sceneName){
+            if (gameObject.scene == sceneName) {
                 gameObject.addToWorld(this);
-                if(gameObject.mesh?.instancedMeshInfo){
+                if (gameObject.mesh?.instancedMeshInfo) {
                     gameObject.addToScene(this);
                 }
             }
         }
     }
 
-    addGameObject(gameObject, scene = "main") {
+    addGameObject(gameObject, scene) {
+        if (!scene) {
+            scene = gameObject.scene || "main";
+        }
         gameObject.gameEngine = this;
         gameObject.id = GameEngine.maxID++;
         this.all[gameObject.id] = gameObject;
         gameObject.mesh = gameObject._mesh;
         gameObject._mesh = null;
+        this.addToScene(gameObject, scene);
+    }
 
-        if (!this.scenes[scene]) {
-            this.scenes[scene] = {};
-            this.graphicsEngine.createScene(scene);
-        }
-
-        this.scenes[scene][gameObject.id] = gameObject;
-
+    removeGameObject(gameObject) {
+        delete this.all[gameObject.id];
+        delete this.scenes[gameObject.scene][gameObject.id];
     }
 
     getByID(id) {

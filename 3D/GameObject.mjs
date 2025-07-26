@@ -9,7 +9,8 @@ class GameObject extends GameEngineComponent {
         this.id = -1;
         this.mesh = options?.mesh ?? null;
         this.physics = options?.physics ?? null;
-        this.scene = options?.scene ?? "main";
+        this.oldScene = options?.scene ?? "main";
+        this.scene = this.oldScene;
     }
 
     set mesh(value) {
@@ -28,11 +29,13 @@ class GameObject extends GameEngineComponent {
     }
 
     disposeMesh() {
-        var mesh = this.mesh?.mesh || this._mesh || null;
-        if (!mesh) {
+        if (this.mesh?.instancedMeshInfo) {
+            this.gameEngine.graphicsEngine.meshLinker.removeMesh(this.id);
             return;
         }
-        if (mesh.instancedMeshInfo) {
+
+        var mesh = this.mesh?.mesh
+        if (!mesh) {
             return;
         }
         mesh.traverse((child) => {
@@ -58,6 +61,7 @@ class GameObject extends GameEngineComponent {
         if (mesh.parent) {
             mesh.parent.remove(mesh);
         }
+        this.gameEngine.graphicsEngine.meshLinker.removeMesh(this.id);
     }
 
 
@@ -69,25 +73,30 @@ class GameObject extends GameEngineComponent {
 
     }
 
-    addToScene(gameEngine) {
+
+    addToScene(gameEngine){
+        gameEngine.addToScene(this, this.scene);
+    }
+
+    addMeshToScene(gameEngine) {
         if (!this.mesh) {
             return null;
         }
         if (this.mesh.isMeshLink) {
             if (this.mesh.instancedMeshInfo) {
-                return gameEngine.addToScene(this.mesh.instancedMeshInfo.instancedMesh, this.scene);
+                return gameEngine.addMeshToScene(this.mesh.instancedMeshInfo.instancedMesh, this.scene);
             }
-            gameEngine.addToScene(this.mesh.mesh, this.scene);
+            gameEngine.addMeshToScene(this.mesh.mesh, this.scene);
             return;
         }
-        gameEngine.addToScene(this.mesh, this.scene);
+        gameEngine.addMeshToScene(this.mesh, this.scene);
     }
 
     addToWorld(gameEngine) {
-        if(!this.physics || gameEngine.activeScene != this.scene){
+        if (!this.physics || gameEngine.activeScene != this.scene) {
             return;
         }
-        if(this.physics instanceof Constraint){
+        if (this.physics instanceof Constraint) {
             gameEngine.world.addConstraint(this.physics);
             return;
         }
@@ -135,7 +144,7 @@ class GameObject extends GameEngineComponent {
                 lastPoints[0].lerp(points[0], lerp),
                 lastPoints[1].lerp(points[1], lerp)
             ];
-            
+
             this.mesh.mesh.geometry.setFromPoints(lerped);
             this.mesh.mesh.geometry.attributes.position.needsUpdate = true;
             return;
@@ -144,7 +153,26 @@ class GameObject extends GameEngineComponent {
         const quat = this.physics.global.body.rotation.slerp(last.global.body.rotation, 1 - lerp);
         this.mesh.mesh.quaternion.set(...[quat.x, quat.y, quat.z, quat.w]);
     }
-   
+
+
+    destroy() {
+        this.disposeMesh();
+        if (this.physics) {
+            if (this.physics instanceof Constraint) {
+                this.physics.world.removeConstraint(this.physics);
+            } else {
+                this.physics.world.removeComposite(this.physics);
+            }
+            this.physics.destroy();
+        }
+        this.gameEngine.removeGameObject(this);
+        this.mesh = null;
+        this.scene = null;
+        this.physics = null;
+        this.id = -1;
+        super.destroy();
+    }
+
 }
 
 

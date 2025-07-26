@@ -47,6 +47,7 @@ import BalloonCarry from "./3D/Entity/BalloonCarry.mjs";
 import gameEngineConfig from "./3D/config/gameEngine.config.mjs";
 import defaultKeyBinds from "./3D/config/defaultKeyBinds.config.mjs";
 import GameObject from "./3D/GameObject.mjs";
+import EncounterTrigger from "./3D/Entity/EncounterTrigger.mjs";
 
 var stats = new Stats();
 var stats2 = new Stats();
@@ -292,7 +293,6 @@ gameEngine.world.setSubsteps(4);
 gameEngine.world.setVelocityIterations(16);
 gameEngine.world.setPenetrationIterations(16);
 
-var gravity = -0.35;
 
 var player = new Player({
     radius: 0.5,
@@ -302,7 +302,7 @@ var player = new Player({
     airMoveStrength: 0.25,
     moveSpeed: 0.5 * 4,
     jumpSpeed: 1,
-    gravity: new Vector3(0, gravity, 0),
+    gravity: new Vector3(0, gameEngine.gravity, 0),
     mass: 1,
     gameEngine: gameEngine
 });
@@ -310,118 +310,6 @@ player.setMeshAndAddToScene({}, gameEngine);
 player.addToGameEngine(gameEngine);
 gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine);
-
-
-top.doThing = function () {
-    this.document.getElementById("canvas-blink").classList.add("black");
-    this.setTimeout(function () {
-        this.document.getElementById("canvas-blink").classList.remove("black");
-    }, 100)
-    this.setTimeout(function () {
-        for (const go of player.gameObjects) {
-            go.scene = "dirt_arena";
-            go.addToScene(gameEngine);
-        }
-        player.getMainShape().physics.maxParent.setPosition(new Vector3(0, 2, 0));
-        player.getMainShape().physics.maxParent.global.body.setVelocity(new Vector3())
-
-        gameEngine.loadScene("dirt_arena");
-    }, 50)
-}
-top.doThing2 = function () {
-    this.document.getElementById("canvas-blink").classList.add("black");
-    this.setTimeout(function () {
-        this.document.getElementById("canvas-blink").classList.remove("black");
-    }, 100)
-    this.setTimeout(function () {
-        for (const go of player.gameObjects) {
-            go.scene = "main";
-            go.addToScene(gameEngine);
-        }
-        gameEngine.loadScene("main");
-    }, 50);
-}
-
-
-const friction = 0.3;
-
-
-for (var i = 0; i < 1; i++) {
-    var slime = new Slime({
-        gameEngine: gameEngine,
-        gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(0 * 1, 20 + i * 0.1, 0 + 1 * i * 0.1),
-        radius: 1,
-        speed: 0.5,
-        jumpPower: 1
-    })
-    slime.sphere.setRestitution(1)
-    slime.setMeshAndAddToScene({}, gameEngine);
-    gameEngine.entitySystem.register(slime);
-    slime.addToGameEngine(gameEngine);
-    slime.addToWorld(gameEngine);
-    slime.getTargets = function () {
-        return [player.id];
-    }
-}
-
-
-for (var i = 0; i < 2; i++) {
-    let slime = new Slime({
-        gameEngine: gameEngine,
-        gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(0 * 1, 20 + i * 0.1, 0 + 1 * i * 0.1),
-        radius: 1,
-        speed: 0.5,
-        jumpPower: 1
-    })
-    slime.sphere.setRestitution(1)
-    slime.setMeshAndAddToScene({}, gameEngine);
-    for (const go of slime.gameObjects) {
-        go.scene = "dirt_arena";
-        go.addToScene(gameEngine)
-    }
-
-    gameEngine.entitySystem.register(slime);
-    slime.addToGameEngine(gameEngine);
-    slime.addToWorld(gameEngine);
-    slime.getTargets = function () {
-        return [player.id];
-    }
-}
-
-
-
-for (let i = 0; i < 0; i = i + 1) {
-    var slime = new Slime({
-        gameEngine: gameEngine,
-        gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(-70 * 1, 20 + i * 0.1, 30 + 1 * i * 0.1),
-        radius: 1,
-        speed: 1.2,
-        damage: 10,
-        jumpPower: 1
-    })
-    slime.sphere.setRestitution(1)
-    slime.setMeshAndAddToScene({}, gameEngine);
-    gameEngine.entitySystem.register(slime);
-    slime.addToGameEngine(gameEngine);
-    slime.addToWorld(gameEngine);
-    slime.getTargets = function () {
-        return [player.id];
-    }
-    const balloonCarry = new BalloonCarry({
-        gravity: new Vector3(0, gravity, 0),
-        position: new Vector3(30, 10, 0),
-        gameEngine: gameEngine,
-        size: 1.2,
-        carryingEntity: slime
-    })
-    balloonCarry.setMeshAndAddToScene({}, gameEngine);
-    gameEngine.entitySystem.register(balloonCarry);
-    balloonCarry.addToGameEngine(gameEngine);
-    balloonCarry.addToWorld(gameEngine);
-}
 
 
 const ufo = new UFO({
@@ -661,6 +549,13 @@ for (const gameObject of map.objects) {
             shopInventory.open();
         })
     }
+    if(obj.name.toLowerCase().includes("encountertrigger")){
+        const et = new EncounterTrigger({
+            gameEngine: gameEngine
+        });
+        et.addGameObject(gameObject);
+        gameEngine.entitySystem.register(et);
+    }
 }
 for (var entity of map.entities) {
     entity.setMeshAndAddToScene({}, gameEngine);
@@ -671,7 +566,7 @@ for (var entity of map.entities) {
         entity.getTargets = function () {
             return [player.id];
         }
-        entity.setGravity(new Vector3(0, gravity, 0));
+        entity.setGravity(new Vector3(0, gameEngine.gravity, 0));
     }
 }
 gameEngine.graphicsEngine.addToScene(map.gltf.scene, "main");
@@ -755,7 +650,7 @@ for (var entity of map.entities) {
         entity.getTargets = function () {
             return [player.id];
         }
-        entity.setGravity(new Vector3(0, gravity, 0));
+        entity.setGravity(new Vector3(0, gameEngine.gravity, 0));
     }
 }
 gameEngine.graphicsEngine.addToScene(map.gltf.scene, "dirt_arena");

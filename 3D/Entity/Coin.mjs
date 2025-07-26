@@ -58,7 +58,7 @@ const Coin = class extends Entity {
     }
 
     addToScene(gameEngine) {
-        this.mainGameObject.addToScene(gameEngine);
+        this.mainGameObject.addMeshToScene(gameEngine);
     }
 
     addToWorld(gameEngine) {

@@ -22,6 +22,39 @@ var Player = class extends Entity {
         this.airMoveStrength = options?.airMoveStrength ?? 0.1;
         this.jumpSpeed = options?.jumpSpeed ?? 1;
         this.radius = options?.radius ?? 1;
+        this.inBattle = false;
+        this.lastDamageTime = 0;
+        this.invincibilityFramesDuration = 300;
+
+        this.cash = options?.cash ?? 100000;
+        this.hotbar = options?.hotbar ?? Array(9).fill(null);
+        this.hotbarElement = options?.hotbarElement ?? null;
+        this.inventory = options?.hotbar ?? Array(9).fill(null);
+        this.inventoryElement = options?.hotbarElement ?? null;
+
+        this.tiltable = options?.tiltable ?? true;
+
+        this.totalMass = options?.mass ?? 1;
+        this.height = options?.height ?? 3;
+
+        this.damage = 1;
+
+        this.canJump = false;
+        this.touchingGround = false;
+        this.groundVelocity = new Vector3();
+        this.touchingWall = false;
+        this.wallNormal = new Vector3();
+
+        this.groundDetectDot = 0.8;
+        this.wallDetectDot = 0.2;
+
+        this.latestItemId = 0;
+
+
+        this.keysHeld = {};
+        this.justToggled = {};
+        this.keysVector = new Vector3();
+
         this.composite = new Composite({
             global: {
                 body: {
@@ -42,19 +75,7 @@ var Player = class extends Entity {
             })
         );
 
-        this.lastDamageTime = 0;
-        this.invincibilityFramesDuration = 300;
 
-        this.cash = options?.cash ?? 100000;
-        this.hotbar = options?.hotbar ?? Array(9).fill(null);
-        this.hotbarElement = options?.hotbarElement ?? null;
-        this.inventory = options?.hotbar ?? Array(9).fill(null);
-        this.inventoryElement = options?.hotbarElement ?? null;
-
-        this.tiltable = options?.tiltable ?? true;
-
-        this.totalMass = options?.mass ?? 1;
-        this.height = options?.height ?? 3;
         this.spheres = new Array(this.height);
         for (var i = 0; i < this.height; i++) {
             const go = new GameObject();
@@ -75,8 +96,7 @@ var Player = class extends Entity {
         }
 
         this.mainGameObject = this.gameObjects.at(-1);
-
-        this.damage = 1;
+        this.spawnPoint = this.spheres[0].global.body.position.copy();
 
 
         this.composite.setLocalFlag(Composite.FLAGS.CENTER_OF_MASS, true);
@@ -88,17 +108,7 @@ var Player = class extends Entity {
             sphere.setFriction(0);
         }
 
-        this.spawnPoint = this.spheres[0].global.body.position.copy();
-        this.canJump = false;
-        this.touchingGround = false;
-        this.groundVelocity = new Vector3();
-        this.touchingWall = false;
-        this.wallNormal = new Vector3();
 
-        this.groundDetectDot = 0.8;
-        this.wallDetectDot = 0.2;
-
-        this.latestItemId = 0;
 
         this.itemHeldBox = new Box({
             width: 1,
@@ -203,7 +213,6 @@ var Player = class extends Entity {
             if (this.touchingGround && this.tiltable) {
                 velXZ = velXZ2;
             }
-            // this.composite.global.body.rotation = Quaternion.lookAt(velXZ.normalize(), new Vector3(0, 1, 0));
         }.bind(this);
 
 
@@ -223,9 +232,6 @@ var Player = class extends Entity {
 
         this.updateShapeID(this.composite);
 
-        this.keysHeld = {};
-        this.justToggled = {};
-        this.keysVector = new Vector3();
     }
 
 
@@ -276,7 +282,7 @@ var Player = class extends Entity {
 
     addToScene(gameEngine) {
         for (var i of this.gameObjects) {
-            i.addToScene(gameEngine);
+            i.addMeshToScene(gameEngine);
         }
     }
 
@@ -389,6 +395,8 @@ var Player = class extends Entity {
                         this.boxGameObject.mesh.mesh = ItemMeshManager.get(selectedItem.constructor, this.gameEngine);
                         this.boxGameObject.addToScene(this.gameEngine);
                         this.constraintGameObject.addToScene(this.gameEngine);
+                        this.boxGameObject.addMeshToScene(this.gameEngine);
+                        this.constraintGameObject.addMeshToScene(this.gameEngine);
                         this.boxGameObject.addToWorld(this.gameEngine);
                         this.constraintGameObject.addToWorld(this.gameEngine);
                         this.latestId++;
@@ -403,6 +411,8 @@ var Player = class extends Entity {
                                 this.boxGameObject.mesh.mesh = mesh;
                                 this.boxGameObject.addToScene(this.gameEngine);
                                 this.constraintGameObject.addToScene(this.gameEngine);
+                                this.boxGameObject.addMeshToScene(this.gameEngine);
+                                this.constraintGameObject.addMeshToScene(this.gameEngine);
                                 this.latestId++;
                             }
                         }.bind(this));

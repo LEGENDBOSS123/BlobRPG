@@ -66,7 +66,6 @@ var Particle = class {
         if(!this.sceneName){
             this.sceneName = gameEngine.activeScene;
         }
-        console.log(this.gameEngine, this.sprite, this.sceneName)
         this.gameEngine.graphicsEngine.addToScene(this.sprite, this.sceneName);
     }
 

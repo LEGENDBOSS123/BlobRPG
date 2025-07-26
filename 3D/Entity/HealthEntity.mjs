@@ -72,6 +72,10 @@ var HealthEntity = class extends Entity {
         this.updateHealthTexture(true);
     }
 
+    isAlive(){
+        return this.health > 0;
+    }
+
     toJSON() {
         var json = {};
         json.health = this.health;
