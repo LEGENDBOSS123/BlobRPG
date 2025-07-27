@@ -10,8 +10,8 @@ class EncounterTrigger extends Entity {
     static canvasBlinkElement = "canvas-blink";
     constructor(options) {
         super(options);
-        this.encounters = ["Slime", "BalloonSlime"];
-        this.encounterProbabilities = [0.5, 0.5];
+        this.encounters = ["Slime", "BalloonSlime", "BossSlime"];
+        this.encounterProbabilities = [1, 1, 1];
         this.encounterChance = 0.1;
         this.isEncounterTrigger = true;
         this.gameObjects = [];
@@ -105,6 +105,29 @@ class EncounterTrigger extends Entity {
                             radius: 1,
                             speed: 0.5,
                             jumpPower: 1,
+                            gameEngine: this.gameEngine
+                        });
+                        slime.sphere.setRestitution(1)
+
+                        slime.getTargets = function () {
+                            return [players[0].id];
+                        }
+                        enemy.push(slime);
+                    }
+                    break;
+                }
+                case "BossSlime": {
+
+                    for (var i = 0; i < 1; i++) {
+                        let slime = new Slime({
+                            gameEngine: this.gameEngine,
+                            gravity: new Vector3(0, this.gameEngine.gravity, 0),
+                            position: new Vector3(0, 0, 0),
+                            radius: 4,
+                            speed: 0.1,
+                            jumpPower: 1,
+                            damage: 20,
+                            maxHealth: 500,
                             gameEngine: this.gameEngine
                         });
                         slime.sphere.setRestitution(1)
