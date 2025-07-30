@@ -42,16 +42,12 @@ const Item = class extends GameEngineComponent {
         return cloned;
     }
 
-    getCooldown() {
-        return 0;
-    }
-
-    getCooldownRatio() {
-        return 0;
-    }
-
     getInspectHTML() {
         return this.getToolTipHTML();
+    }
+
+    canStackWith(item){
+        return item.name == this.name && this.stackable && item.stackable;
     }
 }
 

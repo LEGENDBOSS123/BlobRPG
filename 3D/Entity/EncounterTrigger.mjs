@@ -11,7 +11,7 @@ class EncounterTrigger extends Entity {
     constructor(options) {
         super(options);
         this.encounters = ["Slime", "BalloonSlime", "BossSlime"];
-        this.encounterProbabilities = [1, 1, 1];
+        this.encounterProbabilities = [1, 0.3, 0.3];
         this.encounterChance = 0.1;
         this.isEncounterTrigger = true;
         this.gameObjects = [];
@@ -64,10 +64,12 @@ class EncounterTrigger extends Entity {
             document.getElementById("canvas-blink").classList.remove("black");
         }, this.transitionTime);
         setTimeout(function () {
-            console.log(battleManager);
             for (const player of battleManager.players) {
                 player.inBattle = false;
                 for (const go of player.gameObjects) {
+                    if(!go.scene){
+                        continue;
+                    }
                     go.scene = this.oldScene;
                     go.addToScene(this.gameEngine);
                     go.addMeshToScene(this.gameEngine);
@@ -105,7 +107,6 @@ class EncounterTrigger extends Entity {
                             radius: 1,
                             speed: 0.5,
                             jumpPower: 1,
-                            gameEngine: this.gameEngine
                         });
                         slime.sphere.setRestitution(1)
 
@@ -128,7 +129,6 @@ class EncounterTrigger extends Entity {
                             jumpPower: 1,
                             damage: 20,
                             maxHealth: 500,
-                            gameEngine: this.gameEngine
                         });
                         slime.sphere.setRestitution(1)
 
@@ -148,7 +148,6 @@ class EncounterTrigger extends Entity {
                             radius: 1,
                             speed: 0.5,
                             jumpPower: 1,
-                            gameEngine: this.gameEngine
                         });
                         slime.sphere.setRestitution(1);
 
@@ -171,7 +170,6 @@ class EncounterTrigger extends Entity {
                     break;
                 }
             }
-            console.log(enemy);
             for (const enem of enemy) {
                 const be = new BattleEnemy({
                     enemy: enem,
@@ -196,6 +194,9 @@ class EncounterTrigger extends Entity {
         setTimeout(function () {
             for (const player of players) {
                 for (const go of player.gameObjects) {
+                    if(!go.scene){
+                        continue;
+                    }
                     go.scene = this.scene;
                     go.addToScene(this.gameEngine);
                     go.addMeshToScene(this.gameEngine);

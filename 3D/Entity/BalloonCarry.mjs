@@ -2,9 +2,10 @@ import GameObject from "../GameObject.mjs";
 import DistanceConstraint from "../Physics/Collision/DistanceConstraint.mjs";
 import Vector3 from "../Physics/Math3D/Vector3.mjs";
 import Sphere from "../Physics/Shapes/Sphere.mjs";
+import Enemy from "./Enemy.mjs";
 import Entity from "./Entity.mjs";
 
-class BalloonCarry extends Entity {
+class BalloonCarry extends Enemy {
     constructor(options) {
         super(options);
         this.usesInstancing = true;
@@ -50,10 +51,6 @@ class BalloonCarry extends Entity {
         this.carryingEntity.getMainShape().physics.global.body.setPosition(this.sphere.global.body.position.copy().subtractInPlace(new Vector3(0, this.jointLength, 0)));
 
 
-    }
-
-    isAlive(){
-        return false;
     }
 
     addToScene(gameEngine) {

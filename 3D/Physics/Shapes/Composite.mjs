@@ -347,7 +347,7 @@ const Composite = class extends WorldObject {
     }
 
     createMesh(options, gameEngine) {
-        return null;
+        return gameEngine.graphicsEngine.meshLinker.createMeshData(new gameEngine.graphicsEngine.THREE.Object3D());
     }
 
     getCenterOfMass(skip = false) {

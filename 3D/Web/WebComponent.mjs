@@ -4,14 +4,14 @@ const WebComponent = class extends GameEngineComponent{
     constructor(options) {
         super(options);
         this.html = null;
-        this.eventListeners = {};
+        this.DOMevents = {};
     }
 
-    addEventListener(name, target, type, handler, options = false) {
-        if(this.eventListeners[name]) {
+    addDOMEventListener(name, target, type, handler, options = false) {
+        if(this.DOMevents[name]) {
             return console.warn(`Event listener ${name} already exist`);
         }
-        this.eventListeners[name] = {
+        this.DOMevents[name] = {
             name: name,
             target: target,
             type: type,
@@ -21,23 +21,23 @@ const WebComponent = class extends GameEngineComponent{
         target.addEventListener(type, handler, options);
     }
 
-    removeEventListener(name) {
-        var listener = this.eventListeners[name];
+    removeDOMEventListener(name) {
+        var listener = this.DOMevents[name];
         if (listener) {
             listener.target.removeEventListener(listener.type, listener.handler, listener.options);
-            delete this.eventListeners[name];
+            delete this.DOMevents[name];
         }
     }
 
     destroy(){
-        for(var name in this.eventListeners) {
-            this.removeEventListener(name);
+        for(var name in this.DOMevents) {
+            this.removeDOMEventListener(name);
         }
-        this.gameEngine = null;
-        this.eventListeners = {};
+        this.DOMevents = {};
         if(this.html){
             this.html.remove();
         }
+        super.destroy();
     }
 }
 

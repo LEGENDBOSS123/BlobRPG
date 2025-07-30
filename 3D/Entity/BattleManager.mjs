@@ -18,7 +18,6 @@ class BattleManager extends Entity {
     }
 
     allEnemiesDead() {
-        console.log(this.enemies.length);
         return this.enemies.length == this.defeatedEnemies.size;
     }
 

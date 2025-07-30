@@ -5,8 +5,10 @@ import Vector3 from "../Physics/Math3D/Vector3.mjs";
 import TextParticle from "../Graphics/Particle/TextParticle.mjs";
 import Particle from "../Graphics/Particle/Particle.mjs";
 import GameObject from "../GameObject.mjs";
+import Enemy from "./Enemy.mjs";
+import Health from "../Components/Health.mjs";
 
-var Slime = class extends HealthEntity {
+var Slime = class extends Enemy {
     constructor(options) {
         super(options);
         this.gravity = options?.gravity ?? new Vector3(0, 0, 0);
@@ -21,8 +23,12 @@ var Slime = class extends HealthEntity {
         this.maxJumpCooldown = options?.maxJumpCooldown ?? 30;
         this.jumpCooldown = options?.jumpCooldown ?? 0;
         this.usesInstancing = true;
-        this.lastDamageTime = 0;
-        this.invincibilityFramesDuration = 100;
+
+        this.health = new Health({
+            parent: this,
+            maxHealth: options?.maxHealth ?? 100,
+            onDamage: this.onDamage.bind(this)
+        });
 
         this.sphere = new Sphere(
             {
@@ -106,6 +112,31 @@ var Slime = class extends HealthEntity {
         }
     }
 
+    onDamage(damage) {
+        for (let i = 0; i < 20; i++) {
+            this.gameEngine.particleSystem.addParticle(new Particle({
+                position: this.getMainShape().physics.global.body.position.copy(),
+                velocity: Vector3.random().scale(0.003),
+                duration: 1000,
+                size: 0.15,
+                fadeInSpeed: 0.1,
+                fadeOutSpeed: 0.1,
+                shrinkSpeed: 0.2,
+                growthSpeed: 0.2,
+                color: "red"
+            }));
+        }
+    }
+
+    setGameEngine(gameEngine) {
+        super.setGameEngine(gameEngine);
+        this.health.setGameEngine(gameEngine);
+    }
+
+    isAlive() {
+        return this.health.isAlive();
+    }
+
     setGravity(vec) {
         this.gravity = vec;
         this.sphere.global.body.acceleration = vec;
@@ -113,32 +144,7 @@ var Slime = class extends HealthEntity {
 
 
     takeDamage(damage) {
-        const time = this.gameEngine.timer.getTime();
-        if (time - this.lastDamageTime < this.invincibilityFramesDuration) {
-            return;
-        }
-        this.lastDamageTime = time;
-        if (damage > this.health) {
-            damage = this.health;
-        }
-        this.health -= damage;
-        for (var i = 0; i < 10; i++) {
-            this.gameEngine.particleSystem.addParticle(new Particle({
-                position: this.getMainShape().physics.global.body.position.add(new Vector3(0, 0, 0)),
-                velocity: new Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).scaleInPlace(0.005),
-                duration: 500,
-                size: Math.random() * 0.3 + 0.1,
-                fadeInSpeed: 0.2,
-                fadeOutSpeed: 0.2,
-                shrinkSpeed: 0.5,
-                growthSpeed: 0.3,
-                color: "red",
-                canvas: {
-                    width: 4,
-                    height: 4
-                }
-            }));
-        }
+        this.health.takeDamage(damage);
     }
 
     addToScene(gameEngine) {
@@ -149,7 +155,7 @@ var Slime = class extends HealthEntity {
     }
 
     addToWorld(gameEngine) {
-        for(var go of this.gameObjects){
+        for (var go of this.gameObjects) {
             go.addToWorld(gameEngine);
         }
         this.updateShapeID();
@@ -158,8 +164,8 @@ var Slime = class extends HealthEntity {
     async setMesh(options, gameEngine) {
         const mesh = await gameEngine.graphicsEngine.modelPool.loadInstance("slime.glb", 100);
         this.mainGameObject.mesh = mesh;
-        this.makeHealthSprite(new Vector3(2, 0.3, 0).scale(this.sphere.radius), new Vector3(0, 1.3, 0).scale(this.sphere.radius));
-        this.healthGameObject.mesh = gameEngine.graphicsEngine.meshLinker.createMeshData(this.healthSprite);
+        this.health.makeHealthSprite(new Vector3(2, 0.3, 0).scale(this.sphere.radius), new Vector3(0, 1.3, 0).scale(this.sphere.radius));
+        this.healthGameObject.mesh = gameEngine.graphicsEngine.meshLinker.createMeshData(this.health.healthSprite);
     }
 
     async setMeshAndAddToScene(options, gameEngine) {
@@ -170,7 +176,7 @@ var Slime = class extends HealthEntity {
     findTarget(targets = []) {
         for (var i of targets) {
             var target = this.gameEngine.entitySystem.getByID(i);
-            if (target.health <= 0) {
+            if (!target.health?.isAlive()) {
                 continue;
             }
             return i;
@@ -189,9 +195,9 @@ var Slime = class extends HealthEntity {
                 info.instancedMesh.getMatrixAt(mesh.instancedIndex, dummy.matrix);
                 dummy.matrix.decompose(dummy.position, dummy.quaternion, dummy.scale);
 
-                this.healthSprite.position.set(...Vector3.from(dummy.position).add(this.healthInfo.position));
-                this.healthSprite.scale.set(...this.healthInfo.scale);
-                this.updateHealthTexture();
+                this.health.healthSprite.position.set(...Vector3.from(dummy.position).add(this.health.healthInfo.position));
+                this.health.healthSprite.scale.set(...this.health.healthInfo.scale);
+                this.health.updateHealthTexture();
 
                 dummy.scale.set(this.sphere.radius, this.sphere.radius, this.sphere.radius);
                 dummy.updateMatrix();
@@ -216,16 +222,16 @@ var Slime = class extends HealthEntity {
     }
 
     updateStep() {
-        
+
 
 
         if (this.getMainShape().physics.global.body.position.y < -100) {
-            this.health = 0;
+            this.takeDamage(this.health.health);
         }
 
         var targetID = this.findTarget(this.getTargets());
         this.targetID = targetID;
-        if (targetID == null || this.health <= 0) {
+        if (targetID == null || !this.health.isAlive()) {
             this.targetID = null;
             return;
         }
@@ -234,11 +240,11 @@ var Slime = class extends HealthEntity {
         var targetEntity = this.gameEngine.entitySystem.getByID(targetID);
 
         var targetBody = targetEntity.getMainShape().physics;
-        
+
         if (!targetBody) {
             return;
         }
-        
+
         var direction = targetBody.global.body.position.subtract(this.sphere.global.body.position);
 
         direction.y = 0;
@@ -303,6 +309,11 @@ var Slime = class extends HealthEntity {
 
     getMainShape() {
         return this.mainGameObject;
+    }
+
+    destroy(){
+        this.health.destroy();
+        super.destroy();
     }
 }
 

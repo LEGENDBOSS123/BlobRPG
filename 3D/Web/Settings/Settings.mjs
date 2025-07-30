@@ -140,7 +140,7 @@ const Panel = class extends SettingsComponent {
     setupEventListeners() {
         for (const buttonTitle in this.buttonElements) {
             const button = this.buttonElements[buttonTitle];
-            this.addEventListener(buttonTitle + "-click", button.element, "click",
+            this.addDOMEventListener(buttonTitle + "-click", button.element, "click",
                 function (e) {
                     button.content.show();
                     for(const b in this.buttonElements){
@@ -238,12 +238,12 @@ const Checkbox = class extends SettingsComponent {
     }
 
     setupEventListeners() {
-        this.addEventListener("checkbox-change", this.html, "change",
+        this.addDOMEventListener("checkbox-change", this.html, "change",
             function (e) {
                 this.setValue(this.getValue());
             }.bind(this)
         );
-        this.addEventListener("checkbox-keydown", this.checkboxElement, "keydown",
+        this.addDOMEventListener("checkbox-keydown", this.checkboxElement, "keydown",
             function (e) {
                 this.checkboxElement.blur();
             }.bind(this)
@@ -324,17 +324,17 @@ const Slider = class extends SettingsComponent {
     }
 
     setupEventListeners() {
-        this.addEventListener("slider-change", this.sliderElement, "input",
+        this.addDOMEventListener("slider-change", this.sliderElement, "input",
             function (e) {
                 this.setValue(this.getValue());
             }.bind(this)
         );
-        this.addEventListener("value-change", this.valueElement, "change",
+        this.addDOMEventListener("value-change", this.valueElement, "change",
             function (e) {
                 this.setValue(this.valueElement.value);
             }.bind(this)
         );
-        this.addEventListener("value-keydown", this.valueElement, "keydown",
+        this.addDOMEventListener("value-keydown", this.valueElement, "keydown",
             function (e) {
                 e.stopImmediatePropagation();
             }.bind(this), true
@@ -475,7 +475,7 @@ const Keybind = class extends SettingsComponent {
 
     makeKeys() {
         for (const key of this.keyElements) {
-            this.removeEventListener(key.eventListenerName);
+            this.removeDOMEventListener(key.eventListenerName);
             key.remove();
         }
         this.keyElements = [];
@@ -498,7 +498,7 @@ const Keybind = class extends SettingsComponent {
             const eventListenerName = "key-delete" + this.keyEventListenerIndex;
             keyElement.eventListenerName = eventListenerName;
             this.keyEventListenerIndex++;
-            this.addEventListener(eventListenerName, deleteKey, "click",
+            this.addDOMEventListener(eventListenerName, deleteKey, "click",
                 function (e) {
                     if (this.keys.length <= 1) {
                         this.root.gameEngine.toastManager.createToast({
@@ -508,7 +508,7 @@ const Keybind = class extends SettingsComponent {
                         });
                         return;
                     }
-                    this.removeEventListener(eventListenerName);
+                    this.removeDOMEventListener(eventListenerName);
                     keyElement.remove();
                     this.keys.splice(this.keys.indexOf(key), 1);
                     this.parent.updateValue();
@@ -566,7 +566,7 @@ const Keybind = class extends SettingsComponent {
     }
 
     setupEventListeners() {
-        this.addEventListener("button-click", this.addButton, "click",
+        this.addDOMEventListener("button-click", this.addButton, "click",
             function (e) {
                 this.addButton.blur();
                 if (Keybind.onListenCallback) {

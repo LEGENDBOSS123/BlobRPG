@@ -14,9 +14,33 @@ var HealthEntity = class extends Entity {
             context: null,
             texture: null,
             position: options?.position ?? new Vector3(),
-            scale: options?.scale ?? new Vector3(1,1,1)
+            scale: options?.scale ?? new Vector3(1, 1, 1)
         };
         this.healthSprite = null;
+
+        this.invincibilityFramesDuration = options?.invincibilityFramesDuration ?? 300;
+        this.lastDamageTime = 0;
+
+    }
+
+    onDeath(){
+
+    }
+
+    takeDamage(damage) {
+        const time = this.gameEngine.timer.getTime();
+        if (time - this.lastDamageTime < this.invincibilityFramesDuration) {
+            return;
+        }
+        this.lastDamageTime = time;
+        if (damage > this.health) {
+            damage = this.health;
+        }
+        this.health -= damage;
+        
+        if (this.health <= 0) {
+            this.onDeath();
+        }
     }
 
     updateHealthTexture(force = false) {
@@ -72,7 +96,7 @@ var HealthEntity = class extends Entity {
         this.updateHealthTexture(true);
     }
 
-    isAlive(){
+    isAlive() {
         return this.health > 0;
     }
 

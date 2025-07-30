@@ -20,6 +20,10 @@ var Entity = class extends GameEngineComponent {
         }
     }
 
+    addToDOM(){
+        return null;
+    }
+
     playAnimation(shape, name, crossFadeDuration = 0, warp = false) {
         if (!shape.mesh || !shape.mesh.animations) {
             return;

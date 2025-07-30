@@ -74,8 +74,9 @@ class GameObject extends GameEngineComponent {
     }
 
 
-    addToScene(gameEngine){
-        gameEngine.addToScene(this, this.scene);
+    addToScene(gameEngine, scene = this.scene){
+        this.scene = scene;
+        gameEngine.addToScene(this, scene);
     }
 
     addMeshToScene(gameEngine) {
@@ -102,6 +103,7 @@ class GameObject extends GameEngineComponent {
         }
         gameEngine.world.addComposite(this.physics);
     }
+
 
     lerpMesh(last, lerp, previousWorld) {
         if (!this.mesh || !this.physics) {

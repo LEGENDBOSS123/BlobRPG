@@ -14,6 +14,7 @@ import SoundManager from "./Sounds/SoundManager.mjs";
 import ToastManager from "./Web/Toast/ToastManager.mjs";
 import Vector3 from "./Physics/Math3D/Vector3.mjs";
 import GameObject from "./GameObject.mjs";
+import DistanceConstraint from "./Physics/Collision/DistanceConstraint.mjs";
 /**
  * @typedef {object} GameEngineOptions
  * @property {object} [graphicsEngine] - Options for the GraphicsEngine.
@@ -78,7 +79,7 @@ const GameEngine = class {
 
     addToScene(gameObject, scene) {
         if (!scene) {
-            scene = gameObject.scene || "main";
+            scene = gameObject.scene ?? "main";
         }
         const oldScene = gameObject.oldScene;
         if (this.scenes[oldScene]?.[gameObject.id]) {
@@ -94,18 +95,12 @@ const GameEngine = class {
         this.scenes[scene][gameObject.id] = gameObject;
     }
 
-    removeAllScenes() {
-        this.activeScene = "";
-        this.graphicsEngine.swapScene("");
-        this.world.removeAllConstraints();
-        this.world.removeAllComposites();
-    }
-
     loadScene(sceneName) {
         if (!this.scenes[sceneName]) {
             return;
         }
-        this.removeAllScenes();
+        this.world.removeAllConstraints();
+        this.world.removeAllComposites();
         this.activeScene = sceneName;
         this.graphicsEngine.swapScene(sceneName);
         for (var i in this.all) {
@@ -121,7 +116,7 @@ const GameEngine = class {
 
     addGameObject(gameObject, scene) {
         if (!scene) {
-            scene = gameObject.scene || "main";
+            scene = gameObject.scene ?? "main";
         }
         gameObject.gameEngine = this;
         gameObject.id = GameEngine.maxID++;

@@ -18,11 +18,7 @@ import DistanceConstraint from "./3D/Physics/Collision/DistanceConstraint.mjs";
 import GameEngine from "./3D/GameEngine.mjs";
 import Sphere from "./3D/Physics/Shapes/Sphere.mjs";
 import Slime from "./3D/Entity/Slime.mjs";
-import Inventory from "./3D/Web/Inventory/Inventory.mjs";
-import InventorySlot from "./3D/Web/Inventory/InventorySlot.mjs";
-import InventoryItem from "./3D/Web/Inventory/InventoryItem.mjs";
-import Modal from "./3D/Web/Modal/Modal.mjs";
-import Hotbar from "./3D/Web/Inventory/Hotbar.mjs";
+
 import ToastManager from "./3D/Web/Toast/ToastManager.mjs";
 import ProgressBar from "./3D/Web/ProgressBar/ProgressBar.mjs";
 import Settings from "./3D/Web/Settings/Settings.mjs";
@@ -91,34 +87,6 @@ gameEngine.soundManager.addSounds({
     "damage": "damage.mp3"
 })
 
-const healthBar = new ProgressBar({
-    gameEngine: gameEngine,
-    title: "HEALTH"
-});
-
-healthBar.createHTML({
-    container: document.body,
-    width: 300,
-    height: 20
-})
-
-healthBar.html.style.top = "5px";
-healthBar.html.style.right = "15px";
-
-
-const cashCounter = new Counter({
-    gameEngine: gameEngine,
-    title: "CASH",
-    prefix: ":       $"
-});
-
-cashCounter.createHTML({
-    container: document.body,
-    height: 20
-})
-
-cashCounter.html.style.top = "50px";
-cashCounter.html.style.right = "25px";
 
 
 const settings = new Settings({
@@ -300,13 +268,14 @@ var player = new Player({
     tiltable: false,
     moveStrength: 0.5,
     airMoveStrength: 0.25,
-    moveSpeed: 0.5 * 4,
+    moveSpeed: 0.5,
     jumpSpeed: 1,
     gravity: new Vector3(0, gameEngine.gravity, 0),
     mass: 1,
     gameEngine: gameEngine
 });
 player.setMeshAndAddToScene({}, gameEngine);
+player.addToDOM();
 player.addToGameEngine(gameEngine);
 gameEngine.entitySystem.register(player);
 player.addToWorld(gameEngine);
@@ -354,35 +323,12 @@ shopInventory.createHTML({
     centered: true
 });
 
-shopInventory.purchaseCallback = function (item, quantity) {
-    var index = inventory.emptyIndex();
-    var hotbarIndex = hotbar.emptyIndex();
-    if ((index == -1 && hotbarIndex == -1) || player.cash - item.price * quantity < 0) {
-        if (index == -1) {
-            this.gameEngine.toastManager.createToast({ duration: 1000, type: Toast.TYPES.ERROR, message: "Inventory and hotbar full" });
-        }
-        else {
-            this.gameEngine.toastManager.createToast({ duration: 1000, type: Toast.TYPES.ERROR, message: "Cannot afford purchase" });
-        }
-        return 0;
+shopInventory.purchaseCallback = function (offer, quantity) {
+    const success = player.hotbar.addItem(offer.item);
+    if(!success){
+        return player.inventory.addItem(offer.item, quantity);
     }
-    player.cash -= item.price * quantity;
-    let emptySlot;
-    if (hotbarIndex != -1) {
-        emptySlot = hotbar.getSlot(hotbarIndex.x, hotbarIndex.y);
-    }
-    else {
-        emptySlot = inventory.getSlot(index.x, index.y);
-    }
-    emptySlot.item = new InventoryItem({
-        gameEngine: this.gameEngine,
-        item: item.item.clone()
-    });
-
-    emptySlot.item.item.quantity = quantity;
-    emptySlot.update();
-
-    return quantity;
+    return true;
 };
 
 // shopInventory.close();
@@ -415,71 +361,18 @@ shopInventory.items = [
 
 shopInventory.updateItems();
 
-var inventory = new Inventory({
-    gameEngine: gameEngine,
-    rows: 12,
-    columns: 8,
-    document: document,
-    title: "Inventory",
-    hideOnClose: true
-})
-
-inventory.createHTML({
-    container: document.body,
-    overflow: true,
-    width: 750,
-    height: 500
-})
-
-inventory.modal.hide();
 
 
-var hotbar = new Hotbar({
-    rows: 1,
-    columns: 9,
-    document: document,
-    closeable: false,
-    fullscreenable: false,
-    resizable: false,
-    draggable: false,
-    gameEngine: gameEngine
-});
-player.hotbarElement = hotbar;
-player.inventoryElement = inventory;
-document.addEventListener("click", function (e) {
-    player.useSelectedItem();
-})
-hotbar.createHTML({
-    container: document.body,
-    overflow: false,
-    width: 600,
-    height: 70.2337,
-    gap: "4px"
-});
-var setHotbarPosition = function () {
-    hotbar.modal.center();
-    hotbar.modal.html.style.top = `${hotbar.modal.html.parentElement.clientHeight - hotbar.modal.html.offsetHeight - 25}px`;
-}
-setHotbarPosition();
 
 document.addEventListener("keydown", function (e) {
     if (e.key == "e") {
-        inventory.modal.toggleShowHide();
+        player.inventoryUI.modal.toggleOpenClose();
     }
     if (e.key == "Escape") {
         settings.toggleOpenClose();
     }
 });
 
-// for (var x = 1; x < 8; x++) {
-//     for (var y = 1; y < 10; y++) {
-
-//         inventory.getSlot(x, y).setItem(new InventoryItem({
-//             gameEngine: gameEngine,
-//             item: Math.random() > 0.2 ? apple.clone() : sword.clone()
-//         }))
-//     }
-// }
 
 
 var map = await gameEngine.loadMap("lawn.glb", {
@@ -549,7 +442,7 @@ for (const gameObject of map.objects) {
             shopInventory.open();
         })
     }
-    if(obj.name.toLowerCase().includes("encountertrigger")){
+    if (obj.name.toLowerCase().includes("encountertrigger")) {
         const et = new EncounterTrigger({
             gameEngine: gameEngine
         });
@@ -725,15 +618,8 @@ function render() {
         stats2.end();
     }
     toolTip.update();
-    inventory.update();
     shopInventory.update();
-    setHotbarPosition();
-    hotbar.update();
-    healthBar.value = player.health;
-    healthBar.max = player.maxHealth;
-    healthBar.update();
-    cashCounter.value = player.cash;
-    cashCounter.update();
+    
     settings.update();
 
 

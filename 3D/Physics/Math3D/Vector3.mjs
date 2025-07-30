@@ -21,6 +21,10 @@ const Vector3 = class {
         return this.subtract(this.projectOnto(v));
     }
 
+    static random(){
+        return new this(Math.random(), Math.random(), Math.random());
+    }
+
     abs() {
         return new this.constructor(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z));
     }

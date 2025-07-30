@@ -37,7 +37,7 @@ const Modal = class extends WebComponent {
     }
 
     headerVisible() {
-        return this.title || this.closeable || this.draggable;
+        return this.title || this.closeable || this.draggable || this.fullscreenable;
     }
 
     setContainer(container) {
@@ -261,7 +261,7 @@ const Modal = class extends WebComponent {
                 document.removeEventListener("mousemove", onmousemoveDrag);
                 document.removeEventListener("mouseup", onmouseupDrag);
             }.bind(this);
-            this.addEventListener("mousedownDrag", this.modalHeaderElement, "mousedown",
+            this.addDOMEventListener("mousedownDrag", this.modalHeaderElement, "mousedown",
                 function (e) {
                     this.bringToFront();
                     isDragging = true;
@@ -281,7 +281,7 @@ const Modal = class extends WebComponent {
                 x: this.html.offsetLeft,
                 y: this.html.offsetTop
             }
-            this.addEventListener("dblclick", this.modalHeaderElement, "dblclick",
+            this.addDOMEventListener("dblclick", this.modalHeaderElement, "dblclick",
                 function (e) {
                     if(e.target != this.modalHeaderElement) {
                         return;
@@ -307,7 +307,7 @@ const Modal = class extends WebComponent {
         }
 
         if (this.closeable) {
-            this.addEventListener("clickClose", this.modalCloseButtonElement, "click",
+            this.addDOMEventListener("clickClose", this.modalCloseButtonElement, "click",
                 function (e) {
                     if (this.hideOnClose) {
                         this.hide();
@@ -318,7 +318,7 @@ const Modal = class extends WebComponent {
                 }.bind(this)
             );
         }
-        this.addEventListener("onmousedown", this.html, "mousedown",
+        this.addDOMEventListener("onmousedown", this.html, "mousedown",
             function (e) {
                 this.bringToFront();
             }.bind(this)
@@ -327,11 +327,6 @@ const Modal = class extends WebComponent {
 
     destroy() {
         super.destroy();
-
-        if (this.html && this.html.parentNode) {
-            this.html.remove();
-        }
-        this.html = null;
         this.modalContentElement = null;
         this.modalHeaderElement = null;
         this.modalTitleElement = null;

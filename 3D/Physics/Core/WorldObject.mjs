@@ -1,55 +1,28 @@
+import GameEngineComponent from "../../GameEngineComponent.mjs";
 import ClassRegistry from "./ClassRegistry.mjs";
 
-const WorldObject = class {
+const WorldObject = class extends GameEngineComponent {
 
     static name = "WORLDOBJECT";
 
     constructor(options) {
+        super(options);
         this.id = options?.id ?? -1;
         this.type = ClassRegistry.getTypeFromName(this.constructor.name);
         this.name = options?.name ?? "";
 
-        this.events = {};
+        
         this.toBeRemoved = options?.toBeRemoved ?? false;
         this.world = options?.world ?? null;
-        this.gameEngine = options?.gameEngine ?? null;
     }
 
-    addEventListener(event, callback) {
-        if (!this.events[event]) {
-            this.events[event] = [];
-        }
-        this.events[event].push(callback);
-    }
-
-    removeEventListener(event, callback) {
-        if (!this.events[event]) {
-            return;
-        }
-        var index = this.events[event].indexOf(callback);
-        if (index == -1) {
-            return;
-        }
-        this.events[event].splice(index, 1);
-        if (this.events[event].length == 0) {
-            delete this.events[event];
-        }
-    }
-
-    dispatchEvent(event, args = []) {
-        if (!this.events[event]) {
-            return;
-        }
-        for (var listener in this.events[event]) {
-            this.events[event][listener](...args);
-        }
-    }
+    
 
     
 
     
     toJSON() {
-        var json = {};
+        var json = super.toJSON();;
         json.id = this.id;
         json.type = this.type;
         json.name = this.name;
@@ -58,7 +31,7 @@ const WorldObject = class {
     }
 
     static fromJSON(json, gameEngine) {
-        var worldObject = new this();
+        var worldObject = super.fromJSON(json, gameEngine);
         worldObject.id = json.id;
         worldObject.type = json.type;
         worldObject.name = json.name;

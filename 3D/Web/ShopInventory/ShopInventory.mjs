@@ -2,7 +2,7 @@ import Modal from "../Modal/Modal.mjs";
 import Toast from "../Toast/Toast.mjs";
 
 const ShopInventory = class extends Modal {
-    static itemEventListenerIndex = 0;
+    static itemDOMEventListenerIndex = 0;
 
     constructor(options) {
         super(options);
@@ -113,9 +113,9 @@ const ShopInventory = class extends Modal {
         price.textContent = "$" + item.price;
         itemElement.appendChild(price);
 
-        item.id = ShopInventory.itemEventListenerIndex++;
+        item.id = ShopInventory.itemDOMEventListenerIndex++;
 
-        this.addEventListener("item-" + item.id, itemElement, "click",
+        this.addDOMEventListener("item-" + item.id, itemElement, "click",
             function (e) {
                 this.select(this.itemElements.indexOf(itemElement)); 
             }.bind(this)
@@ -156,11 +156,11 @@ const ShopInventory = class extends Modal {
     }
 
     updateItems() {
-        for (var name in this.eventListeners) {
+        for (var name in this.DOMevents) {
             if (!name.startsWith('item-')) {
                 continue;
             }
-            this.removeEventListener(name);
+            this.removeDOMEventListener(name);
         }
         this.itemElementContainer.innerHTML = '';
         for (const item of this.items) {
@@ -172,7 +172,7 @@ const ShopInventory = class extends Modal {
     }
 
     setupShopEventListeners() {
-        this.addEventListener("buy-click", this.buyButton, "click",
+        this.addDOMEventListener("buy-click", this.buyButton, "click",
             function (e) {
                 if (this.selectedIndex == -1) {
                     return;
@@ -185,7 +185,7 @@ const ShopInventory = class extends Modal {
                     if (itemToBuy.quantity <= 0) {
                         this.items.splice(this.selectedIndex, 1);
                         this.itemElements[this.selectedIndex].remove();
-                        this.removeEventListener("item-" + itemToBuy.id);
+                        this.removeDOMEventListener("item-" + itemToBuy.id);
                         this.itemElements.splice(this.selectedIndex, 1);
                         this.selectedIndex = 0;
                         if (this.items.length == 0) {

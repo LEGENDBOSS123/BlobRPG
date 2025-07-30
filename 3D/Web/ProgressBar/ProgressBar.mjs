@@ -4,8 +4,10 @@ const ProgressBar = class extends WebComponent {
     constructor(options) {
         super(options);
         this.value = options?.value ?? 100;
+        this.min = options?.min ?? 0;
         this.max = options?.max ?? 100;
         this.title = options?.title ?? "";
+        this.useMinAsLeftText = options?.useMinAsLeftText ?? false;
         this.html = null;
         this.leftTextElement = null;
         this.rightTextElement = null;
@@ -19,16 +21,18 @@ const ProgressBar = class extends WebComponent {
     }
 
     get ratio() {
-        return Math.max(0, Math.min(1, this.value / this.max));
+        return (this.value - this.min) / (this.max - this.min);
     }
 
     set ratio(value) {
-        this.value = value * this.max;
+        this.value = value * (this.max - this.min) + this.min;
     }
 
     createHTML(options) {
         const width = options?.width ?? 750;
         const height = options?.height ?? 60;
+        const color1 = options?.color1 ?? "#4CAF50";
+        const color2 = options?.color2 ?? "#8BC34A";
 
         this.html = document.createElement("div");
         this.html.classList.add("progress-bar");
@@ -37,6 +41,7 @@ const ProgressBar = class extends WebComponent {
 
         this.fillElement = document.createElement("div");
         this.fillElement.classList.add("progress-bar-fill");
+        this.fillElement.style.background = `linear-gradient(to right, ${color1}, ${color2})`;
         this.html.appendChild(this.fillElement);
 
         this.leftTextElement = document.createElement("span");
@@ -61,10 +66,11 @@ const ProgressBar = class extends WebComponent {
         if (this.fillElement && this.fillElement.style.width != `${percentage}%`) {
             this.fillElement.style.width = `${percentage}%`;
         }
-        if (this.leftTextElement && this.leftTextElement.textContent != this.value) {
-            this.leftTextElement.textContent = this.value;
+        const leftText = (this.useMinAsLeftText ? this.min : this.value).toString();
+        if (this.leftTextElement && this.leftTextElement.textContent != leftText) {
+            this.leftTextElement.textContent = leftText;
         }
-        if (this.rightTextElement && this.rightTextElement.textContent != this.max) {
+        if (this.rightTextElement && this.rightTextElement.textContent != this.max.toString()) {
             this.rightTextElement.textContent = this.max;
         }
         if (this.middleTextElement && this.middleTextElement.textContent != this.title) {
